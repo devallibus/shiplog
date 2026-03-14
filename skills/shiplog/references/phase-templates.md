@@ -347,3 +347,34 @@ Target: issue (Full Mode) or `--log` PR (Quiet Mode).
 ```
 
 Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`
+
+---
+
+## Issue Closure Comment
+
+When closing an issue manually (not via PR auto-close), use this format:
+
+```markdown
+## [shiplog/history] #<ID>: Closure
+
+**Evidence:** [URL to commit, PR, or decision artifact]
+**Merged to default branch:** yes | no | n/a
+**Verification:** [1-3 sentences — why this evidence satisfies the issue]
+**Disposition:** fully resolved | superseded by #<N> | won't fix (reason)
+```
+
+See `references/closure-and-review.md` for the full closure and review protocol.
+
+---
+
+## Review Sign-Off Comment
+
+When reviewing a PR, include this sign-off block:
+
+```
+Reviewed-by: <model name> (<tool/environment>)
+Disposition: approve | request-changes
+Scope: <what was reviewed>
+```
+
+See `references/closure-and-review.md` §3-5 for the full multi-model review protocol.
