@@ -118,6 +118,44 @@ Preferred labels:
 
 ---
 
+## Shell Portability
+
+Keep the workflow cross-platform. Do not assume Bash unless you know the agent is running in Bash.
+
+- Prefer shell-neutral patterns for multiline GitHub content. When the issue, comment, or PR body is more than a short sentence, prefer `gh ... --body-file <temp-file>` over inline heredocs or nested quoting.
+- Keep the existing Bash examples for macOS/Linux, but add a PowerShell-safe variant when interpolation or quoting rules differ.
+- If the same content will be reused across shells, write the markdown to a temp file first and pass it to `gh`.
+- For branch setup, break chained shell commands into separate steps if the shell operator differs across platforms.
+
+Portable pattern for multiline `gh` bodies:
+
+```bash
+body_file="$(mktemp)"
+cat > "$body_file" <<'EOF'
+## Title
+
+Body content
+EOF
+gh issue comment <ISSUE_NUMBER> --body-file "$body_file"
+rm "$body_file"
+```
+
+```powershell
+$bodyPath = Join-Path $PWD '.tmp-gh-body.md'
+$body = @"
+## Title
+
+Body content
+"@
+Set-Content -Path $bodyPath -Value $body -NoNewline
+gh issue comment <ISSUE_NUMBER> --body-file $bodyPath
+Remove-Item $bodyPath -Force
+```
+
+Use the same pattern for `gh issue create`, `gh pr create`, and `gh pr comment`.
+
+---
+
 ## PHASE 1: Brainstorm-to-Issue
 
 **Trigger:** User wants to plan, brainstorm, or design something.
@@ -167,6 +205,10 @@ gh issue create \
 EOF
 )"
 ```
+
+Portable note:
+- The Bash example is fine on macOS/Linux shells.
+- On PowerShell, prefer the `--body-file` temp-file pattern from `Shell Portability` instead of translating the heredoc inline.
 
 ### Step 2 (Quiet Mode): Defer capture until the feature branch exists
 
@@ -225,6 +267,9 @@ gh issue comment <ISSUE_NUMBER> --body "$(cat <<'EOF'
 EOF
 )"
 ```
+
+Portable note:
+- For cross-platform reliability, prefer `gh issue comment --body-file <temp-file>` when the comment body spans multiple lines.
 
 ### Step 3 (Quiet Mode): Create `--log` branch + PR
 
@@ -361,6 +406,31 @@ EOF
 gh pr comment <LOG_PR_NUMBER> --body "[same content]"
 ```
 
+
+For Codex on Windows/PowerShell, use an expandable here-string and double backticks around interpolated values you want rendered as markdown code spans:
+
+```powershell
+$commitSha = git log -1 --format='%h'
+$commitMsg = git log -1 --format='%s'
+$body = @"
+## [#<ISSUE>] commit: ``$commitSha``
+
+**What:** $commitMsg
+
+**Why:** [1-2 sentences explaining the reasoning]
+
+**Discovered:** [Anything unexpected, or "Nothing unexpected"]
+
+**Next:** [What comes next]
+"@
+gh issue comment <ISSUE_NUMBER> --body $body
+```
+
+PowerShell note:
+- In an expandable string or here-string, `` `$commitSha `` escapes interpolation and posts the literal text `$commitSha`
+- Use `` ``$commitSha`` `` when you want markdown backticks around the interpolated value
+- If in doubt, avoid markdown code spans and post the SHA as plain text
+
 **When to add context comments:**
 - After implementing significant functionality
 - After discovering something unexpected
@@ -432,6 +502,10 @@ Closes #<ISSUE_NUMBER>
 EOF
 )"
 ```
+
+Portable note:
+- The PR body is large enough that `--body-file` should be treated as the preferred portable path on both macOS/Linux and PowerShell.
+- Keep the Bash example as a fast path, but do not force agents to translate nested heredoc quoting when a temp file is simpler.
 
 ### Step 2 (Quiet Mode): Clean feature PR
 
@@ -631,3 +705,15 @@ For each operation:
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
 All skills are optional. Without them, shiplog falls back to direct `gh`/`git` commands.
+
+### Codex agent identity
+
+When signing issues, PRs, or timeline comments from Codex, report the model identity from local Codex metadata instead of guessing from the generic system prompt.
+
+- Primary source: `~/.codex/config.toml`
+- Read `model` and `model_reasoning_effort`
+- Corroborate if needed with `~/.codex/models_cache.json`
+- If both are present, sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`
+- Shorthand like `gpt-5.4 high` is acceptable only when both values are explicitly present
+- If the files are unavailable or do not expose the values, fall back to `OpenAI Codex, based on GPT-5`
+
