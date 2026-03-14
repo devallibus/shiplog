@@ -129,11 +129,35 @@ This is the temporary format. When #33 (authored-artifact signatures) lands, it 
 - Same model, same version, different session does NOT count as independent.
 - Human review always counts as independent.
 
+### Review target selection
+
+When asked to review open PRs (e.g., "review PRs", "check for PRs to review"), the reviewing agent should:
+
+1. List open PRs on the repository.
+2. For each PR, check the `Authored-by:` signature on the latest commit and any existing `Reviewed-by:` sign-offs.
+3. **Skip PRs where the latest commit or most recent review was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
+4. **Review PRs where the latest activity is from a different model.** These are candidates for cross-model review.
+5. If all open PRs were last touched by the current model, inform the user:
+   > "All open PRs were last touched by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
+6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per §4 audit trail rules.
+
+**What counts as "last touched":** The most recent of: (a) the latest commit's `Authored-by:` signature, or (b) the most recent review's `Reviewed-by:` signature. If a PR was authored by Model A but the latest review is from Model B with `request-changes`, and Model A pushed a fix commit, Model A is the last touch — Model B (or another cross-model reviewer) should re-review.
+
 ---
 
 ## 4. Review Execution Ladder
 
 Ordered from most to least desirable:
+
+### GitHub API constraint
+
+All AI agents authenticate as the repository owner's GitHub account. GitHub does not allow a user to submit an `APPROVE` review on their own pull request. This means the formal `APPROVE` review event will always fail when the PR was opened by the same account.
+
+**Workaround:**
+- Use the `COMMENT` review event instead of `APPROVE`.
+- Include the full signed disposition block (`Reviewed-by:`, `Disposition: approve`, `Scope:`) in the comment body.
+- The cross-model provenance in the `Reviewed-by:` line is the authoritative review signal for shiplog, not the GitHub review badge.
+- Merge authorization follows the shiplog sign-off (see §5), not the GitHub "approved" status.
 
 ### Best: Spawn a review agent
 
