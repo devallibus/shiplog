@@ -344,6 +344,31 @@ EOF
 gh pr comment <LOG_PR_NUMBER> --body "[same content]"
 ```
 
+
+For Codex on Windows/PowerShell, use an expandable here-string and double backticks around interpolated values you want rendered as markdown code spans:
+
+```powershell
+$commitSha = git log -1 --format='%h'
+$commitMsg = git log -1 --format='%s'
+$body = @"
+## [#<ISSUE>] commit: ``$commitSha``
+
+**What:** $commitMsg
+
+**Why:** [1-2 sentences explaining the reasoning]
+
+**Discovered:** [Anything unexpected, or "Nothing unexpected"]
+
+**Next:** [What comes next]
+"@
+gh issue comment <ISSUE_NUMBER> --body $body
+```
+
+PowerShell note:
+- In an expandable string or here-string, `` `$commitSha `` escapes interpolation and posts the literal text `$commitSha`
+- Use `` ``$commitSha`` `` when you want markdown backticks around the interpolated value
+- If in doubt, avoid markdown code spans and post the SHA as plain text
+
 **When to add context comments:**
 - After implementing significant functionality
 - After discovering something unexpected
@@ -625,3 +650,4 @@ When signing issues, PRs, or timeline comments from Codex, report the model iden
 - If both are present, sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`
 - Shorthand like `gpt-5.4 high` is acceptable only when both values are explicitly present
 - If the files are unavailable or do not expose the values, fall back to `OpenAI Codex, based on GPT-5`
+
