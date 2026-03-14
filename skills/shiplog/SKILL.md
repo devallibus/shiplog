@@ -39,7 +39,7 @@ Ask the user which mode on first activation. Remember the choice via `ork:rememb
 
 ## Model-Tier Routing
 
-Assign AI model tiers to phases based on cognitive demand. Advisory only - never blocks workflow. When a stronger model wants a cheaper agent to execute bounded work, use delegation mode so the handoff stays auditable.
+The skill cannot switch models — only the user can. Routing is purely advisory.
 
 | Tier | When to Use | Default Phases |
 |------|------------|----------------|
@@ -47,30 +47,42 @@ Assign AI model tiers to phases based on cognitive demand. Advisory only - never
 | **tier-2** (capable) | Context loading, judgment, structured docs | Phase 2, Phase 3, Phase 6 |
 | **tier-3** (fast) | Execution, routine commits, templates | Phase 4, Phase 7 |
 
-**Resolution order:** Per-issue `## Model Routing` > `.shiplog/routing.md` > built-in defaults > silent.
+### Routing behavior
 
-**Routing prompt:** At phase transitions when the tier changes, suggest the model switch. For cross-tool switches, include the handoff location.
+Configured in `.shiplog/routing.md` (one field). Resolution order: per-issue `## Model Routing` > `.shiplog/routing.md` > built-in default (`confirm`).
 
-**Context handoff:** When transitioning tiers, write a self-contained handoff comment. Treat lower-tier execution as a contract, not a goal: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget should be explicit. The golden rule: if a tier-3 model reading the handoff would need to make a judgment call, the handoff is not specific enough.
+| Mode | Behavior |
+|------|----------|
+| `confirm` (default) | Pause at tier transitions and ask the user before proceeding |
+| `warn` | Show a one-line banner at tier transitions, don't stop |
+| `off` | Silent. No routing prompts at all |
 
-**Delegation mode:** Use a dedicated delegation handoff when tier-1 or tier-2 work is split into bounded tier-3 execution. Delegated agents should execute only within the contract and return a structured artifact; issue and PR lifecycle actions stay with the delegator unless a contract explicitly grants them.
+**`/shiplog models`:** Re-runs the setup prompt at any time to change the routing mode.
 
-**First activation setup:** On the first shiplog activation in a repo, if `.shiplog/routing.md` is missing, run the setup wizard from `references/model-routing.md` before relying on project-level routing. Detect the current platform, suggest the available models, confirm tier assignments with the user, and write `.shiplog/routing.md`. If the user declines or only has one active model, continue with built-in defaults and silent routing for the current session until a config exists.
+**First activation:** If `.shiplog/routing.md` is missing, run the setup prompt from `references/model-routing.md` before the first phase entry check.
 
-**Phase entry check:** At the start of every phase:
-1. Resolve the entering phase's target tier using the resolution order above.
-2. Read routing behavior from `.shiplog/routing.md` if it exists. Without a project config, built-in defaults stay silent even when a phase has a recommended tier.
-3. If behavior is `suggest` and the entering phase's tier differs from the previous phase, emit the routing prompt from `references/model-routing.md`.
-4. If the switch is cross-tool or moves from a higher tier to a lower tier, write the handoff comment before telling the user where to continue.
-5. If behavior is `quiet`, skip the prompt and optionally note the resolved tier in the next timeline artifact. If behavior is `off`, do nothing.
+### Phase entry check (Step 0)
 
-See `references/model-routing.md` for full configuration format, setup wizard, handoff templates, delegation rules, and examples.
+Every phase begins with this check:
+
+1. Read routing mode from per-issue override > `.shiplog/routing.md` > default (`confirm`).
+2. If mode is `off`, skip to Step 1.
+3. Compare the entering phase's tier to the previous phase's tier. If same, skip to Step 1.
+4. If mode is `confirm`: emit the routing prompt and wait for user acknowledgment.
+5. If mode is `warn`: emit the routing banner and continue immediately.
+6. If work is transferring to another model/tool, write a handoff comment per `references/model-routing.md`.
+
+**Routing mismatch:** If the user continues without switching models, proceed normally. Never block or repeat the prompt.
+
+See `references/model-routing.md` for routing prompt format, handoff template, and tier reference table.
 
 ---
 
 ## When This Skill Activates
 
-**User-invocable:** `/shiplog`
+**User-invocable:** `/shiplog`, `/shiplog models`
+
+**`/shiplog models`:** Re-runs the routing setup prompt. See [Model-Tier Routing](#model-tier-routing).
 
 **Auto-activate when ANY of these occur:**
 - User says "let's plan", "let's brainstorm", or "let's design"
@@ -128,11 +140,10 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 ```
 User request arrives
   |
-  +--> [If first activation and .shiplog/routing.md is missing: run setup wizard]
+  +--> [If .shiplog/routing.md missing: run setup prompt]
+  +--> ["/shiplog models": re-run setup prompt, update config]
   |
-  +--> [Resolve target phase tier + routing behavior]
-  |
-  +--> [If tier changed and behavior=suggest: emit routing prompt / handoff]
+  +--> [Step 0: phase entry check — compare tier, apply routing mode]
   |
   +-- "Let's brainstorm/plan/design X"     -> PHASE 1 [tier-1]
   +-- "Work on issue #N"                    -> PHASE 2 [tier-2]
@@ -167,11 +178,11 @@ Key rules:
 
 ## PHASE 1: Brainstorm-to-Issue
 
-**Routing:** tier-1 (reasoning).
+<!-- routing: tier-1 -->
 
-1. **Routing check.** On first activation, if `.shiplog/routing.md` is missing, run the setup wizard from `references/model-routing.md`. Resolve the Phase 1 tier and apply the routing prompt / handoff rules from that reference before continuing.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0). On first activation, if `.shiplog/routing.md` is missing, run the setup prompt first.
 
-2. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
+1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
 3. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
    Before writing the final issue body, classify factual claims:
@@ -184,17 +195,17 @@ Key rules:
 
 5. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
 
-6. **Transition.** Proceed to PHASE 2 if the user wants to start work. Run the Phase 2 routing check before continuing. Emit a routing prompt only if the entering tier changes, and write the handoff comment first when the next step crosses tools or drops to a lower tier.
+6. **Transition.** Proceed to PHASE 2 if the user wants to start work.
 
 ---
 
 ## PHASE 2: Issue-to-Branch
 
-**Routing:** tier-2 (capable).
+<!-- routing: tier-2 -->
 
-1. **Routing check.** Resolve the Phase 2 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If the switch is cross-tool or to a lower tier, write the handoff comment before asking the user to continue elsewhere.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-2. **Load context.** `gh issue view <N> --json title,body,labels,comments,milestone` and search knowledge graph.
+1. **Load context.** `gh issue view <N> --json title,body,labels,comments,milestone` and search knowledge graph.
 
 3. **Create branch (worktree-first).** The skill cannot detect concurrent agents, so shared-checkout branch switching is unsafe by default. One branch, one worktree, one agent.
 
@@ -216,21 +227,20 @@ Key rules:
    See `references/shell-portability.md` for shell-specific notes.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-4. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing). If routing behavior is `quiet`, this is the default place to note the resolved tier without interrupting the user.
+4. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
 
 5. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
-   Prefer delegation for `[tier-3]` tasks and routine implementation only. Discovery, closure, and PR judgment stay with the higher-tier delegator.
 
 ---
 
 ## PHASE 3: Discovery Protocol
 
-**Routing:** tier-2 (capable).
+<!-- routing: tier-2 -->
 
-1. **Routing check.** Resolve the Phase 3 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If the switch is cross-tool or to a lower tier, write the handoff comment before switching.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-2. **Classify the discovery.** Use the routing-aware decision tree below to decide whether to fix inline, stack a prerequisite, or create a new issue.
+1. **Classify the discovery.** Use the routing-aware decision tree below to decide whether to fix inline, stack a prerequisite, or create a new issue.
 
 ```
 Discovery made during work
@@ -248,11 +258,11 @@ Discovery made during work
 
 ## PHASE 4: Commit-with-Context
 
-**Routing:** tier-3 (fast).
+<!-- routing: tier-3 -->
 
-1. **Routing check.** Resolve the Phase 4 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If the switch is cross-tool or from a higher tier, write the handoff comment before asking the user to switch tools or models.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-2. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
+1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
 
 3. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
 
@@ -264,11 +274,11 @@ Discovery made during work
 
 ## PHASE 5: PR-as-Timeline
 
-**Routing:** tier-1 (reasoning).
+<!-- routing: tier-1 -->
 
-1. **Routing check.** Resolve the Phase 5 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If the switch is cross-tool or from a lower tier back to a stronger model, point to the latest handoff or timeline artifact before continuing.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-2. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
+1. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
 
 3. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
 
@@ -284,10 +294,10 @@ Discovery made during work
 
 ## PHASE 6: Knowledge Retrieval
 
-**Routing:** tier-2 (capable).
+<!-- routing: tier-2 -->
 
-1. **Routing check.** Resolve the Phase 6 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If a cross-tool switch is needed, point the user to the artifact location that contains the retrieval target.
-2. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
+1. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
 3. **Prefer structured envelopes.** When artifacts carry machine-readable envelopes, fetch envelope metadata before reading full threads. See `references/artifact-envelopes.md` for the envelope format, artifact kinds, supersession model, and `gh` query patterns.
 4. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
 5. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
@@ -296,11 +306,11 @@ Discovery made during work
 
 ## PHASE 7: Timeline Maintenance
 
-**Routing:** tier-3 (fast).
+<!-- routing: tier-3 -->
 
-1. **Routing check.** Resolve the Phase 7 tier. If the entering tier differs from the previous phase and routing behavior is `suggest`, emit the routing prompt from `references/model-routing.md`. If routing behavior is `quiet`, record the resolved tier in the timeline comment only when that extra detail helps future readers.
+0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-2. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign each timeline comment per [Agent identity signing](#agent-identity-signing).
+1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign each timeline comment per [Agent identity signing](#agent-identity-signing).
 
 3. **Use the standard format.** See `references/phase-templates.md` for the comment format. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`.
 
@@ -325,7 +335,7 @@ This skill ORCHESTRATES. It never reimplements.
 | Issue tracking | `ork:issue-progress-tracking` | Richer timeline comments |
 | Storing decisions | `ork:remember` | Structured `#ID: decision` entries |
 | Fixing issues | `ork:fix-issue` | Timeline documentation of RCA |
-| Model routing | Built-in | Tier-based switch prompts, handoffs, and delegation contracts |
+| Model routing | Built-in | Phase entry check (Step 0), routing prompts, handoffs |
 
 **Graceful degradation:** Try preferred skill → alternative skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
 
