@@ -10,7 +10,7 @@ For shell portability guidance, see `references/shell-portability.md`.
 
 ```bash
 gh issue create \
-  --title "[PLAN] Brief title describing the work" \
+  --title "[shiplog/plan] Brief title describing the work" \
   --body "$(cat <<'EOF'
 ## Context
 
@@ -73,7 +73,7 @@ On PowerShell, prefer the `--body-file` temp-file pattern from `references/shell
 
 ```bash
 gh issue comment <ISSUE_NUMBER> --body "$(cat <<'EOF'
-## [shiplog] Work Started
+## [shiplog/session-start] <Brief description of the work>
 
 **Branch:** `issue/<N>-<description>`
 **Approach:** [1-2 sentences about the plan for this session]
@@ -94,7 +94,7 @@ git checkout -b <branch>--log
 git commit --allow-empty -m "shiplog: initialize knowledge log"
 git push -u origin <branch>--log
 gh pr create --base <branch> \
-  --title "[shiplog] <description>" \
+  --title "[shiplog/worklog] <description>" \
   --body "## Knowledge Log\n\nTracking decisions and discoveries for this work."
 # If you deferred a brainstorm from PHASE 1, use that saved content as the initial PR body instead of this placeholder.
 # Then switch back to the feature branch
@@ -105,7 +105,7 @@ On PowerShell, use backtick (`` ` ``) for line continuation instead of `\`, or p
 
 Post a comment on the `--log` PR:
 ```bash
-gh pr comment <LOG_PR_NUMBER> --body "[shiplog] Work started. Approach: [1-2 sentences]"
+gh pr comment <LOG_PR_NUMBER> --body "[shiplog/session-start] Work started. Approach: [1-2 sentences]"
 ```
 
 ---
@@ -114,7 +114,7 @@ gh pr comment <LOG_PR_NUMBER> --body "[shiplog] Work started. Approach: [1-2 sen
 
 ```bash
 gh issue create \
-  --title "[DISCOVERY] Brief description" \
+  --title "[shiplog/discovery] Brief description" \
   --body "$(cat <<'EOF'
 ## Discovered During
 
@@ -140,7 +140,7 @@ EOF
 
 Cross-reference on the parent:
 ```bash
-gh issue comment <PARENT_ISSUE> --body "[#<PARENT>] discovery: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
+gh issue comment <PARENT_ISSUE> --body "[shiplog/discovery] #<PARENT>: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
 ```
 
 ---
@@ -155,7 +155,7 @@ COMMIT_MSG=$(git log -1 --format='%s')
 
 # Full Mode: comment on issue
 gh issue comment <ISSUE_NUMBER> --body "$(cat <<EOF
-## [#<ISSUE>] commit: \`$COMMIT_SHA\`
+## [shiplog/commit-note] #<ISSUE>: \`$COMMIT_SHA\`
 
 **What:** $COMMIT_MSG
 
@@ -177,7 +177,7 @@ gh pr comment <LOG_PR_NUMBER> --body "[same content]"
 $commitSha = git log -1 --format='%h'
 $commitMsg = git log -1 --format='%s'
 $body = @"
-## [#<ISSUE>] commit: ``$commitSha``
+## [shiplog/commit-note] #<ISSUE>: ``$commitSha``
 
 **What:** $commitMsg
 
@@ -254,7 +254,7 @@ The PR body is large enough that `--body-file` should be treated as the preferre
 Add a final summary comment to the `--log` PR:
 ```bash
 gh pr comment <LOG_PR_NUMBER> --body "$(cat <<'EOF'
-## [shiplog] Final Summary
+## [shiplog/review-handoff] Final Summary
 
 **Feature PR:** #<FEATURE_PR_NUMBER>
 **Status:** Ready for review
@@ -298,7 +298,7 @@ EOF
 Target: issue (Full Mode) or `--log` PR (Quiet Mode).
 
 ```markdown
-## [#<ID>] <type>: <brief summary>
+## [shiplog/<kind>] #<ID>: <brief summary>
 
 **Status:** [In progress / Blocked / Approach changed / Milestone reached]
 
