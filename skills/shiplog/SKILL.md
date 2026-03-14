@@ -344,25 +344,37 @@ gh issue view <ISSUE_NUMBER> --json title,body,labels,comments,milestone
 
 Also search knowledge graph if available: `/ork:memory search "#<issue-id>"`
 
-### Step 2: Create branch
+### Step 2: Create branch (worktree-first)
 
-Delegate to `superpowers:using-git-worktrees` if isolation is needed, otherwise:
+**Default: use a dedicated worktree.** The skill cannot detect whether other agents are active in the same checkout, so shared-checkout branch switching is unsafe by default. One branch, one worktree, one agent.
+
+Delegate to `superpowers:using-git-worktrees` if available. Otherwise create the worktree manually:
 
 ```bash
-# Resolve the repo default branch dynamically — never hardcode main/master
 DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+git fetch origin $DEFAULT_BRANCH
 
+BRANCH=issue/<ISSUE_NUMBER>-<brief-description>
+git worktree add ../$BRANCH -b $BRANCH origin/$DEFAULT_BRANCH
+cd ../$BRANCH
+```
+
+**Fallback: in-place checkout.** Only when the user explicitly requests no worktree or the environment does not support them:
+
+```bash
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
 git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH
 git checkout -b issue/<ISSUE_NUMBER>-<brief-description>
 ```
 
 Portable note:
-- On PowerShell, break the chained commands into separate steps and use a different variable capture syntax:
+- On PowerShell, break chained commands into separate steps and use a different variable capture syntax:
   ```powershell
   $DEFAULT_BRANCH = gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
-  git checkout $DEFAULT_BRANCH
-  git pull origin $DEFAULT_BRANCH
-  git checkout -b issue/<ISSUE_NUMBER>-<brief-description>
+  git fetch origin $DEFAULT_BRANCH
+  $BRANCH = "issue/<ISSUE_NUMBER>-<brief-description>"
+  git worktree add ../$BRANCH -b $BRANCH origin/$DEFAULT_BRANCH
+  Set-Location ../$BRANCH
   ```
 
 ### Step 3: Post timeline entry (Full Mode)
@@ -793,7 +805,7 @@ For each operation:
 
 **Hotfix / emergency:** Fix first. Create issue and PR after, backfilling the timeline. PR body notes: "Hotfix — issue created retroactively."
 
-**Session resume:** Detect the issue from the current branch name (`issue/N-*`), then run `gh pr list --head $(git branch --show-current)` to find any linked PR. Search `ork:memory`. Read issue/PR comments. Add "Session resumed" timeline comment. Continue with Phase 7.
+**Session resume:** Detect the issue from the current branch name (`issue/N-*`) or current worktree. If the branch has an existing worktree, `cd` into it rather than switching branches in the main checkout. Run `gh pr list --head $(git branch --show-current)` to find any linked PR. Search `ork:memory`. Read issue/PR comments. Add "Session resumed" timeline comment. Continue with Phase 7.
 
 **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in the closed PR's history.
 
