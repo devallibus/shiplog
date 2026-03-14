@@ -103,6 +103,8 @@ A review produces one of three artifacts:
 | **Request changes** | Issues found; author must address before re-review |
 | **Comment** | Observations that do not block merge |
 
+For AI-operated shiplog reviews, these outcomes are recorded as signed comment artifacts. The `Disposition:` line is the authoritative outcome; formal GitHub review states and badges are advisory at best.
+
 ### Sign-off format
 
 Every review comment must include a structured sign-off block:
@@ -129,11 +131,36 @@ This is the temporary format. When #33 (authored-artifact signatures) lands, it 
 - Same model, same version, different session does NOT count as independent.
 - Human review always counts as independent.
 
+### Review target selection
+
+When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for PRs to review", "review PR #56"), the reviewing agent should:
+
+1. List open PRs on the repository.
+2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` line, or a newer linked commit-note / handoff artifact) and any existing `Reviewed-by:` sign-offs.
+3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
+4. **Review PRs where the latest activity is from a different model.** These are candidates for cross-model review.
+5. If all open PRs were last touched by the current model, inform the user:
+   > "All open PRs were last touched by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
+6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
+
+**What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` artifact associated with the work, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog authorship lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
+
 ---
 
 ## 4. Review Execution Ladder
 
 Ordered from most to least desirable:
+
+### GitHub API constraint
+
+All AI agents authenticate as the repository owner's GitHub account. Formal same-account review events are not a reliable mechanism in this workflow: GitHub blocks self-`APPROVE`, and shiplog should not depend on formal `REQUEST_CHANGES` or other review states as merge-authoritative signals either.
+
+**Workaround:**
+- Use signed review comments as the canonical review artifact.
+- Post a comment review artifact for every outcome, including approve, request-changes, and non-blocking feedback.
+- Include the full signed disposition block (`Reviewed-by:`, `Disposition: approve | request-changes`, `Scope:`) in the comment body.
+- The cross-model provenance in the `Reviewed-by:` line is the authoritative review signal for shiplog, not the GitHub review badge.
+- Merge authorization follows the shiplog sign-off (see Section 5), not GitHub `reviewDecision`, review badges, or formal review states.
 
 ### Best: Spawn a review agent
 
