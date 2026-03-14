@@ -180,6 +180,14 @@ Key rules:
    git worktree add ../$BRANCH -b $BRANCH origin/$DEFAULT_BRANCH
    cd ../$BRANCH
    ```
+   ```powershell
+   $defaultBranch = gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+   git fetch origin $defaultBranch
+   $branch = 'issue/<ISSUE_NUMBER>-<brief-description>'
+   git worktree add ../$branch -b $branch origin/$defaultBranch
+   Set-Location ../$branch
+   ```
+   See `references/shell-portability.md` for shell-specific notes.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
 3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates.
@@ -307,7 +315,23 @@ This skill ORCHESTRATES. It never reimplements.
 | `git` | Branch, commit, diff, log | Pre-installed |
 | GitHub remote | Must be in a git repo with GitHub remote | — |
 
-All recommended skills are optional. See `references/phase-templates.md` for full skill list. Without them, shiplog falls back to direct `gh`/`git` commands.
+All recommended skills are optional. The current optional integrations are listed below. Without them, shiplog falls back to direct `gh`/`git` commands.
+
+### Recommended Skills
+
+| Skill | Plugin | What It Adds |
+|-------|--------|-------------|
+| `ork:commit` | OrchestKit | Conventional commits with validation |
+| `ork:create-pr` | OrchestKit | PR creation with parallel validation agents |
+| `ork:stacked-prs` | OrchestKit | Stacked PR mechanics and management |
+| `ork:issue-progress-tracking` | OrchestKit | Auto-checkbox updates from commits |
+| `ork:remember` / `ork:memory` | OrchestKit | Knowledge graph storage and retrieval |
+| `ork:brainstorming` | OrchestKit | Parallel agent brainstorming |
+| `superpowers:brainstorming` | Superpowers | Design-first brainstorming workflow |
+| `superpowers:using-git-worktrees` | Superpowers | Isolated workspace creation |
+| `superpowers:finishing-a-development-branch` | Superpowers | Post-implementation options |
+| `superpowers:writing-plans` | Superpowers | Structured plan documents |
+| `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
 ### Codex agent identity
 

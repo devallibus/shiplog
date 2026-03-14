@@ -42,3 +42,21 @@ Use the same pattern for `gh issue create`, `gh pr create`, and `gh pr comment`.
 - In an expandable string or here-string, `` `$var `` escapes interpolation and posts the literal text `$var`.
 - Use `` ``$var`` `` when you want markdown backticks around the interpolated value.
 - If in doubt, avoid markdown code spans and post values as plain text.
+
+## Worktree branch setup
+
+```bash
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+git fetch origin $DEFAULT_BRANCH
+BRANCH=issue/<ISSUE_NUMBER>-<brief-description>
+git worktree add ../$BRANCH -b $BRANCH origin/$DEFAULT_BRANCH
+cd ../$BRANCH
+```
+
+```powershell
+$defaultBranch = gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+git fetch origin $defaultBranch
+$branch = 'issue/<ISSUE_NUMBER>-<brief-description>'
+git worktree add ../$branch -b $branch origin/$defaultBranch
+Set-Location ../$branch
+```
