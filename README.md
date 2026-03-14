@@ -26,7 +26,7 @@ shiplog fixes this by making your git history the single source of truth — not
 |---------|-------------|
 | [Two Modes](#two-modes) | Full mode for OSS, quiet mode for clean team PRs |
 | [7-Phase Workflow](#the-7-phases) | Brainstorm → Issue → Branch → Commit → PR → Retrieval → Maintenance |
-| [Cross-Model Review](#cross-model-review) | No PR merges without independent review from a different AI model |
+| [Cross-Model Review](#cross-model-review) | No PR merges without independent review from a different model or a human |
 | [Evidence-Linked Closure](#evidence-linked-closure) | No issue closes without linked proof (commit, PR, or decision artifact) |
 | [Model-Tier Routing](#model-tier-routing) | Route reasoning models to planning, fast models to implementation |
 | [Delegation Contracts](#delegation-contracts) | Structured handoffs with allowed files, stop conditions, decision budgets |
@@ -64,7 +64,7 @@ main
 
 ## Cross-Model Review
 
-Every PR requires a positive review from a model *different* from the author before it can merge. A single model authoring, reviewing, and merging its own work is the anti-pattern this protocol prevents.
+Every PR requires a positive review from an independent reviewer — a different AI model or a human — before it can merge. A single model authoring, reviewing, and merging its own work is the anti-pattern this protocol prevents.
 
 - **Review artifacts** carry a signed `Reviewed-by:` line with model family, version, and tool
 - **Three dispositions:** approve (merge authorized), request-changes (must address), comment (non-blocking)
@@ -84,7 +84,7 @@ No issue closes without linked evidence:
 | Merged PR URL | The fix is better represented by the full PR |
 | Discussion or decision artifact | Resolved by a decision, policy change, or external action |
 
-Closing an issue requires a structured closure comment with evidence link, verification statement, and disposition. Umbrella issues require all children closed first. Ambiguous matches are escalated — never silently closed.
+When a PR with `Closes #N` merges, the PR itself serves as evidence — no separate closure comment is needed if the PR body carries a clear summary. For manual closure, a structured comment with evidence link, verification statement, and disposition is required. Umbrella issues require all children closed first. Ambiguous matches are escalated — never silently closed.
 
 ## Model-Tier Routing
 
@@ -197,7 +197,7 @@ All artifacts use `#ID` as the primary key for fast retrieval:
 | Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
 | Memory | `#<id>: <decision>` | `#42: chose JWT over sessions` |
 
-Timeline comments use semantic tags: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`.
+Timeline comments use semantic tags: `plan`, `session-start`, `session-resume`, `commit-note`, `discovery`, `milestone`, `approach-change`, `blocker`, `review-handoff`, `worklog`, `history`, `session-end`.
 
 Retrieve everything about issue 42:
 ```bash
