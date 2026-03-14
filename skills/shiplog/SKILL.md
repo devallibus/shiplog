@@ -55,7 +55,7 @@ Configured in `.shiplog/routing.md` (one field). Resolution order: per-issue `##
 |------|----------|
 | `confirm` (default) | Pause at tier transitions and ask the user before proceeding |
 | `warn` | Show a one-line banner at tier transitions, don't stop |
-| `off` | Silent. No routing prompts at all |
+| `off` | Silent. No routing prompts; handoffs still apply when work transfers |
 
 **`/shiplog models`:** Re-runs the setup prompt at any time to change the routing mode.
 
@@ -184,18 +184,18 @@ Key rules:
 
 1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
-3. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
+2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
    Before writing the final issue body, classify factual claims:
    - **Internal claims** about this repository's code, tests, configuration, or committed docs can be verified from the repo itself. The codebase is the source of truth.
    - **External claims** about third-party tools, URLs, APIs, platform capabilities, pricing, distribution channels, or ecosystem behavior must be verified against primary sources before they are stated as facts.
    - If an external claim cannot be verified yet, keep it explicitly marked as `[unverified]` and treat it as a hypothesis, not settled input. Do not turn an unverified claim into a task requirement, acceptance criterion, or architectural decision without a verification step.
    - Brainstorming can stay exploratory, but the final issue body must distinguish verified facts from open questions and hypotheses.
 
-4. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until PHASE 2. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created in PHASE 2.
+3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until PHASE 2. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created in PHASE 2.
 
-5. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
+4. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
 
-6. **Transition.** Proceed to PHASE 2 if the user wants to start work.
+5. **Transition.** Proceed to PHASE 2 if the user wants to start work.
 
 ---
 
@@ -207,7 +207,7 @@ Key rules:
 
 1. **Load context.** `gh issue view <N> --json title,body,labels,comments,milestone` and search knowledge graph.
 
-3. **Create branch (worktree-first).** The skill cannot detect concurrent agents, so shared-checkout branch switching is unsafe by default. One branch, one worktree, one agent.
+2. **Create branch (worktree-first).** The skill cannot detect concurrent agents, so shared-checkout branch switching is unsafe by default. One branch, one worktree, one agent.
 
    Delegate to `superpowers:using-git-worktrees` if available. Otherwise:
    ```bash
@@ -227,9 +227,9 @@ Key rules:
    See `references/shell-portability.md` for shell-specific notes.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-4. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
+3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
 
-5. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
+4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
 
 ---
@@ -264,7 +264,7 @@ Discovery made during work
 
 1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
 
-3. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
+2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. NOT after trivial commits.
 
@@ -280,13 +280,13 @@ Discovery made during work
 
 1. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
 
-3. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
+2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
 
-4. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR. Sign the summary comment per [Agent identity signing](#agent-identity-signing).
+3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR. Sign the summary comment per [Agent identity signing](#agent-identity-signing).
 
-5. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules. Sign every review artifact per [Agent identity signing](#agent-identity-signing).
+4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules. Sign every review artifact per [Agent identity signing](#agent-identity-signing).
 
-6. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
+5. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
 
 6. **Closure verification (optional).** When an issue will be closed manually or the mapping between the evidence and the issue is non-obvious, optionally delegate a bounded verifier agent per `references/closure-and-review.md`. The verifier audits the evidence and returns a verification note, but the higher-tier actor still decides whether to close, keep open, or escalate.
 
@@ -298,9 +298,9 @@ Discovery made during work
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 1. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
-3. **Prefer structured envelopes.** When artifacts carry machine-readable envelopes, fetch envelope metadata before reading full threads. See `references/artifact-envelopes.md` for the envelope format, artifact kinds, supersession model, and `gh` query patterns.
-4. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
-5. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
+2. **Prefer structured envelopes.** When artifacts carry machine-readable envelopes, fetch envelope metadata before reading full threads. See `references/artifact-envelopes.md` for the envelope format, artifact kinds, supersession model, and `gh` query patterns.
+3. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
+4. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
 
 ---
 
@@ -312,7 +312,7 @@ Discovery made during work
 
 1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign each timeline comment per [Agent identity signing](#agent-identity-signing).
 
-3. **Use the standard format.** See `references/phase-templates.md` for the comment format. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`.
+2. **Use the standard format.** See `references/phase-templates.md` for the comment format. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`.
 
 Delegate automatic checkbox updates to `ork:issue-progress-tracking` if available.
 
@@ -358,8 +358,6 @@ This skill ORCHESTRATES. It never reimplements.
 **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in closed PR history.
 
 **Quiet mode — feature branch rebased:** Rebase `--log` branch onto updated feature branch. Use `--force-with-lease`.
-
-**Model routing mismatch:** If the user continues without switching models, proceed normally. Never block or repeat the prompt.
 
 ---
 
