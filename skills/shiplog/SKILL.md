@@ -78,7 +78,9 @@ See `references/model-routing.md` for full configuration format, setup wizard, h
 
 ## ID-First Naming Convention
 
-All artifacts use `#ID` as the primary key for fast, token-efficient retrieval:
+All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
+
+**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`. Format: `[shiplog/<kind>] <human title>`.
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|
@@ -86,7 +88,7 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval:
 | Commit | `<type>(#<id>): <msg>` | `feat(#42): add JWT validation` |
 | PR title | `<type>(#<id>): <msg>` | `feat(#42): add auth middleware` |
 | PR body | `Closes #<id>` | `Closes #42` |
-| Timeline comment | `[#<id>] <type>: ...` | `[#42] discovery: race condition` |
+| Timeline comment | `[shiplog/<kind>] #<id>: ...` | `[shiplog/discovery] #42: race condition` |
 | Stacked branch | `issue/<new-id>-<slug>` | `issue/43-fix-race-condition` |
 | Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
 | Memory entry | `#<id>: <decision>` | `#42: chose JWT over sessions` |
@@ -97,14 +99,14 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval:
 |----------|-----------|---------|
 | Feature branch | per team convention | `feature/auth-middleware` |
 | Knowledge branch | `<branch>--log` | `feature/auth-middleware--log` |
-| Knowledge PR title | `[shiplog] <desc>` | `[shiplog] auth middleware decisions` |
+| Knowledge PR title | `[shiplog/worklog] <desc>` | `[shiplog/worklog] auth middleware decisions` |
 | Knowledge PR base | the feature branch | base: `feature/auth-middleware` |
 
 **Retrieval:**
 - `gh issue list --search "#42"` — everything linked to issue 42
 - `git log --grep="#42"` — all commits for issue 42
 - `gh pr list --search "#42"` — PRs closing issue 42
-- `gh pr list --search "[shiplog]"` — all knowledge PRs (quiet mode)
+- `gh pr list --search "[shiplog/"` — all knowledge PRs (quiet mode)
 
 ---
 
