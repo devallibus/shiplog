@@ -148,18 +148,14 @@ EOF
 )"
 ```
 
-### Step 2 (Quiet Mode): Capture in `--log` PR
+### Step 2 (Quiet Mode): Defer capture until the feature branch exists
 
-Create the knowledge branch and PR first, then post the brainstorm as the PR body:
+Do not create the `--log` PR yet. Quiet Mode needs the feature branch to exist first, and that branch is only created in PHASE 2.
 
-```bash
-git checkout -b <feature-branch>--log
-git commit --allow-empty -m "shiplog: initialize knowledge log"
-git push -u origin <feature-branch>--log
-gh pr create --base <feature-branch> \
-  --title "[shiplog] <feature description>" \
-  --body "[brainstorm content using same template as above]"
-```
+Instead:
+- Save the brainstorm content locally using the same template as above.
+- If your team still requires an issue, create a minimal clean issue and keep the detailed reasoning out of it.
+- In PHASE 2, after `<branch>` exists, create `<branch>--log`, open the PR against `<branch>`, and use the saved brainstorm content as the opening knowledge log entry.
 
 ### Step 3: Store in knowledge graph
 
@@ -220,6 +216,7 @@ git push -u origin <branch>--log
 gh pr create --base <branch> \
   --title "[shiplog] <description>" \
   --body "## Knowledge Log\n\nTracking decisions and discoveries for this work."
+# If you deferred a brainstorm from PHASE 1, use that saved content as the initial PR body instead of this placeholder.
 # Then switch back to the feature branch
 git checkout <branch>
 ```
@@ -260,13 +257,7 @@ Discovery made during work
 ### Phase 3a: Stack a prerequisite
 
 1. Commit current progress on current branch.
-2. Delegate to `ork:stacked-prs` if available, otherwise manually:
-
-```bash
-git checkout -b issue/<NEW_ISSUE>-<description>
-```
-
-3. Create a new issue for the discovered work (Full Mode):
+2. Create a new issue for the discovered work first, so the new issue ID exists before any branch or PR naming depends on it:
 
 ```bash
 gh issue create \
@@ -274,7 +265,7 @@ gh issue create \
   --body "$(cat <<'EOF'
 ## Discovered During
 
-Issue #<PARENT> — while working on [context]
+Issue #<PARENT> - while working on [context]
 
 ## Problem
 
@@ -294,10 +285,16 @@ EOF
 )"
 ```
 
+3. Capture the created issue number as `<NEW_ISSUE>`, then delegate to `ork:stacked-prs` if available, otherwise manually:
+
+```bash
+git checkout -b issue/<NEW_ISSUE>-<description>
+```
+
 4. Cross-reference on the parent:
 
 ```bash
-gh issue comment <PARENT_ISSUE> --body "[#<PARENT>] discovery: Found sub-problem → created #<NEW_ISSUE>. This is a stacked prerequisite."
+gh issue comment <PARENT_ISSUE> --body "[#<PARENT>] discovery: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
 ```
 
 ### Phase 3b: Log independent discovery
