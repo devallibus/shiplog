@@ -12,6 +12,15 @@ For shell portability guidance, see `references/shell-portability.md`.
 gh issue create \
   --title "[shiplog/plan] Brief title describing the work" \
   --body "$(cat <<'EOF'
+<!-- shiplog:
+kind: state
+issue: <ISSUE_NUMBER>
+branch: issue/<ISSUE_NUMBER>-<slug>
+status: open
+phase: 1
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## Context
 
 [1-3 sentences: what problem are we solving and why now]
@@ -86,6 +95,13 @@ On PowerShell, prefer the `--body-file` temp-file pattern from `references/shell
 
 ```bash
 gh issue comment <ISSUE_NUMBER> --body "$(cat <<'EOF'
+<!-- shiplog:
+kind: handoff
+issue: <ISSUE_NUMBER>
+phase: 2
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/session-start] <Brief description of the work>
 
 **Branch:** `issue/<N>-<description>`
@@ -109,7 +125,7 @@ git commit --allow-empty -m "shiplog: initialize knowledge log"
 git push -u origin <branch>--log
 gh pr create --base <branch> \
   --title "[shiplog/worklog] <description>" \
-  --body "## Knowledge Log\n\nTracking decisions and discoveries for this work."
+  --body "<!-- shiplog:\nkind: state\nissue: <ISSUE_NUMBER>\nbranch: <branch>--log\nstatus: open\nupdated_at: <ISO_TIMESTAMP>\n-->\n\n## Knowledge Log\n\nTracking decisions and discoveries for this work."
 # If you deferred a brainstorm from PHASE 1, use that saved content as the initial PR body instead of this placeholder.
 # Then switch back to the feature branch
 git checkout <branch>
@@ -119,7 +135,14 @@ On PowerShell, use backtick (`` ` ``) for line continuation instead of `\`, or p
 
 Post a comment on the `--log` PR:
 ```bash
-gh pr comment <LOG_PR_NUMBER> --body "[shiplog/session-start] Work started. Approach: [1-2 sentences]"
+gh pr comment <LOG_PR_NUMBER> --body "<!-- shiplog:
+kind: handoff
+issue: <ISSUE_NUMBER>
+phase: 2
+updated_at: <ISO_TIMESTAMP>
+-->
+
+[shiplog/session-start] Work started. Approach: [1-2 sentences]"
 ```
 
 ---
@@ -130,6 +153,14 @@ gh pr comment <LOG_PR_NUMBER> --body "[shiplog/session-start] Work started. Appr
 gh issue create \
   --title "[shiplog/discovery] Brief description" \
   --body "$(cat <<'EOF'
+<!-- shiplog:
+kind: state
+issue: <NEW_ISSUE>
+status: open
+phase: 3
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## Discovered During
 
 Issue #<PARENT> - while working on [context]
@@ -155,7 +186,13 @@ EOF
 
 Cross-reference on the parent:
 ```bash
-gh issue comment <PARENT_ISSUE> --body "[shiplog/discovery] #<PARENT>: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
+gh issue comment <PARENT_ISSUE> --body "<!-- shiplog:
+kind: commit-note
+issue: <PARENT>
+updated_at: <ISO_TIMESTAMP>
+-->
+
+[shiplog/discovery] #<PARENT>: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
 ```
 
 ---
@@ -170,6 +207,13 @@ COMMIT_MSG=$(git log -1 --format='%s')
 
 # Full Mode: comment on issue
 gh issue comment <ISSUE_NUMBER> --body "$(cat <<EOF
+<!-- shiplog:
+kind: commit-note
+issue: <ISSUE>
+phase: 4
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/commit-note] #<ISSUE>: \`$COMMIT_SHA\`
 
 **What:** $COMMIT_MSG
@@ -200,6 +244,13 @@ gh pr comment <LOG_PR_NUMBER> --body "[same content]"
 $commitSha = git log -1 --format='%h'
 $commitMsg = git log -1 --format='%s'
 $body = @"
+<!-- shiplog:
+kind: commit-note
+issue: <ISSUE>
+phase: 4
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/commit-note] #<ISSUE>: ``$commitSha``
 
 **What:** $commitMsg
@@ -232,6 +283,15 @@ BASE_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
 gh pr create --base $BASE_BRANCH \
   --title "<type>(#$ISSUE_NUMBER): Brief description" \
   --body "$(cat <<'EOF'
+<!-- shiplog:
+kind: history
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+branch: issue/<ISSUE_NUMBER>-<slug>
+status: resolved
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## Summary
 
 [2-3 sentences: what this PR does and why]
@@ -292,6 +352,14 @@ The PR body is large enough that `--body-file` should be treated as the preferre
 Add a final summary comment to the `--log` PR:
 ```bash
 gh pr comment <LOG_PR_NUMBER> --body "$(cat <<'EOF'
+<!-- shiplog:
+kind: review-handoff
+issue: <ISSUE_NUMBER>
+pr: <FEATURE_PR_NUMBER>
+phase: 5
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/review-handoff] Final Summary
 
 **Feature PR:** #<FEATURE_PR_NUMBER>
@@ -338,6 +406,13 @@ EOF
 Target: issue (Full Mode) or `--log` PR (Quiet Mode).
 
 ```markdown
+<!-- shiplog:
+kind: <kind>
+issue: <ID>
+phase: 7
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/<kind>] #<ID>: <brief summary>
 
 **Status:** [In progress / Blocked / Approach changed / Milestone reached]
@@ -367,6 +442,13 @@ Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `app
 When closing an issue manually (not via PR auto-close), use this format:
 
 ```markdown
+<!-- shiplog:
+kind: history
+issue: <ID>
+status: closed
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [shiplog/history] #<ID>: Closure
 
 **Evidence:** [URL to commit, PR, or decision artifact]
@@ -386,6 +468,13 @@ See `references/closure-and-review.md` for the full closure and review protocol.
 When reviewing a PR, include this sign-off block:
 
 ```
+<!-- shiplog:
+kind: verification
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+updated_at: <ISO_TIMESTAMP>
+-->
+
 Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | request-changes
 Scope: <what was reviewed>
