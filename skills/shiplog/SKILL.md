@@ -68,6 +68,8 @@ See `references/model-routing.md` for full configuration format, setup wizard, h
 - Mid-work discovery requiring a new issue or stacked PR
 - User asks "where did we decide X?" or "what's the status of Y?"
 - Resuming work on an existing issue or PR
+- Applying review feedback, fixing review findings, or addressing request-changes dispositions
+- User references an issue or PR by number (e.g., "fix #42", "address the findings on PR #44")
 
 **Do NOT auto-activate for:**
 - Generic coding requests ("let's build", "let's fix", "add a feature")
@@ -315,12 +317,16 @@ This skill ORCHESTRATES. It never reimplements.
 
 All recommended skills are optional. See `references/phase-templates.md` for full skill list. Without them, shiplog falls back to direct `gh`/`git` commands.
 
-### Codex agent identity
+### Agent identity signing
 
-When signing artifacts from Codex, read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable.
+Every shiplog artifact (issue comments, PR comments, review sign-offs) must carry a model-aware signature so the knowledge graph records which model produced each artifact. Shorthand or anonymous signatures defeat cross-model review auditability.
 
-If local Codex metadata exposes both values, do not use shorthand such as `OpenAI Codex (Codex CLI)` or omit the reasoning effort. Shiplog artifacts must carry the full model-aware signature.
+**Claude Code:** Sign as `Claude <model-name> (Claude Code)` — e.g., `Claude Opus 4.6 (Claude Code)` or `Claude Sonnet 4 (Claude Code)`. The model name is available in the system prompt. Do not use generic signatures like `Claude (Claude Code)` when the specific model is known.
 
-If a shiplog artifact is posted with the wrong Codex signature, correct the existing artifact in place when the platform allows editing. If it cannot be edited, post an immediate follow-up correction that supersedes the bad signature.
+**Codex:** Read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable. Do not use shorthand such as `OpenAI Codex (Codex CLI)` or omit the reasoning effort when local metadata exposes both values.
+
+**Other tools:** Sign as `<model-name> (<tool-name>)`. Include the most specific model identifier available.
+
+**Correction rule:** If a shiplog artifact is posted with an incorrect or incomplete signature, correct it in place when the platform allows editing. If it cannot be edited, post an immediate follow-up correction that supersedes the bad signature.
 
 Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).
