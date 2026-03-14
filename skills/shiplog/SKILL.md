@@ -240,8 +240,9 @@ Discovery made during work
 **Routing:** tier-2 (capable).
 
 1. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
-2. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
-3. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
+2. **Prefer structured envelopes.** When artifacts carry machine-readable envelopes, fetch envelope metadata before reading full threads. See `references/artifact-envelopes.md` for the envelope format, artifact kinds, supersession model, and `gh` query patterns.
+3. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
+4. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
 
 ---
 
