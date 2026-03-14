@@ -108,6 +108,13 @@ For cross-platform reliability, prefer `gh issue comment --body-file <temp-file>
 Use this when a model or agent delegates a bounded task to another agent. This is distinct from a phase-transition handoff.
 
 ```markdown
+<!-- shiplog:
+kind: handoff
+issue: <ID>
+phase: <PHASE>
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [#<ID>] delegation handoff: <task title>
 
 **Delegated by:** <family>/<version> (<tool>)
@@ -144,6 +151,12 @@ Authored-by: <family>/<version> (<tool>)
 The delegated agent should report completion with a structured artifact instead of an informal summary.
 
 ```markdown
+<!-- shiplog:
+kind: verification
+issue: <ID>
+updated_at: <ISO_TIMESTAMP>
+-->
+
 ## [#<ID>] delegation report: <task title>
 
 **Status:** completed | blocked | escalated
