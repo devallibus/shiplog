@@ -256,6 +256,27 @@ Note: Self-review recorded as audit trail. This PR must not merge until an indep
 
 **Self-review is an audit artifact, not a gate-satisfying event.** It exists so the review intent is visible in the timeline, but it confers no merge authorization. There are no exceptions to the independent review requirement.
 
+### Review completion: default publication
+
+A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
+
+**Default behavior:** After completing the review analysis and summarizing findings to the user, post the signed review artifact on the PR. Then link the posted comment in the user-facing response.
+
+**Explicit exceptions (require user opt-in):**
+- The user explicitly requested a dry run or local-only review.
+- The user explicitly asked not to post to GitHub.
+
+Unless one of these exceptions applies, publication is the assumed completion step. The agent should not wait for a follow-up prompt to post.
+
+**When GitHub posting is blocked:** If the agent cannot reach GitHub (network failure, API error, permission issue):
+
+1. Report the blocker to the user immediately.
+2. Provide the exact signed review artifact text in the chat response so the user can post it manually or the agent can retry later.
+3. Do not mark the review as complete — note that publication is pending.
+4. On next opportunity, retry posting the artifact or confirm the user has posted it.
+
+The signed artifact text is the deliverable. GitHub publication is the delivery mechanism. When the mechanism fails, preserve the deliverable intact and make the failure visible.
+
 ---
 
 ## 5. Merge Authorization
