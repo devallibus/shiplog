@@ -639,3 +639,63 @@ Scope: <what was reviewed>
 ```
 
 See `references/closure-and-review.md` §3-5 for the full multi-model review protocol.
+
+---
+
+## Edit Provenance
+
+When a later model materially edits an existing signed artifact, choose one of these patterns.
+
+### In-place edit footer
+
+Use this when the artifact should remain the single canonical current body
+(issue body, PR body, or a latest-wins state/history artifact). Preserve the
+original `Authored-by:` line and append:
+
+```markdown
+Updated-by: <family>/<version> (<tool>)
+Edit-kind: correction | amendment | rewrite
+Edit-note: [1 sentence describing what changed and why]
+```
+
+If the artifact carries an envelope, refresh the metadata too:
+
+```html
+<!-- shiplog:
+updated_at: <ISO_TIMESTAMP>
+updated_by: <family>/<version> (<tool>)
+edit_kind: correction | amendment | rewrite
+-->
+```
+
+### Amendment artifact
+
+Use this when silently rewriting the existing artifact would hide an important
+event in the timeline: handoffs, verification comments, commit notes, review
+sign-offs, or other major signed comments.
+
+```markdown
+<!-- shiplog:
+kind: amendment
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+updated_at: <ISO_TIMESTAMP>
+amends: <artifact-reference>
+-->
+
+## [shiplog/amendment] #<ISSUE_NUMBER>: <brief description>
+
+**Target:** [URL to the artifact being corrected or clarified]
+**Edit kind:** correction | amendment | rewrite
+**Why new artifact:** [why this should not be a silent in-place edit]
+**What changed:**
+- [change 1]
+- [change 2]
+
+**Current canonical artifact:** [URL to the body/comment that should now be treated as current, or `this comment`]
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+If the amendment fully replaces the old artifact as current, swap `amends:` for
+`supersedes:` and update the old artifact with `superseded_by:` when practical.
