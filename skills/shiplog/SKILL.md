@@ -231,7 +231,9 @@ Discovery made during work
 
 3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR.
 
-4. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
+4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules.
+
+5. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
 
 ---
 
