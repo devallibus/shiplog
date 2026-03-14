@@ -74,6 +74,12 @@ Every PR requires a positive review from an independent reviewer — a different
 
 When spawning a reviewer isn't possible, shiplog generates a self-contained **review contract** you can hand to any other model or tool.
 
+**Merge conditions:**
+1. At least one cross-model (or human) review with `Disposition: approve`
+2. All `request-changes` reviews addressed
+3. PR body includes `Closes #<N>` linking to the tracking issue
+4. Issue closure has linked evidence (the merged PR itself)
+
 ## Evidence-Linked Closure
 
 No issue closes without linked evidence:
@@ -147,7 +153,34 @@ updated_at: 2026-03-14T12:00:00Z
 -->
 ```
 
-Seven canonical kinds: `state`, `handoff`, `verification`, `commit-note`, `review-handoff`, `blocker`, `history`. Each follows either a **latest-wins** rule (only the newest is current) or an **accumulating** rule (multiple coexist). Supersession markers link newer artifacts to the ones they replace, preserving the full timeline while making current state instantly retrievable.
+**Why invisible?** Agents fetch envelope metadata first, then read the full body only when needed — reducing token cost on long threads. Humans see clean markdown; machines get structured data.
+
+**How to inspect:** Envelopes are hidden in rendered GitHub views. To see them:
+```bash
+# Raw body includes the HTML comment
+gh issue view 42 --json body --jq '.body'
+
+# Find all shiplog envelopes on an issue
+gh issue view 42 --json body,comments --jq '
+  [.body, .comments[].body]
+  | map(select(test("<!-- shiplog:")))
+'
+```
+Or click **Edit** on any issue or comment in GitHub to see the envelope in the raw source.
+
+**7 envelope kinds:**
+
+| Kind | Purpose | Uniqueness |
+|------|---------|------------|
+| `state` | Current status snapshot | latest-wins |
+| `handoff` | Context transfer between tiers/tools | accumulating |
+| `verification` | Testing or review evidence | accumulating |
+| `commit-note` | Reasoning behind a commit | accumulating |
+| `review-handoff` | Review request or completion | accumulating |
+| `blocker` | Something preventing progress | latest-wins |
+| `history` | Retrospective summary | latest-wins |
+
+For **latest-wins** kinds, the most recent envelope is current — older ones are historical. For **accumulating** kinds, multiple envelopes coexist, each capturing a distinct event. Supersession markers link newer artifacts to the ones they replace, preserving the full timeline while making current state instantly retrievable.
 
 ## Agent Identity Signing
 
@@ -208,7 +241,29 @@ git log --all --oneline --grep="#42"         # commits
 
 ## Shell Portability
 
-shiplog is cross-platform from day one. All templates and commands work on both Bash (macOS/Linux) and PowerShell (Windows). Multiline GitHub content uses the `gh ... --body-file <temp-file>` pattern for reliable cross-shell operation. See `references/shell-portability.md` for the full pattern library.
+shiplog is cross-platform from day one. All templates and commands work on both Bash (macOS/Linux) and PowerShell (Windows). The key pattern: use `gh ... --body-file <temp-file>` for multiline content instead of inline heredocs.
+
+```bash
+# Bash
+body_file="$(mktemp)"
+cat > "$body_file" <<'EOF'
+## Timeline comment content
+EOF
+gh issue comment 42 --body-file "$body_file"
+rm "$body_file"
+```
+
+```powershell
+# PowerShell
+$bodyPath = Join-Path $PWD '.tmp-gh-body.md'
+Set-Content -Path $bodyPath -Value @"
+## Timeline comment content
+"@ -NoNewline
+gh issue comment 42 --body-file $bodyPath
+Remove-Item $bodyPath -Force
+```
+
+See `references/shell-portability.md` for worktree setup, variable capture syntax, and escaping differences.
 
 ## Worktree-First Workflow
 
