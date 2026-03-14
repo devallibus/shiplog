@@ -194,14 +194,17 @@ gh issue view 42 --json body,comments --jq '
 '
 ```
 
-**Find the latest state envelope:**
+**Find all state envelopes (apply §3 resolution to select current):**
 ```bash
 gh issue view 42 --json body,comments --jq '
   [.body, .comments[].body]
   | map(select(test("kind: state")))
-  | last
 '
 ```
+> The result is a candidate set, not a final answer. Agents must apply the
+> supersession rules from §3: sort by `updated_at` descending, prefer entries
+> with explicit `supersedes` markers, and use the first result as current.
+> Do not assume comment order equals logical currency.
 
 **Find all verification artifacts on a PR:**
 ```bash
