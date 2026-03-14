@@ -778,7 +778,7 @@ For each operation:
 
 **Hotfix / emergency:** Fix first. Create issue and PR after, backfilling the timeline. PR body notes: "Hotfix — issue created retroactively."
 
-**Session resume:** Check `--from-pr <number>` for PR context. Search `ork:memory`. Read issue/PR comments. Add "Session resumed" timeline comment. Continue with Phase 7.
+**Session resume:** Detect the issue from the current branch name (`issue/N-*`), then run `gh pr list --head $(git branch --show-current)` to find any linked PR. Search `ork:memory`. Read issue/PR comments. Add "Session resumed" timeline comment. Continue with Phase 7.
 
 **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in the closed PR's history.
 
