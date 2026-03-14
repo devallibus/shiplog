@@ -368,6 +368,9 @@ EOF
 )"
 ```
 
+Portable note:
+- For cross-platform reliability, prefer `gh issue comment --body-file <temp-file>` when the comment body spans multiple lines.
+
 ### Step 3 (Quiet Mode): Create `--log` branch + PR
 
 If the `--log` PR doesn't exist yet:
@@ -504,6 +507,31 @@ EOF
 # Quiet Mode: comment on --log PR
 gh pr comment <LOG_PR_NUMBER> --body "[same content]"
 ```
+
+
+For Codex on Windows/PowerShell, use an expandable here-string and double backticks around interpolated values you want rendered as markdown code spans:
+
+```powershell
+$commitSha = git log -1 --format='%h'
+$commitMsg = git log -1 --format='%s'
+$body = @"
+## [#<ISSUE>] commit: ``$commitSha``
+
+**What:** $commitMsg
+
+**Why:** [1-2 sentences explaining the reasoning]
+
+**Discovered:** [Anything unexpected, or "Nothing unexpected"]
+
+**Next:** [What comes next]
+"@
+gh issue comment <ISSUE_NUMBER> --body $body
+```
+
+PowerShell note:
+- In an expandable string or here-string, `` `$commitSha `` escapes interpolation and posts the literal text `$commitSha`
+- Use `` ``$commitSha`` `` when you want markdown backticks around the interpolated value
+- If in doubt, avoid markdown code spans and post the SHA as plain text
 
 **When to add context comments:**
 - After implementing significant functionality
