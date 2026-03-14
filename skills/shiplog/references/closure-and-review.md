@@ -143,6 +143,8 @@ When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for
    > "All open PRs were last touched by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
 6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
 
+**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see §4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone — it will miss most AI-operated reviews.
+
 **What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` artifact associated with the work, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog authorship lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
 
 ---
