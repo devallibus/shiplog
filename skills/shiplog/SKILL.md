@@ -1,6 +1,6 @@
 ---
 name: shiplog
-description: Git-as-knowledge-graph workflow. Use when starting planned work, brainstorming, creating issues/PRs, tracking decisions, or when complete traceability is needed. Auto-activates for branch creation, issue creation, PR creation, brainstorming, or session resume. Slash command /shiplog.
+description: Git-as-knowledge-graph workflow for traceability. Use when planning work, brainstorming designs, creating/managing issues and PRs, tracking architectural decisions, or resuming prior sessions. Slash command /shiplog.
 ---
 
 # Shiplog
@@ -118,12 +118,17 @@ See `references/model-routing.md` for full configuration format, setup wizard, a
 **User-invocable:** `/shiplog`
 
 **Auto-activate when ANY of these occur:**
-- User says "let's plan", "let's brainstorm", "let's build", "let's fix"
-- Creating a new branch or issue
-- Creating a PR
+- User says "let's plan", "let's brainstorm", or "let's design"
+- User explicitly requests traceability or knowledge-graph tracking
+- Creating a new issue or PR with intent to document decisions
 - Mid-work discovery requiring a new issue or stacked PR
 - User asks "where did we decide X?" or "what's the status of Y?"
 - Resuming work on an existing issue or PR
+
+**Do NOT auto-activate for:**
+- Generic coding requests ("let's build", "let's fix", "add a feature")
+- Simple bug fixes or refactors that don't need traceability
+- Work where a more specific skill (TDD, debugging, etc.) is the better fit
 
 ---
 
