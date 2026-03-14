@@ -98,6 +98,26 @@ User request arrives
 
 ---
 
+## User-Facing Language
+
+The phase numbers are internal workflow labels. Do not surface them to the user as progress titles or status updates.
+
+- Avoid messages like `Following shiplog Phase 1 -> Phase 2 -> Phase 4 -> Phase 5.`
+- Prefer descriptive status language such as `capturing the plan`, `creating the branch`, `implementing the change`, `documenting the commit`, and `opening the PR`.
+- If a short roadmap is useful, write it in user terms: `Plan approved. Next I'll capture it in the issue, create the working branch, implement the change, then open the PR.`
+- Only mention phase numbers when you are discussing the skill itself or debugging the workflow.
+
+Preferred labels:
+- `Plan Capture` for PHASE 1
+- `Branch Setup` for PHASE 2
+- `Discovery Handling` for PHASE 3
+- `Commit Context` for PHASE 4
+- `PR Timeline` for PHASE 5
+- `History Lookup` for PHASE 6
+- `Timeline Updates` for PHASE 7
+
+---
+
 ## PHASE 1: Brainstorm-to-Issue
 
 **Trigger:** User wants to plan, brainstorm, or design something.
