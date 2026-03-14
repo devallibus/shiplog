@@ -56,6 +56,42 @@ If the match between the issue and the evidence is ambiguous:
 3. Tag the issue for human review or escalate to a higher-tier model.
 4. If a verifier agent is available, delegate the ambiguity check per `references/model-routing.md` delegation protocol.
 
+### Optional verifier-agent workflow
+
+Use this workflow when closure evidence is specific enough to audit but repetitive enough to delegate.
+The supervising model remains responsible for the closure decision.
+
+**Supervisor responsibilities:**
+- choose the candidate evidence links to inspect
+- assemble a bounded verifier contract using the delegation protocol from `references/model-routing.md`
+- keep closure judgment for ambiguous issues, umbrella issues, and any case where the verifier reports mismatch or low confidence
+
+**Verifier may:**
+- read the issue body and linked discussion
+- inspect candidate commits and merged PRs
+- inspect current file state on the default branch
+- produce a signed verification note with evidence, confidence, and a recommended action
+
+**Verifier may not:**
+- reinterpret vague issue intent
+- decide that a partial fix is "good enough"
+- close umbrella issues or mixed-status roadmap issues on its own
+- close any issue directly
+- resolve ambiguous evidence by inference
+
+**Required verifier output:**
+- candidate fix artifact links
+- whether the fix is merged to the default branch
+- which parts of the issue are satisfied by the diff or current file state
+- any unresolved mismatch or ambiguity
+- confidence: `high` | `medium` | `low`
+- recommended action: `close` | `keep open` | `escalate`
+
+**Decision rule:**
+- Only close when the supervising model agrees with the verifier's evidence review and the verifier returns `close` with high confidence and no unresolved mismatch.
+- If the verifier returns `keep open` or `escalate`, do not close the issue.
+- When a verifier note materially informed the closure decision, post it as an issue comment before closing so the audit trail stays durable.
+
 ### Umbrella issues
 
 Umbrella issues (tracking multiple sub-issues or a roadmap) require:

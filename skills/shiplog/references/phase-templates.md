@@ -565,6 +565,62 @@ See `references/closure-and-review.md` for the full closure and review protocol.
 
 ---
 
+## Closure Verifier Handoff
+
+Use this when a stronger model wants a bounded verifier agent to audit closure
+evidence before an issue is manually closed.
+
+```markdown
+## [#<ID>] closure verifier handoff: <issue title>
+
+**Delegated by:** <family>/<version> (<tool>)
+**Target tier:** tier-3
+**Why delegation fits:** [why this closure audit is bounded and evidence-driven]
+
+### Goal
+Verify whether the listed evidence justifies closing issue #<ID>. Do not close the issue yourself.
+
+### Allowed sources
+- issue body and linked discussion
+- listed commits and merged PRs
+- current file state on the default branch
+
+### Contract
+- **Candidate evidence:** [commit URLs, PR URLs, or artifact links to inspect]
+- **Must not decide:** vague intent, partial-fix sufficiency, umbrella mixed status, or the closure action itself
+- **Stop and ask if:** [conditions that require escalation to the supervising model]
+- **Verification required:** confirm merge status, compare the diff or file state to the issue claim, and record any unresolved mismatch
+- **Return artifact:** closure verification note
+- **Decision budget:** `none`
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+## Closure Verification Note
+
+Post the verifier output as a signed issue comment when it materially informs a
+closure decision.
+
+```markdown
+<!-- shiplog:
+kind: verification
+issue: <ID>
+updated_at: <ISO_TIMESTAMP>
+-->
+
+## [shiplog/verification] #<ID>: Closure audit
+
+**Candidate evidence:** [links inspected]
+**Merged to default branch:** yes | no | unclear
+**Satisfied scope:** [which issue claims are satisfied]
+**Unresolved mismatch:** [gap, ambiguity, or `None`]
+**Confidence:** high | medium | low
+**Recommended action:** close | keep open | escalate
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+---
 ## Review Sign-Off Comment
 
 When reviewing a PR, include this sign-off block:

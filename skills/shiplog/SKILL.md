@@ -253,6 +253,8 @@ Discovery made during work
 
 5. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
 
+6. **Closure verification (optional).** When an issue will be closed manually or the mapping between the evidence and the issue is non-obvious, optionally delegate a bounded verifier agent per `references/closure-and-review.md`. The verifier audits the evidence and returns a verification note, but the higher-tier actor still decides whether to close, keep open, or escalate.
+
 ---
 
 ## PHASE 6: Knowledge Retrieval
