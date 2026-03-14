@@ -324,7 +324,7 @@ Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a prov
 **Canonical grammar:**
 
 ```
-<role>: <family>/<version> (<tool>)
+<role>: <family>/<version> (<tool>[, <qualifier>])
 ```
 
 | Field | Values | Examples |
@@ -333,8 +333,9 @@ Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a prov
 | `family` | Provider name, lowercase | `claude`, `openai`, `google` |
 | `version` | Model identifier | `opus-4.6`, `sonnet-4`, `gpt-5.4` |
 | `tool` | Runtime environment, lowercase | `claude-code`, `codex`, `cursor` |
+| `qualifier` | Optional tool-specific metadata | `effort: high`, `effort: medium` |
 
-**Searching:** `Authored-by:` → all authorship. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts.
+**Searching:** `Authored-by:` → all authorship. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts (matches both `(codex)` and `(codex, effort: high)`).
 
 **Model detection per tool:**
 
