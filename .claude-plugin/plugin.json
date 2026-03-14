@@ -1,0 +1,11 @@
+{
+  "name": "shiplog",
+  "description": "Git-as-knowledge-graph workflow for traceability across issues, branches, commits, reviews, and PRs.",
+  "version": "0.1.0",
+  "author": {
+    "name": "devallibus"
+  },
+  "homepage": "https://github.com/devallibus/shiplog",
+  "repository": "https://github.com/devallibus/shiplog",
+  "license": "MIT"
+}
