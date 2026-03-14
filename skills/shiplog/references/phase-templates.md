@@ -173,6 +173,11 @@ gh issue comment <ISSUE_NUMBER> --body "$(cat <<EOF
 
 **Why:** [1-2 sentences explaining the reasoning]
 **Verification:** [What was checked, what was deferred, or "Not run"]
+[If verification profile active]:
+- **Profile:** [active profile names]
+- **Scenarios:** [added N, changed M, existing passed K]
+- **Tests:** [added N, changed M, all passing]
+- **Deferred:** [anything intentionally skipped, with reason]
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
@@ -196,6 +201,11 @@ $body = @"
 
 **Why:** [1-2 sentences explaining the reasoning]
 **Verification:** [What was checked, what was deferred, or "Not run"]
+[If verification profile active]:
+- **Profile:** [active profile names]
+- **Scenarios:** [added N, changed M, existing passed K]
+- **Tests:** [added N, changed M, all passing]
+- **Deferred:** [anything intentionally skipped, with reason]
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
@@ -244,8 +254,14 @@ Closes #<ISSUE_NUMBER>
 
 ## Testing
 
+[If verification profile active]:
+**Verification profile:** [profile names]
+
 - [x] [What was tested and how]
 - [x] All existing tests pass
+- [x] [Verification-profile-specific checks, e.g., "Fail-first confirmed", "No existing scenarios modified"]
+
+**Verification summary:** [scenarios added/changed, tests added/changed, deferred items]
 
 ## Stacked PRs / Related
 
