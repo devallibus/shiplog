@@ -30,7 +30,16 @@ main
 
 ### Model Routing
 
-Assign AI model tiers to phases — use your best model for brainstorming and PR synthesis, a fast model for implementation and commits. Shiplog prompts you to switch at phase transitions and ensures the smart model leaves clear enough instructions for the fast model to execute.
+Assign AI model tiers to phases - use your best model for brainstorming and PR synthesis, a fast model for implementation and commits. Shiplog prompts you to switch at phase transitions and ensures the stronger model leaves a contract clear enough for a cheaper model to execute.
+
+### Delegation Contracts
+
+When a tier-1 or tier-2 model wants a cheaper agent to execute bounded work, shiplog treats that as a first-class delegation handoff:
+
+- delegation is best for `[tier-3]` tasks and routine implementation
+- the delegator defines allowed files, acceptance criteria, forbidden judgment calls, verification, and return artifact
+- the delegated agent reports back with a structured completion artifact instead of improvising or widening scope
+- issue and PR lifecycle actions stay with the delegator by default
 
 Configure per-project in `.shiplog/routing.md` or per-issue in the issue body. See `references/model-routing.md` for the full spec.
 
