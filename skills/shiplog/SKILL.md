@@ -68,6 +68,8 @@ See `references/model-routing.md` for full configuration format, setup wizard, h
 - Mid-work discovery requiring a new issue or stacked PR
 - User asks "where did we decide X?" or "what's the status of Y?"
 - Resuming work on an existing issue or PR
+- Applying review feedback, fixing review findings, or addressing request-changes dispositions
+- User references an issue or PR by number (e.g., "fix #42", "address the findings on PR #44")
 
 **Do NOT auto-activate for:**
 - Generic coding requests ("let's build", "let's fix", "add a feature")
@@ -315,8 +317,35 @@ This skill ORCHESTRATES. It never reimplements.
 
 All recommended skills are optional. See `references/phase-templates.md` for full skill list. Without them, shiplog falls back to direct `gh`/`git` commands.
 
-### Codex agent identity
+### Agent identity signing
 
-When signing artifacts from Codex, read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable.
+Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a provenance signature in the canonical format. All templates in `references/phase-templates.md` include the signature line.
+
+**Canonical grammar:**
+
+```
+<role>: <family>/<version> (<tool>[, <qualifier>])
+```
+
+| Field | Values | Examples |
+|-------|--------|---------|
+| `role` | `Authored-by` or `Reviewed-by` | — |
+| `family` | Provider name, lowercase | `claude`, `openai`, `google` |
+| `version` | Model identifier | `opus-4.6`, `sonnet-4`, `gpt-5.4` |
+| `tool` | Runtime environment, lowercase | `claude-code`, `codex`, `cursor` |
+| `qualifier` | Optional tool-specific metadata | `effort: high`, `effort: medium` |
+
+**Searching:** `Authored-by:` → all authorship. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts (matches both `(codex)` and `(codex, effort: high)`).
+
+**Model detection per tool:**
+
+| Tool | Source | Example signature |
+|------|--------|-------------------|
+| Claude Code | System prompt model name | `claude/opus-4.6 (claude-code)` |
+| Codex | `~/.codex/config.toml` `model` + `model_reasoning_effort` | `openai/gpt-5.4 (codex, effort: high)` |
+| Cursor | System prompt model identifier | `claude/opus-4.6 (cursor)` |
+| Other | Best available model identifier | `<family>/<version> (<tool>)` |
+
+**Correction rule:** If a shiplog artifact carries an incorrect or incomplete signature, correct it in place when the platform allows editing. Otherwise post an immediate follow-up correction.
 
 Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).

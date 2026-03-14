@@ -72,6 +72,7 @@ Tier tag rules:
 - [Any unresolved questions]
 
 ---
+Authored-by: <family>/<version> (<tool>)
 *Captain's log entry created by [shiplog](https://github.com/devallibus/shiplog)*
 EOF
 )"
@@ -91,6 +92,7 @@ gh issue comment <ISSUE_NUMBER> --body "$(cat <<'EOF'
 **Approach:** [1-2 sentences about the plan for this session]
 
 ---
+Authored-by: <family>/<version> (<tool>)
 *Captain's log — session start*
 EOF
 )"
@@ -145,6 +147,7 @@ Issue #<PARENT> - while working on [context]
 [Approach]
 
 ---
+Authored-by: <family>/<version> (<tool>)
 *Discovered during #<PARENT>. Stacked dependency.*
 EOF
 )"
@@ -182,6 +185,8 @@ gh issue comment <ISSUE_NUMBER> --body "$(cat <<EOF
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
 **Next:** [What comes next]
+
+Authored-by: <family>/<version> (<tool>)
 EOF
 )"
 
@@ -210,6 +215,8 @@ $body = @"
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
 **Next:** [What comes next]
+
+Authored-by: <family>/<version> (<tool>)
 "@
 gh issue comment <ISSUE_NUMBER> --body $body
 ```
@@ -272,6 +279,7 @@ Closes #<ISSUE_NUMBER>
 [Anything a future developer should know when revisiting this area. Patterns established, gotchas found, decisions that might need revisiting.]
 
 ---
+Authored-by: <family>/<version> (<tool>)
 *Captain's log — PR timeline by [shiplog](https://github.com/devallibus/shiplog)*
 EOF
 )"
@@ -297,6 +305,8 @@ gh pr comment <LOG_PR_NUMBER> --body "$(cat <<'EOF'
 
 ### Lessons Learned
 [What we'd do differently next time]
+
+Authored-by: <family>/<version> (<tool>)
 EOF
 )"
 ```
@@ -344,6 +354,8 @@ Target: issue (Full Mode) or `--log` PR (Quiet Mode).
 [If blocked]: **Blocker:** [Description and what help is needed]
 
 [If approach changed]: **Why:** [What changed and reasoning]
+
+Authored-by: <family>/<version> (<tool>)
 ```
 
 Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`
@@ -361,6 +373,8 @@ When closing an issue manually (not via PR auto-close), use this format:
 **Merged to default branch:** yes | no | n/a
 **Verification:** [1-3 sentences — why this evidence satisfies the issue]
 **Disposition:** fully resolved | superseded by #<N> | won't fix (reason)
+
+Authored-by: <family>/<version> (<tool>)
 ```
 
 See `references/closure-and-review.md` for the full closure and review protocol.
@@ -372,7 +386,7 @@ See `references/closure-and-review.md` for the full closure and review protocol.
 When reviewing a PR, include this sign-off block:
 
 ```
-Reviewed-by: <model name> (<tool/environment>)
+Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | request-changes
 Scope: <what was reviewed>
 ```

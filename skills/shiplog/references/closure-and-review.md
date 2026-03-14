@@ -108,14 +108,14 @@ A review produces one of three artifacts:
 Every review comment must include a structured sign-off block:
 
 ```
-Reviewed-by: <model name> (<tool/environment>)
+Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | request-changes
 Scope: <what was reviewed — e.g., "full diff", "SKILL.md + artifact-envelopes.md">
 ```
 
 **Example:**
 ```
-Reviewed-by: Claude Sonnet 4 (Claude Code)
+Reviewed-by: claude/sonnet-4 (claude-code)
 Disposition: approve
 Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
 ```
@@ -183,7 +183,7 @@ When cross-model review is genuinely unavailable (single-tool environment, urgen
 3. The PR stays open — merge is blocked until an independent reviewer approves.
 
 ```
-Reviewed-by: Claude Opus 4.6 (Claude Code)
+Reviewed-by: claude/opus-4.6 (claude-code)
 Disposition: self-review (does NOT satisfy gate — independent review required)
 Scope: full diff
 Note: Self-review recorded as audit trail. This PR must not merge until an independent cross-model review is completed.

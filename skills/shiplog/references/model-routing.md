@@ -106,8 +106,9 @@ When model routing is first used and no `.shiplog/routing.md` exists, the skill 
 | Signal | Platform |
 |--------|----------|
 | System prompt contains `claude-*` model ID | Claude Code |
+| System prompt contains `powered by <model-id>` | Cursor |
 | `~/.codex/config.toml` exists with `model` field | Codex |
-| Neither detected | Ask user |
+| None of the above detected | Ask user |
 
 ### Step 2: Suggest models
 
@@ -118,6 +119,11 @@ When model routing is first used and no `.shiplog/routing.md` exists, the skill 
 > - tier-3: Claude Haiku 4.5 (`/model haiku`)
 >
 > Do you use any other tools (Cursor, Codex, etc.)? If so, which models?
+
+**Cursor detected:**
+> I see you're running Cursor with [model-id from system prompt]. Which tier should this model be?
+>
+> Do you use any other tools (Claude Code, Codex, etc.)? If so, which models?
 
 **Codex detected:**
 > Reading `~/.codex/config.toml`... Current model: [model]. Available models from `~/.codex/models_cache.json`: [list].
@@ -224,7 +230,7 @@ How the skill detects the current model at runtime:
 |----------|-----------------|
 | Claude Code | System prompt contains model ID (e.g., `claude-opus-4-6`) |
 | Codex | Read `~/.codex/config.toml` → `model` field |
-| Cursor | Cannot detect programmatically — include model name in routing prompt so user can self-check |
+| Cursor | System prompt contains model identifier (e.g., `powered by claude-4.6-opus-high-thinking`). Fall back to asking the user if not present |
 | Unknown | Ask user in routing prompt |
 
 ---
