@@ -174,22 +174,22 @@ Sign-off comment with:
 - Any findings
 ```
 
-### Minimum: Self-review with transparency
+### When independent review is unavailable: audit trail only
 
-When cross-model review is genuinely unavailable (single-tool environment, urgency):
+When cross-model review is genuinely unavailable (single-tool environment, urgency), the author records a self-review audit artifact. **This does not satisfy the gate and the PR remains unmerged.**
 
-1. The reviewing model signs its own review.
-2. The sign-off explicitly states that independent review was not available.
-3. Shiplog marks whether independent review is still required.
+1. The author signs a self-review clearly marked as non-satisfying.
+2. The sign-off explicitly states that independent review is still required.
+3. The PR stays open — merge is blocked until an independent reviewer approves.
 
 ```
 Reviewed-by: Claude Opus 4.6 (Claude Code)
-Disposition: approve (self-review — independent review unavailable)
+Disposition: self-review (does NOT satisfy gate — independent review required)
 Scope: full diff
-Note: This PR was self-reviewed. Independent cross-model review is recommended before this work is treated as trusted.
+Note: Self-review recorded as audit trail. This PR must not merge until an independent cross-model review is completed.
 ```
 
-**Self-review does not satisfy the gate.** It is a documented exception, not a workaround.
+**Self-review is an audit artifact, not a gate-satisfying event.** It exists so the review intent is visible in the timeline, but it confers no merge authorization. There are no exceptions to the independent review requirement.
 
 ---
 
