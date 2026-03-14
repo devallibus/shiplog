@@ -614,3 +614,14 @@ For each operation:
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
 All skills are optional. Without them, shiplog falls back to direct `gh`/`git` commands.
+
+### Codex agent identity
+
+When signing issues, PRs, or timeline comments from Codex, report the model identity from local Codex metadata instead of guessing from the generic system prompt.
+
+- Primary source: `~/.codex/config.toml`
+- Read `model` and `model_reasoning_effort`
+- Corroborate if needed with `~/.codex/models_cache.json`
+- If both are present, sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`
+- Shorthand like `gpt-5.4 high` is acceptable only when both values are explicitly present
+- If the files are unavailable or do not expose the values, fall back to `OpenAI Codex, based on GPT-5`
