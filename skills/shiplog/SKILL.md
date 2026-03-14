@@ -158,7 +158,7 @@ Key rules:
 
 1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
-2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions.
+2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
 
 3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until PHASE 2. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created in PHASE 2.
 
@@ -194,7 +194,7 @@ Key rules:
    See `references/shell-portability.md` for shell-specific notes.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates.
+3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
@@ -214,9 +214,9 @@ Discovery made during work
   +-- Refactoring opportunity?             -> Create issue tagged "refactor"
 ```
 
-**Phase 3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Cross-reference on the parent issue. See `references/phase-templates.md` for the discovery issue template.
+**Phase 3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Cross-reference on the parent issue. See `references/phase-templates.md` for the discovery issue template. Sign both the discovery issue and the parent cross-reference comment per [Agent identity signing](#agent-identity-signing).
 
-**Phase 3b (independent discovery):** Create new issue (same template without "blocks parent"). Add timeline comment. Continue current work.
+**Phase 3b (independent discovery):** Create new issue (same template without "blocks parent"). Add timeline comment. Continue current work. Sign each posted artifact per [Agent identity signing](#agent-identity-signing).
 
 ---
 
@@ -226,7 +226,7 @@ Discovery made during work
 
 1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
 
-2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template.
+2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. NOT after trivial commits.
 
@@ -240,11 +240,11 @@ Discovery made during work
 
 1. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
 
-2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference.
+2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
 
-3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR.
+3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR. Sign the summary comment per [Agent identity signing](#agent-identity-signing).
 
-4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules.
+4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules. Sign every review artifact per [Agent identity signing](#agent-identity-signing).
 
 5. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
 
@@ -265,7 +265,7 @@ Discovery made during work
 
 **Routing:** tier-3 (fast).
 
-Add timeline comments when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked.
+Add timeline comments when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign each timeline comment per [Agent identity signing](#agent-identity-signing).
 
 See `references/phase-templates.md` for the comment format. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`.
 
