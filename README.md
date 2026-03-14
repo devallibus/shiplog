@@ -192,7 +192,12 @@ All artifacts use `#ID` as the primary key for fast retrieval:
 | Branch | `issue/<id>-<slug>` | `issue/42-auth-middleware` |
 | Commit | `<type>(#<id>): <msg>` | `feat(#42): add JWT validation` |
 | PR title | `<type>(#<id>): <msg>` | `feat(#42): add auth middleware` |
+| PR body | `Closes #<id>` | `Closes #42` |
+| Timeline comment | `[shiplog/<kind>] #<id>: ...` | `[shiplog/discovery] #42: race condition` |
+| Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
 | Memory | `#<id>: <decision>` | `#42: chose JWT over sessions` |
+
+Timeline comments use semantic tags: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`.
 
 Retrieve everything about issue 42:
 ```bash
@@ -294,8 +299,10 @@ shiplog orchestrates other skills for a richer experience. All are optional — 
 | `ork:stacked-prs` | OrchestKit | Stacked PR mechanics |
 | `ork:issue-progress-tracking` | OrchestKit | Auto-checkbox updates from commits |
 | `ork:remember` / `ork:memory` | OrchestKit | Knowledge graph storage |
+| `ork:brainstorming` | OrchestKit | Parallel agent brainstorming |
 | `superpowers:brainstorming` | [Superpowers](https://github.com/obra/superpowers) | Design-first brainstorming |
 | `superpowers:using-git-worktrees` | Superpowers | Isolated workspaces |
+| `superpowers:finishing-a-development-branch` | Superpowers | Post-implementation options |
 | `superpowers:writing-plans` | Superpowers | Structured plan documents |
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
