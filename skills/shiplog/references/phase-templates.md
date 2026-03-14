@@ -33,25 +33,37 @@ gh issue create \
 
 Each task is self-contained. A tier-3 model should be able to execute any task
 using only the information in that task block, without reading the rest of this issue.
+When exact behavior matters, write a contract instead of relying on emphasis or tone.
 
 - [ ] **Task 1: [Short title]** `[tier-3]`
   - **What:** [1-2 sentences, exactly what to do — no ambiguity]
   - **Files:** `path/to/file.ts` (create|modify|delete)
+  - **Allowed to change:** [`path/to/file.ts`; specific symbols or sections if needed]
+  - **Must not change:** [files, APIs, behavior, or decisions that are out of scope]
+  - **Stop and ask if:** [condition that would require widening scope or making a product/architecture choice]
+  - **Verification:** [command, check, or evidence required before claiming completion]
+  - **Return artifact:** [diff, comment, checklist update, verification note, or exact file list]
+  - **Decision budget:** `none`
   - **Accept when:** [concrete, testable acceptance criteria]
   - **Context:** [any non-obvious background the implementer needs]
 
 - [ ] **Task 2: [Short title]** `[tier-1]`
   - **What:** [1-2 sentences]
   - **Files:** `path/to/file.ts`
+  - **Decision budget:** [what judgment this task is allowed to exercise]
   - **Accept when:** [criteria]
   - **Why tier-1:** [why this needs reasoning, e.g., "requires evaluating 3 API options"]
 
 Tier tag rules:
 - `[tier-3]` tasks MUST be executable without creative judgment.
-  Every decision is pre-made in the task description.
+  Every decision is pre-made in the task description and contract fields.
 - `[tier-1]` tasks require reasoning or trade-off evaluation.
   Include **Why tier-1** explaining what judgment is needed.
 - `[tier-2]` tasks need context awareness but not deep creativity.
+- If a task has safety-critical or review-critical steps, put them in
+  **Verification** or **Stop and ask if**, not in emphatic prose.
+- If completion needs to be checked later, define the **Return artifact**
+  explicitly so another human or agent can verify it.
 - The golden rule: if a tier-3 model would need to make a judgment call,
   the task is not specific enough. Rewrite it.
 
@@ -160,6 +172,7 @@ gh issue comment <ISSUE_NUMBER> --body "$(cat <<EOF
 **What:** $COMMIT_MSG
 
 **Why:** [1-2 sentences explaining the reasoning]
+**Verification:** [What was checked, what was deferred, or "Not run"]
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
@@ -182,6 +195,7 @@ $body = @"
 **What:** $commitMsg
 
 **Why:** [1-2 sentences explaining the reasoning]
+**Verification:** [What was checked, what was deferred, or "Not run"]
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 

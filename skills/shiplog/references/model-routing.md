@@ -162,6 +162,7 @@ Switch to <provider>. The handoff is on issue #<N>.
 ## Context Handoff Protocol
 
 When transitioning from a higher tier to a lower tier, the outgoing model MUST write a handoff comment on the issue (Full Mode) or `--log` PR (Quiet Mode).
+The receiving model should get a contract, not a goal. If a cheaper model must infer scope from tone, the handoff is underspecified.
 
 ### Handoff template
 
@@ -179,6 +180,14 @@ When transitioning from a higher tier to a lower tier, the outgoing model MUST w
 1. [Concrete action with file path]
 2. [Concrete action with file path]
 3. [Concrete action with file path]
+
+### Contract
+- **Allowed files:** `path/to/file.ts`, `path/to/other.ts`
+- **Must not change:** [files, APIs, behavior, or decisions that remain out of scope]
+- **Stop and ask if:** [condition that would require widening scope or making a judgment call]
+- **Verification required:** [tests, checks, or evidence that must exist before reporting done]
+- **Return artifact:** [diff summary, verification note, changed file list, blocker report]
+- **Decision budget:** `none` | `narrow` | `full`
 
 ### Files to touch
 - `path/to/file.ts` (create) — [what goes in it]
@@ -201,6 +210,9 @@ The skill detects which case applies by checking the **Provider** column in the 
 ### The golden rule
 
 > If a tier-3 model reading this handoff would need to make a judgment call, the handoff is not specific enough. Rewrite it until every decision is pre-made.
+
+For delegated execution, `Decision budget: none` should be the default.
+If the work really needs local judgment, narrow the allowed decision surface explicitly instead of implying it.
 
 ---
 

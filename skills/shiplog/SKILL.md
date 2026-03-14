@@ -51,7 +51,7 @@ Assign AI model tiers to phases based on cognitive demand. Advisory only — nev
 
 **Routing prompt:** At phase transitions when the tier changes, suggest the model switch. For cross-tool switches, include the handoff location.
 
-**Context handoff:** When transitioning tiers, write a self-contained handoff comment. The golden rule: if a tier-3 model reading the handoff would need to make a judgment call, the handoff is not specific enough.
+**Context handoff:** When transitioning tiers, write a self-contained handoff comment. Treat lower-tier execution as a contract, not a goal: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget should be explicit. The golden rule: if a tier-3 model reading the handoff would need to make a judgment call, the handoff is not specific enough.
 
 See `references/model-routing.md` for full configuration format, setup wizard, handoff template, and examples.
 
@@ -154,7 +154,7 @@ Key rules:
 
 1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
-2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags), and Open Questions.
+2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions.
 
 3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until PHASE 2. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created in PHASE 2.
 
@@ -185,6 +185,7 @@ Key rules:
 3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates.
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
+   For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
 
 ---
 
@@ -212,7 +213,7 @@ Discovery made during work
 
 1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
 
-2. **Add context comment** for significant commits. Document the reasoning on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template.
+2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template.
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. NOT after trivial commits.
 
