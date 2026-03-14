@@ -356,6 +356,15 @@ git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH
 git checkout -b issue/<ISSUE_NUMBER>-<brief-description>
 ```
 
+Portable note:
+- On PowerShell, break the chained commands into separate steps and use a different variable capture syntax:
+  ```powershell
+  $DEFAULT_BRANCH = gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+  git checkout $DEFAULT_BRANCH
+  git pull origin $DEFAULT_BRANCH
+  git checkout -b issue/<ISSUE_NUMBER>-<brief-description>
+  ```
+
 ### Step 3: Post timeline entry (Full Mode)
 
 ```bash
@@ -388,6 +397,9 @@ gh pr create --base <branch> \
 # Then switch back to the feature branch
 git checkout <branch>
 ```
+
+Portable note:
+- On PowerShell, use backtick (`` ` ``) for line continuation instead of `\`, or pass the PR body via `--body-file`.
 
 Post a comment on the `--log` PR:
 ```bash
