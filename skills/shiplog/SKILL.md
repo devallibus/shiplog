@@ -28,8 +28,8 @@ For personal projects, OSS, teams that embrace documentation. Knowledge goes dir
 For work environments where issues/PRs must stay clean. Knowledge lives in a **stacked knowledge branch** (`--log`) with its own PR targeting the feature branch.
 
 ```
-main
-  └── feature/auth-middleware            ← Clean PR to main
+<default-branch>
+  └── feature/auth-middleware            ← Clean PR to <default-branch>
         └── feature/auth-middleware--log  ← Knowledge PR targets feature branch
 ```
 
@@ -349,7 +349,10 @@ Also search knowledge graph if available: `/ork:memory search "#<issue-id>"`
 Delegate to `superpowers:using-git-worktrees` if isolation is needed, otherwise:
 
 ```bash
-git checkout main && git pull origin main
+# Resolve the repo default branch dynamically — never hardcode main/master
+DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+
+git checkout $DEFAULT_BRANCH && git pull origin $DEFAULT_BRANCH
 git checkout -b issue/<ISSUE_NUMBER>-<brief-description>
 ```
 
@@ -555,7 +558,7 @@ Delegate to `ork:create-pr` (validation) or `superpowers:finishing-a-development
 
 ```bash
 ISSUE_NUMBER=<N>
-BASE_BRANCH=main
+BASE_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
 
 gh pr create --base $BASE_BRANCH \
   --title "<type>(#$ISSUE_NUMBER): Brief description" \
@@ -585,7 +588,7 @@ Closes #<ISSUE_NUMBER>
 ### Changes Made
 
 **Commits:**
-[list commits with `git log --oneline main..HEAD`]
+[list commits with `git log --oneline $BASE_BRANCH..HEAD`]
 
 ## Testing
 
