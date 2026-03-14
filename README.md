@@ -178,6 +178,156 @@ git log --all --oneline --grep="#42"         # commits
 | 6. Knowledge Retrieval | "Where did we decide X?" | Search across all artifacts | tier-2 (capable) |
 | 7. Timeline Maintenance | Mid-work | Session/milestone/blocker comments | tier-3 (fast) |
 
+## Feature Deep Dive
+
+### Artifact Envelopes
+
+Every shiplog artifact — issue bodies, PR bodies, timeline comments — carries a machine-readable metadata envelope embedded as an HTML comment. Envelopes are invisible in rendered GitHub views by design: they exist for agent retrieval, not human reading.
+
+```html
+<!-- shiplog:
+kind: state
+issue: 42
+branch: issue/42-auth-middleware
+status: in-progress
+phase: 2
+updated_at: 2026-03-14T12:00:00Z
+-->
+```
+
+**Why invisible?** Agents fetch envelope metadata first, then read the full body only when needed — reducing token cost on long threads. Humans see clean markdown; machines get structured data.
+
+**How to inspect them:**
+```bash
+# Raw body includes the HTML comment
+gh issue view 42 --json body --jq '.body'
+
+# Find all shiplog envelopes on an issue
+gh issue view 42 --json body,comments --jq '
+  [.body, .comments[].body]
+  | map(select(test("<!-- shiplog:")))
+'
+```
+
+On GitHub, click **Edit** on any issue or comment to see the envelope in the raw markdown source.
+
+**7 envelope kinds:**
+
+| Kind | Purpose | Uniqueness |
+|------|---------|------------|
+| `state` | Current status snapshot | latest-wins |
+| `handoff` | Context transfer between tiers/tools | accumulating |
+| `verification` | Testing or review evidence | accumulating |
+| `commit-note` | Reasoning behind a commit | accumulating |
+| `review-handoff` | Review request or completion | accumulating |
+| `blocker` | Something preventing progress | latest-wins |
+| `history` | Retrospective summary | latest-wins |
+
+**Supersession model:** For latest-wins kinds, the most recent envelope of that kind is current — older ones are historical. For accumulating kinds, multiple envelopes coexist, each capturing a distinct event. Agents sort by `updated_at` to find what's current.
+
+See `references/artifact-envelopes.md` for the full field schema, retrieval patterns, and conflict resolution rules.
+
+### Agent Identity Signing
+
+Every shiplog artifact carries a provenance signature identifying which AI model authored or reviewed it.
+
+```
+Authored-by: claude/opus-4.6 (claude-code)
+Reviewed-by: openai/gpt-5.4 (codex, effort: high)
+```
+
+**Canonical grammar:**
+
+```
+<role>: <family>/<version> (<tool>[, <qualifier>])
+```
+
+- **role** — `Authored-by` or `Reviewed-by`
+- **family** — provider name (`claude`, `openai`, `google`)
+- **version** — model identifier (`opus-4.6`, `sonnet-4`, `gpt-5.4`)
+- **tool** — runtime environment (`claude-code`, `codex`, `cursor`)
+- **qualifier** — optional tool metadata (`effort: high`)
+
+Signatures make it possible to search for all work by a specific model, trace who authored what, and enforce cross-model review requirements.
+
+### Cross-Model Review
+
+Every PR requires a positive review from a model different from the author before merge. Same-model self-review does not count as independent review.
+
+**Review sign-off format:**
+
+```
+Reviewed-by: claude/sonnet-4 (claude-code)
+Disposition: approve
+Scope: full diff — README.md, SKILL.md
+```
+
+**Why cross-model?** A single model authoring, reviewing, and merging its own work is the anti-pattern this protocol prevents. The review loop is part of the safety model — signed review comments are the canonical review artifact, not GitHub review badges.
+
+**Merge conditions:**
+1. At least one cross-model review with `Disposition: approve`
+2. All `request-changes` reviews addressed
+3. PR body includes `Closes #<N>` linking to the tracking issue
+4. Issue closure has linked evidence (the merged PR itself)
+
+See `references/closure-and-review.md` for the full review execution ladder and evidence-linked closure protocol.
+
+### Verification Profiles
+
+Configurable testing and semantic-stability policies that travel with the task. Verification is not "run tests" — it is semantic-stability pressure that makes behavior drift expensive enough to catch.
+
+| Profile | Purpose |
+|---------|---------|
+| `none` | No enforcement (default) |
+| `behavior-spec` | Acceptance scenarios for new/changed behavior |
+| `red-green` | Fail-first unit tests |
+| `structural` | Quality analysis on changed modules |
+| `mutation` | Differential mutation testing |
+
+Profiles are composable and configured in `.shiplog/verification.md`. A per-issue override can tighten the project default but not relax it. Delegated agents inherit the active profile — a tier-3 agent cannot bypass verification.
+
+See `references/verification-profiles.md` for the full behavior-spec protocol, evidence requirements, and configuration format.
+
+### Discovery Protocol
+
+When you find a sub-problem while working on an issue, shiplog routes it based on scope:
+
+```
+Discovery made during work
+  ├── Small fix (< 30 min)?         → Fix inline, add timeline comment
+  ├── Prerequisite for current work? → Stack a new branch/PR (Phase 3a)
+  ├── Independent but important?     → Create new issue, continue (Phase 3b)
+  └── Refactoring opportunity?       → Create issue tagged "refactor"
+```
+
+**Stacked PRs** for prerequisites create a new issue first (so the `#ID` exists), then branch from the current work. Cross-references on the parent issue keep the relationship visible.
+
+### Shell Portability
+
+Shiplog works on both Bash and PowerShell. The key pattern: use `gh ... --body-file <temp-file>` for multiline content instead of inline heredocs.
+
+```bash
+# Bash
+body_file="$(mktemp)"
+cat > "$body_file" <<'EOF'
+## Timeline comment content
+EOF
+gh issue comment 42 --body-file "$body_file"
+rm "$body_file"
+```
+
+```powershell
+# PowerShell
+$bodyPath = Join-Path $PWD '.tmp-gh-body.md'
+Set-Content -Path $bodyPath -Value @"
+## Timeline comment content
+"@ -NoNewline
+gh issue comment 42 --body-file $bodyPath
+Remove-Item $bodyPath -Force
+```
+
+See `references/shell-portability.md` for worktree setup, variable capture syntax, and escaping differences.
+
 ## License
 
 MIT
