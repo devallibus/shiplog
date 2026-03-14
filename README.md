@@ -45,9 +45,46 @@ Configure per-project in `.shiplog/routing.md` or per-issue in the issue body. S
 
 ## Install
 
-### Claude Code
+### 1. Cross-platform with `npx skills add`
 
-Copy the `skills/shiplog/` directory to your Claude Code skills:
+The fastest verified install path is the Vercel Labs CLI:
+
+```bash
+npx skills add devallibus/shiplog --skill shiplog
+```
+
+Target a specific agent explicitly when you want tighter control:
+
+```bash
+npx skills add devallibus/shiplog --skill shiplog --agent claude-code
+npx skills add devallibus/shiplog --skill shiplog --agent codex
+npx skills add devallibus/shiplog --skill shiplog --agent cursor
+```
+
+Update later with:
+
+```bash
+npx skills update
+```
+
+Verified locally on March 14, 2026: installing from `devallibus/shiplog` created project-local installs for Claude Code, Codex, and Cursor. The installer placed Claude Code under `.claude/skills/shiplog` and Codex/Cursor under `.agents/skills/shiplog`.
+
+### 2. Claude Code plugin from a local checkout
+
+This repo includes a Claude plugin manifest in `.claude-plugin/plugin.json`.
+To validate and load it from a checkout:
+
+```bash
+claude plugins validate .claude-plugin/plugin.json
+claude --plugin-dir .
+```
+
+This is the best path for local plugin development and pre-submission testing.
+
+### 3. Claude Code skill copy
+
+If you want the raw skill without the plugin wrapper, copy `skills/shiplog/`
+into Claude Code's skill directory:
 
 ```bash
 # Global (all projects)
@@ -57,14 +94,41 @@ cp -r skills/shiplog ~/.claude/skills/shiplog
 cp -r skills/shiplog .claude/skills/shiplog
 ```
 
-Then invoke with `/shiplog` or let it auto-activate when you create branches, issues, or PRs.
+Then invoke with `/shiplog` or let it auto-activate when you create branches,
+issues, or PRs.
 
-### Codex
+### 4. Cursor and generic manual copy
 
-Copy the `skills/shiplog/` directory to your Codex skills directory.
+If you are not using the `npx skills` flow, you can still install shiplog by
+copying the skill folder into the generic agentskills.io layout used by Codex,
+Cursor, and similar tools:
+
+```bash
+cp -r skills/shiplog .agents/skills/shiplog
+```
+
+### Live development with `--add-dir`
+
+For local iteration without reinstalling after every change:
+
+```bash
+claude --add-dir skills
+```
+
+### Submission channels
+
+- Claude Code marketplace submission is manual and login-gated. Validate
+  `.claude-plugin/plugin.json` first, then submit through the Claude plugin
+  submission flow.
+- Vercel's `skills` CLI can install directly from this repository today; no
+  separate catalog submission was required for the local install paths verified
+  above.
+- Codex is documented to support repo-based skill installation, so a separate
+  curated-catalog submission is not required for basic distribution. Treat any
+  future catalog submission as optional packaging work, not a prerequisite for
+  installability.
 
 ### Requirements
-
 - `gh` CLI ([install](https://cli.github.com/)) — authenticated with `gh auth login`
 - `git` — you're in a git repo with a GitHub remote
 - That's it. Everything else is optional.
