@@ -37,6 +37,82 @@ Ask the user which mode on first activation. Remember the choice via `ork:rememb
 
 ---
 
+## Model-Tier Routing
+
+Assign AI model tiers to phases based on cognitive demand. Use your best model for planning and synthesis, a fast model for implementation and commits. Advisory only — never blocks workflow.
+
+### Tiers
+
+| Tier | When to Use | Default Phases |
+|------|------------|----------------|
+| **tier-1** (reasoning) | Creative synthesis, architecture, narrative | Phase 1, Phase 5 |
+| **tier-2** (capable) | Context loading, judgment, structured docs | Phase 2, Phase 3, Phase 6 |
+| **tier-3** (fast) | Execution, routine commits, templates | Phase 4, Phase 7 |
+
+### Configuration
+
+On first use, if no config exists, run a setup wizard: detect the platform, suggest known models, ask the user to confirm and assign tiers. Generate `.shiplog/routing.md`.
+
+**Resolution order:**
+1. Per-issue `## Model Routing` section (highest priority)
+2. Project `.shiplog/routing.md` file (team defaults)
+3. Built-in defaults (table above)
+4. If none configured → routing is silent, no prompts shown
+
+**Config format** (`.shiplog/routing.md`):
+
+```markdown
+## Available Models
+
+| Model | Provider | Tier |
+|-------|----------|------|
+| Claude Opus 4 | Claude Code | tier-1 |
+| Claude Sonnet 4 | Claude Code | tier-2 |
+| Cursor Composer 1.5 | Cursor | tier-3 |
+
+## Routing Behavior
+suggest
+```
+
+### Routing Prompt
+
+At phase transitions, when the tier changes between consecutive phases:
+
+**Same-tool switch** (same Provider): `[shiplog routing] Entering Phase N — recommends tier-X. Use /model <alias>.`
+
+**Cross-tool switch** (different Provider): `[shiplog routing] Entering Phase N — recommends tier-X. Configured: <model> in <provider>. Switch to <provider>. The handoff is on issue #<N>.`
+
+### Context Handoff Protocol
+
+When transitioning from a higher tier to a lower tier, the outgoing model MUST write a handoff comment on the issue (Full Mode) or `--log` PR (Quiet Mode):
+
+```markdown
+## [#<ID>] handoff: Phase N → Phase M
+
+**Tier transition:** tier-1 → tier-3
+**Recommended model:** [from config]
+
+### What was decided
+- [Decision 1 — concrete, not conceptual]
+
+### What to do next
+1. [Concrete action with file path]
+
+### Files to touch
+- `path/to/file.ts` (create) — [what goes in it]
+
+### Gotchas
+- [What a cheaper model would get wrong without this warning]
+```
+
+**The golden rule:** If a tier-3 model reading this handoff would need to make a judgment call, the handoff is not specific enough. Rewrite it until every decision is pre-made.
+
+**Cross-tool handoffs** (different Provider) must be 100% self-contained — no conversation context carries over. **Same-tool handoffs** can be lighter since conversation history is available.
+
+See `references/model-routing.md` for full configuration format, setup wizard, and examples.
+
+---
+
 ## When This Skill Activates
 
 **User-invocable:** `/shiplog`
@@ -88,12 +164,14 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval:
 ```
 User request arrives
   |
-  +-- "Let's brainstorm/plan/design X"     -> PHASE 1
-  +-- "Work on issue #N"                    -> PHASE 2
-  +-- "I found a sub-problem"              -> PHASE 3
-  +-- "Let's commit" / "Ready for PR"      -> PHASE 4 or 5
-  +-- "Where did we decide X?"             -> PHASE 6
-  +-- Currently mid-work on a branch       -> PHASE 7
+  +--> [Routing check: resolve tier for target phase]
+  |
+  +-- "Let's brainstorm/plan/design X"     -> PHASE 1 [tier-1]
+  +-- "Work on issue #N"                    -> PHASE 2 [tier-2]
+  +-- "I found a sub-problem"              -> PHASE 3 [tier-2]
+  +-- "Let's commit" / "Ready for PR"      -> PHASE 4 [tier-3] or 5 [tier-1]
+  +-- "Where did we decide X?"             -> PHASE 6 [tier-2]
+  +-- Currently mid-work on a branch       -> PHASE 7 [tier-3]
 ```
 
 ---
@@ -159,6 +237,7 @@ Use the same pattern for `gh issue create`, `gh pr create`, and `gh pr comment`.
 ## PHASE 1: Brainstorm-to-Issue
 
 **Trigger:** User wants to plan, brainstorm, or design something.
+**Routing:** tier-1 (reasoning). See [Model-Tier Routing](#model-tier-routing).
 
 ### Step 1: Run the brainstorm
 
@@ -192,9 +271,29 @@ gh issue create \
 
 ## Tasks
 
-- [ ] Task 1: [specific deliverable]
-- [ ] Task 2: [specific deliverable]
-- [ ] Task 3: [specific deliverable]
+Each task is self-contained. A tier-3 model should be able to execute any task
+using only the information in that task block, without reading the rest of this issue.
+
+- [ ] **Task 1: [Short title]** `[tier-3]`
+  - **What:** [1-2 sentences, exactly what to do — no ambiguity]
+  - **Files:** `path/to/file.ts` (create|modify|delete)
+  - **Accept when:** [concrete, testable acceptance criteria]
+  - **Context:** [any non-obvious background the implementer needs]
+
+- [ ] **Task 2: [Short title]** `[tier-1]`
+  - **What:** [1-2 sentences]
+  - **Files:** `path/to/file.ts`
+  - **Accept when:** [criteria]
+  - **Why tier-1:** [why this needs reasoning, e.g., "requires evaluating 3 API options"]
+
+Tier tag rules:
+- `[tier-3]` tasks MUST be executable without creative judgment.
+  Every decision is pre-made in the task description.
+- `[tier-1]` tasks require reasoning or trade-off evaluation.
+  Include **Why tier-1** explaining what judgment is needed.
+- `[tier-2]` tasks need context awareness but not deep creativity.
+- The golden rule: if a tier-3 model would need to make a judgment call,
+  the task is not specific enough. Rewrite it.
 
 ## Open Questions
 
@@ -228,13 +327,14 @@ If `ork:remember` is available:
 
 ### Step 4: Transition
 
-If the user wants to start work immediately, proceed to PHASE 2.
+If the user wants to start work immediately, proceed to PHASE 2. If model routing is configured and the next phase uses a different tier, write a [context handoff comment](#context-handoff-protocol) before transitioning.
 
 ---
 
 ## PHASE 2: Issue-to-Branch
 
 **Trigger:** User wants to work on a specific issue.
+**Routing:** tier-2 (capable). See [Model-Tier Routing](#model-tier-routing).
 
 ### Step 1: Load context
 
@@ -300,6 +400,7 @@ Delegate to `superpowers:executing-plans` or `ork:implement` as appropriate.
 ## PHASE 3: Discovery Protocol
 
 **Trigger:** While working, you discover something that is a separate concern.
+**Routing:** tier-2 (capable). See [Model-Tier Routing](#model-tier-routing).
 
 ### Decision tree
 
@@ -373,6 +474,7 @@ gh issue comment <PARENT_ISSUE> --body "[#<PARENT>] discovery: Found sub-problem
 ## PHASE 4: Commit-with-Context
 
 **Trigger:** Ready to commit changes.
+**Routing:** tier-3 (fast). See [Model-Tier Routing](#model-tier-routing).
 
 ### Step 1: Delegate the commit
 
@@ -443,6 +545,7 @@ PowerShell note:
 ## PHASE 5: PR-as-Timeline
 
 **Trigger:** Work is complete and ready for PR.
+**Routing:** tier-1 (reasoning). See [Model-Tier Routing](#model-tier-routing).
 
 ### Step 1: Pre-PR checks
 
@@ -541,6 +644,7 @@ EOF
 ## PHASE 6: Knowledge Retrieval
 
 **Trigger:** User asks about past decisions, status, or history.
+**Routing:** tier-2 (capable). See [Model-Tier Routing](#model-tier-routing).
 
 ### Step 1: Search git history
 
@@ -585,6 +689,7 @@ If `ork:memory` is available: `/ork:memory search "keyword"`
 ## PHASE 7: Timeline Maintenance
 
 **Trigger:** Mid-work on a branch, need to maintain the timeline.
+**Routing:** tier-3 (fast). See [Model-Tier Routing](#model-tier-routing).
 
 ### When to add timeline comments
 
@@ -640,6 +745,7 @@ This skill ORCHESTRATES. It never reimplements. Delegation map:
 | Issue tracking | `ork:issue-progress-tracking` | Richer timeline comments |
 | Storing decisions | `ork:remember` | Structured `#ID: decision` entries |
 | Fixing issues | `ork:fix-issue` | Timeline documentation of RCA |
+| Model routing | Built-in (no delegation) | Tier-based switch prompts + context handoff |
 
 ### Graceful Degradation
 
@@ -651,6 +757,8 @@ For each operation:
 ```
 
 **Minimum viable installation:** `gh` CLI + `git` + this skill. The core loop (issue -> branch -> commits with context -> PR with timeline) works with just `gh` commands.
+
+**Model routing:** If `.shiplog/routing.md` exists, use project config. If issue has `## Model Routing`, use per-issue override. If neither, silent (no prompts, feature invisible).
 
 ### Conflict Avoidance
 
@@ -675,6 +783,8 @@ For each operation:
 **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in the closed PR's history.
 
 **Quiet mode — feature branch rebased:** Rebase `--log` branch onto updated feature branch. Use `--force-with-lease` for the push.
+
+**Model routing mismatch:** If the user continues without switching models after a routing prompt, proceed normally. Never block or repeat the prompt. Log the actual model used in timeline comments when `quiet` routing behavior is active.
 
 ---
 
@@ -717,3 +827,4 @@ When signing issues, PRs, or timeline comments from Codex, report the model iden
 - Shorthand like `gpt-5.4 high` is acceptable only when both values are explicitly present
 - If the files are unavailable or do not expose the values, fall back to `OpenAI Codex, based on GPT-5`
 
+Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).

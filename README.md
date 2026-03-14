@@ -28,6 +28,12 @@ main
         └── feature/auth-middleware--log  ← Knowledge PR (full timeline here)
 ```
 
+### Model Routing
+
+Assign AI model tiers to phases — use your best model for brainstorming and PR synthesis, a fast model for implementation and commits. Shiplog prompts you to switch at phase transitions and ensures the smart model leaves clear enough instructions for the fast model to execute.
+
+Configure per-project in `.shiplog/routing.md` or per-issue in the issue body. See `references/model-routing.md` for the full spec.
+
 ## Install
 
 ### Claude Code
@@ -89,15 +95,15 @@ git log --all --oneline --grep="#42"         # commits
 
 ## The 7 Phases
 
-| Phase | Trigger | What Happens |
-|-------|---------|-------------|
-| 1. Brainstorm-to-Issue | "Let's plan X" | Brainstorm captured as GitHub Issue |
-| 2. Issue-to-Branch | "Work on #42" | Branch created, timeline started |
-| 3. Discovery Protocol | Sub-problem found | New issue/stacked PR or inline fix |
-| 4. Commit-with-Context | Ready to commit | Commit + reasoning comment |
-| 5. PR-as-Timeline | Work complete | PR with full journey timeline |
-| 6. Knowledge Retrieval | "Where did we decide X?" | Search across all artifacts |
-| 7. Timeline Maintenance | Mid-work | Session/milestone/blocker comments |
+| Phase | Trigger | What Happens | Default Tier |
+|-------|---------|-------------|-------------|
+| 1. Brainstorm-to-Issue | "Let's plan X" | Brainstorm captured as GitHub Issue | tier-1 (reasoning) |
+| 2. Issue-to-Branch | "Work on #42" | Branch created, timeline started | tier-2 (capable) |
+| 3. Discovery Protocol | Sub-problem found | New issue/stacked PR or inline fix | tier-2 (capable) |
+| 4. Commit-with-Context | Ready to commit | Commit + reasoning comment | tier-3 (fast) |
+| 5. PR-as-Timeline | Work complete | PR with full journey timeline | tier-1 (reasoning) |
+| 6. Knowledge Retrieval | "Where did we decide X?" | Search across all artifacts | tier-2 (capable) |
+| 7. Timeline Maintenance | Mid-work | Session/milestone/blocker comments | tier-3 (fast) |
 
 ## License
 
