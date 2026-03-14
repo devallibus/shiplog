@@ -217,6 +217,8 @@ Discovery made during work
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. NOT after trivial commits.
 
+**Verification profiles:** When a verification profile is active, include verification evidence in commit context and PR timeline. See `references/verification-profiles.md` for profile configuration, behavior-spec protocol, and evidence requirements.
+
 ---
 
 ## PHASE 5: PR-as-Timeline
