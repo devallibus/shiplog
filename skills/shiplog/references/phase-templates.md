@@ -36,6 +36,19 @@ updated_at: <ISO_TIMESTAMP>
 - **Alternative A**: [why not chosen]
 - **Alternative B**: [why not chosen]
 
+## Sources and Verification Status
+
+Use this section when the issue includes external factual claims. If the issue is only
+about this repository's own code or docs, cite repo paths inline where useful and omit
+this section if it adds no value.
+
+- `[verified]` Claim: [external factual statement that affects the issue]
+  - **Source:** [primary source URL or official repository link]
+  - **Checked:** [what the source confirms]
+- `[unverified]` Claim or hypothesis: [idea worth preserving, but not yet confirmed]
+  - **Why unverified:** [missing source, conflicting reports, or pending experiment]
+  - **Next step:** [what must be checked before this can become a requirement]
+
 ## Tasks
 
 Each task is self-contained. A tier-3 model should be able to execute any task
@@ -43,6 +56,8 @@ using only the information in that task block, without reading the rest of this 
 When exact behavior matters, write a contract instead of relying on emphasis or tone.
 These fields also serve as the default delegation contract when a stronger model
 hands a `[tier-3]` task to a cheaper agent.
+Do not encode an `[unverified]` external claim as a fixed requirement unless the task
+includes the verification work needed to resolve it.
 
 - [ ] **Task 1: [Short title]** `[tier-3]`
   - **What:** [1-2 sentences, exactly what to do - no ambiguity]

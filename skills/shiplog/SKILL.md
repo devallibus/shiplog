@@ -159,6 +159,11 @@ Key rules:
 1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
 2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
+   Before writing the final issue body, classify factual claims:
+   - **Internal claims** about this repository's code, tests, configuration, or committed docs can be verified from the repo itself. The codebase is the source of truth.
+   - **External claims** about third-party tools, URLs, APIs, platform capabilities, pricing, distribution channels, or ecosystem behavior must be verified against primary sources before they are stated as facts.
+   - If an external claim cannot be verified yet, keep it explicitly marked as `[unverified]` and treat it as a hypothesis, not settled input. Do not turn an unverified claim into a task requirement, acceptance criterion, or architectural decision without a verification step.
+   - Brainstorming can stay exploratory, but the final issue body must distinguish verified facts from open questions and hypotheses.
 
 3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until PHASE 2. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created in PHASE 2.
 
