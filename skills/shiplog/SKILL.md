@@ -39,7 +39,7 @@ Ask the user which mode on first activation. Remember the choice via `ork:rememb
 
 ## Model-Tier Routing
 
-Assign AI model tiers to phases based on cognitive demand. Advisory only — never blocks workflow.
+Assign AI model tiers to phases based on cognitive demand. Advisory only - never blocks workflow. When a stronger model wants a cheaper agent to execute bounded work, use delegation mode so the handoff stays auditable.
 
 | Tier | When to Use | Default Phases |
 |------|------------|----------------|
@@ -53,7 +53,9 @@ Assign AI model tiers to phases based on cognitive demand. Advisory only — nev
 
 **Context handoff:** When transitioning tiers, write a self-contained handoff comment. Treat lower-tier execution as a contract, not a goal: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget should be explicit. The golden rule: if a tier-3 model reading the handoff would need to make a judgment call, the handoff is not specific enough.
 
-See `references/model-routing.md` for full configuration format, setup wizard, handoff template, and examples.
+**Delegation mode:** Use a dedicated delegation handoff when tier-1 or tier-2 work is split into bounded tier-3 execution. Delegated agents should execute only within the contract and return a structured artifact; issue and PR lifecycle actions stay with the delegator unless a contract explicitly grants them.
+
+See `references/model-routing.md` for full configuration format, setup wizard, handoff templates, delegation rules, and examples.
 
 ---
 
@@ -196,6 +198,7 @@ Key rules:
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
+   Prefer delegation for `[tier-3]` tasks and routine implementation only. Discovery, closure, and PR judgment stay with the higher-tier delegator.
 
 ---
 
@@ -287,7 +290,7 @@ This skill ORCHESTRATES. It never reimplements.
 | Issue tracking | `ork:issue-progress-tracking` | Richer timeline comments |
 | Storing decisions | `ork:remember` | Structured `#ID: decision` entries |
 | Fixing issues | `ork:fix-issue` | Timeline documentation of RCA |
-| Model routing | Built-in (no delegation) | Tier-based switch prompts + handoff |
+| Model routing | Built-in | Tier-based switch prompts, handoffs, and delegation contracts |
 
 **Graceful degradation:** Try preferred skill → alternative skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
 

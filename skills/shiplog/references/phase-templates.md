@@ -34,12 +34,15 @@ gh issue create \
 Each task is self-contained. A tier-3 model should be able to execute any task
 using only the information in that task block, without reading the rest of this issue.
 When exact behavior matters, write a contract instead of relying on emphasis or tone.
+These fields also serve as the default delegation contract when a stronger model
+hands a `[tier-3]` task to a cheaper agent.
 
 - [ ] **Task 1: [Short title]** `[tier-3]`
-  - **What:** [1-2 sentences, exactly what to do — no ambiguity]
+  - **What:** [1-2 sentences, exactly what to do - no ambiguity]
   - **Files:** `path/to/file.ts` (create|modify|delete)
   - **Allowed to change:** [`path/to/file.ts`; specific symbols or sections if needed]
   - **Must not change:** [files, APIs, behavior, or decisions that are out of scope]
+  - **Forbidden judgment calls:** [choices the implementer must not make locally]
   - **Stop and ask if:** [condition that would require widening scope or making a product/architecture choice]
   - **Verification:** [command, check, or evidence required before claiming completion]
   - **Return artifact:** [diff, comment, checklist update, verification note, or exact file list]
@@ -99,6 +102,73 @@ EOF
 ```
 
 For cross-platform reliability, prefer `gh issue comment --body-file <temp-file>` when the comment body spans multiple lines.
+
+## Delegation Handoff Comment
+
+Use this when a model or agent delegates a bounded task to another agent. This is distinct from a phase-transition handoff.
+
+```markdown
+## [#<ID>] delegation handoff: <task title>
+
+**Delegated by:** <family>/<version> (<tool>)
+**Target tier:** tier-3
+**Why delegation fits:** [why this work is bounded and non-judgmental]
+
+### Goal
+[One concrete outcome. This is the only goal.]
+
+### Contract
+- **Allowed files:** `path/to/file.ts`, `path/to/other.ts`
+- **Must not change:** [files, APIs, behavior, or decisions outside scope]
+- **Acceptance criteria:** [specific outcomes that define done]
+- **Forbidden judgment calls:** [decisions the delegated agent must not make]
+- **Stop and ask if:** [conditions that require escalation]
+- **Active verification profile:** [profile names or `none`]
+- **Verification required:** [tests, checks, or evidence required]
+- **Return artifact:** [delegation report, changed-file list, verification note, blockers]
+- **Decision budget:** `none` | `narrow`
+
+### Task checklist
+1. [Concrete action with file path]
+2. [Concrete action with file path]
+3. [Concrete action with file path]
+
+### Gotchas
+- [Anything the delegated agent could misunderstand]
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+## Delegation Return Artifact
+
+The delegated agent should report completion with a structured artifact instead of an informal summary.
+
+```markdown
+## [#<ID>] delegation report: <task title>
+
+**Status:** completed | blocked | escalated
+**Contract:** [link or quote the delegation handoff heading]
+
+### Changed files
+- `path/to/file.ts` - [summary]
+
+### Acceptance criteria
+- [x] [criterion met]
+- [ ] [criterion not met, with reason]
+
+### Verification status
+- **Ran:** [commands/checks]
+- **Passed:** [what passed]
+- **Deferred:** [what was skipped, with reason]
+
+### Decisions deferred upward
+- [question or "None"]
+
+### Blockers
+- [blocker or "None"]
+
+Authored-by: <family>/<version> (<tool>)
+```
 
 ## PHASE 2: Quiet Mode `--log` Branch + PR
 
