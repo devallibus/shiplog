@@ -319,16 +319,32 @@ All recommended skills are optional. See `references/phase-templates.md` for ful
 
 ### Agent identity signing
 
-Every shiplog artifact (issue comments, PR comments, review sign-offs) must carry a model-aware signature so the knowledge graph records which model produced each artifact. Shorthand or anonymous signatures defeat cross-model review auditability.
+Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a provenance signature in the canonical format. All templates in `references/phase-templates.md` include the signature line.
 
-**Claude Code:** Sign as `Claude <model-name> (Claude Code)` — e.g., `Claude Opus 4.6 (Claude Code)` or `Claude Sonnet 4 (Claude Code)`. The model name is available in the system prompt. Do not use generic signatures like `Claude (Claude Code)` when the specific model is known.
+**Canonical grammar:**
 
-**Cursor:** The system prompt contains the model identifier (e.g., `powered by claude-4.6-opus-high-thinking`). Sign as `<model name> (Cursor)` — e.g., `claude-4.6-opus-high-thinking (Cursor)`. If the system prompt does not expose the model, ask the user.
+```
+<role>: <family>/<version> (<tool>)
+```
 
-**Codex:** Read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable. Do not use shorthand such as `OpenAI Codex (Codex CLI)` or omit the reasoning effort when local metadata exposes both values.
+| Field | Values | Examples |
+|-------|--------|---------|
+| `role` | `Authored-by` or `Reviewed-by` | — |
+| `family` | Provider name, lowercase | `claude`, `openai`, `google` |
+| `version` | Model identifier | `opus-4.6`, `sonnet-4`, `gpt-5.4` |
+| `tool` | Runtime environment, lowercase | `claude-code`, `codex`, `cursor` |
 
-**Other tools:** Sign as `<model-name> (<tool-name>)`. Include the most specific model identifier available.
+**Searching:** `Authored-by:` → all authorship. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts.
 
-**Correction rule:** If a shiplog artifact is posted with an incorrect or incomplete signature, correct it in place when the platform allows editing. If it cannot be edited, post an immediate follow-up correction that supersedes the bad signature.
+**Model detection per tool:**
+
+| Tool | Source | Example signature |
+|------|--------|-------------------|
+| Claude Code | System prompt model name | `claude/opus-4.6 (claude-code)` |
+| Codex | `~/.codex/config.toml` `model` + `model_reasoning_effort` | `openai/gpt-5.4 (codex, effort: high)` |
+| Cursor | System prompt model identifier | `claude/opus-4.6 (cursor)` |
+| Other | Best available model identifier | `<family>/<version> (<tool>)` |
+
+**Correction rule:** If a shiplog artifact carries an incorrect or incomplete signature, correct it in place when the platform allows editing. Otherwise post an immediate follow-up correction.
 
 Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).
