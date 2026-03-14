@@ -66,11 +66,11 @@ Configured in `.shiplog/routing.md` (one field). Resolution order: per-issue `##
 Every phase begins with this check:
 
 1. Read routing mode from per-issue override > `.shiplog/routing.md` > default (`confirm`).
-2. If mode is `off`, skip to Step 1.
-3. Compare the entering phase's tier to the previous phase's tier. If same, skip to Step 1.
-4. If mode is `confirm`: emit the routing prompt and wait for user acknowledgment.
-5. If mode is `warn`: emit the routing banner and continue immediately.
-6. If work is transferring to another model/tool, write a handoff comment per `references/model-routing.md`.
+2. If work is transferring to another model/tool, write a handoff comment per `references/model-routing.md`.
+3. If mode is `off`, skip to Step 1.
+4. Compare the entering phase's tier to the previous phase's tier. If same, skip to Step 1.
+5. If mode is `confirm`: emit the routing prompt and wait for user acknowledgment.
+6. If mode is `warn`: emit the routing banner and continue immediately.
 
 **Routing mismatch:** If the user continues without switching models, proceed normally. Never block or repeat the prompt.
 

@@ -54,7 +54,7 @@ If the match between the issue and the evidence is ambiguous:
 1. **Do not close the issue.** Leave it open.
 2. Post a comment explaining the ambiguity.
 3. Tag the issue for human review or escalate to a higher-tier model.
-4. If a verifier agent is available, delegate the ambiguity check per `references/model-routing.md` delegation protocol.
+4. If a verifier agent is available, delegate the ambiguity check using the bounded handoff contract from `references/model-routing.md`.
 
 ### Optional verifier-agent workflow
 
@@ -63,7 +63,7 @@ The supervising model remains responsible for the closure decision.
 
 **Supervisor responsibilities:**
 - choose the candidate evidence links to inspect
-- assemble a bounded verifier contract using the delegation protocol from `references/model-routing.md`
+- assemble a bounded verifier contract using the handoff template from `references/model-routing.md`
 - keep closure judgment for ambiguous issues, umbrella issues, and any case where the verifier reports mismatch or low confidence
 
 **Verifier may:**

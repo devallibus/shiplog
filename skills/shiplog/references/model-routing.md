@@ -12,7 +12,7 @@ Configure how the skill communicates tier transitions. Set in `.shiplog/routing.
 |------|----------|----------|
 | `confirm` | Pause at tier transitions and ask the user before proceeding | Yes |
 | `warn` | Show a one-line banner at tier transitions, don't stop | No |
-| `off` | Silent. No routing prompts at all | No |
+| `off` | Silent. No routing prompts or banners; actual handoffs still apply when work transfers | No |
 
 ### Config file format
 
@@ -91,7 +91,7 @@ Show the banner and continue immediately.
 
 ### `off` mode
 
-No output. Proceed directly.
+No routing prompt or banner. Proceed directly unless work is actually transferring to another model or tool, in which case write the handoff artifact and continue.
 
 ### When to prompt
 
@@ -161,3 +161,7 @@ When work transfers between models or tools — whether prompted by routing or n
 > If a tier-3 model reading this handoff would need to make a judgment call, the handoff is not specific enough. Rewrite it until every decision is pre-made.
 
 For delegated execution, `Decision budget: none` should be the default.
+
+### Using the handoff as a verifier contract
+
+When closure or review work is delegated to another model, use this same handoff template as the bounded verifier contract. The supervising model keeps the closure or merge decision; the delegated verifier only inspects the named evidence, current file state, or PR diff and returns the required verification artifact.
