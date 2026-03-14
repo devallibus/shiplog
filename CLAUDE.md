@@ -1,0 +1,1 @@
+@./skills/shiplog/SKILL.md
