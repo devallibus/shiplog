@@ -97,18 +97,7 @@ cp -r skills/shiplog .claude/skills/shiplog
 Then invoke with `/shiplog` or let it auto-activate when you create branches,
 issues, or PRs.
 
-### 4. Codex install from this repo
-
-Codex supports installing skills directly from another repository:
-
-```bash
-$skill-installer https://github.com/devallibus/shiplog
-```
-
-If you prefer manual placement, copy `skills/shiplog/` into your project or
-user skills directory under `.agents/skills/shiplog/`.
-
-### 5. Cursor and generic manual copy
+### 4. Cursor and generic manual copy
 
 If you are not using the `npx skills` flow, you can still install shiplog by
 copying the skill folder into the generic agentskills.io layout used by Codex,
