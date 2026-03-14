@@ -319,4 +319,8 @@ All recommended skills are optional. See `references/phase-templates.md` for ful
 
 When signing artifacts from Codex, read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable.
 
+If local Codex metadata exposes both values, do not use shorthand such as `OpenAI Codex (Codex CLI)` or omit the reasoning effort. Shiplog artifacts must carry the full model-aware signature.
+
+If a shiplog artifact is posted with the wrong Codex signature, correct the existing artifact in place when the platform allows editing. If it cannot be edited, post an immediate follow-up correction that supersedes the bad signature.
+
 Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).
