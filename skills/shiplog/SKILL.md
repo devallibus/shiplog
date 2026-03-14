@@ -323,6 +323,8 @@ Every shiplog artifact (issue comments, PR comments, review sign-offs) must carr
 
 **Claude Code:** Sign as `Claude <model-name> (Claude Code)` — e.g., `Claude Opus 4.6 (Claude Code)` or `Claude Sonnet 4 (Claude Code)`. The model name is available in the system prompt. Do not use generic signatures like `Claude (Claude Code)` when the specific model is known.
 
+**Cursor:** The system prompt contains the model identifier (e.g., `powered by claude-4.6-opus-high-thinking`). Sign as `<model name> (Cursor)` — e.g., `claude-4.6-opus-high-thinking (Cursor)`. If the system prompt does not expose the model, ask the user.
+
 **Codex:** Read model identity from `~/.codex/config.toml` (`model`, `model_reasoning_effort`). Corroborate with `~/.codex/models_cache.json`. Sign as `OpenAI Codex (<model>, reasoning effort: <effort>)`. Fall back to `OpenAI Codex, based on GPT-5` if unavailable. Do not use shorthand such as `OpenAI Codex (Codex CLI)` or omit the reasoning effort when local metadata exposes both values.
 
 **Other tools:** Sign as `<model-name> (<tool-name>)`. Include the most specific model identifier available.
