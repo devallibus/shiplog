@@ -93,7 +93,7 @@ See `references/model-routing.md` for full configuration format, setup wizard, h
 
 All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 
-**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`. Format: `[shiplog/<kind>] <human title>`.
+**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`, `amendment`. Format: `[shiplog/<kind>] <human title>`.
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|
@@ -391,13 +391,13 @@ Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a prov
 
 | Field | Values | Examples |
 |-------|--------|---------|
-| `role` | `Authored-by` or `Reviewed-by` | — |
+| `role` | `Authored-by`, `Updated-by`, or `Reviewed-by` | — |
 | `family` | Provider name, lowercase | `claude`, `openai`, `google` |
 | `version` | Model identifier | `opus-4.6`, `sonnet-4`, `gpt-5.4` |
 | `tool` | Runtime environment, lowercase | `claude-code`, `codex`, `cursor` |
 | `qualifier` | Optional tool-specific metadata | `effort: high`, `effort: medium` |
 
-**Searching:** `Authored-by:` → all authorship. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts (matches both `(codex)` and `(codex, effort: high)`).
+**Searching:** `Authored-by:` → original authorship. `Updated-by:` → later material editors. `Reviewed-by:` → review artifacts. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts (matches both `(codex)` and `(codex, effort: high)`).
 
 **Model detection per tool:**
 
@@ -409,5 +409,15 @@ Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a prov
 | Other | Best available model identifier | `<family>/<version> (<tool>)` |
 
 **Correction rule:** If a shiplog artifact carries an incorrect or incomplete signature, correct it in place when the platform allows editing. Otherwise post an immediate follow-up correction.
+
+**Edit provenance rule:**
+- `Authored-by:` records the original author of an artifact body.
+- `Updated-by:` records a later model or human who materially edits that same artifact body. Preserve the original `Authored-by:` line and append a new `Updated-by:` line for each material edit, newest last.
+- `Reviewed-by:` is review-only. Do not use it for authorship or edit attribution.
+- A **material edit** changes meaning, facts, scope, requirements, acceptance criteria, verification results, review disposition, or a handoff contract. Typos, formatting cleanups, and link-only fixes are cosmetic and do not need `Updated-by:`.
+- **Edit in place** when the artifact is meant to stay the single canonical current body: issue bodies, PR bodies, and latest-wins status/history artifacts. When such an artifact is materially edited, refresh its envelope `updated_at` and add `updated_by` plus `edit_kind` fields when an envelope exists.
+- **Post an amendment artifact** instead of silently rewriting when the artifact is an accumulated event whose original text matters for auditability: handoffs, verification comments, commit-note comments, review sign-offs, and other major signed timeline entries. Use a new signed artifact that references the prior artifact and add envelope `amends` or `supersedes` markers as appropriate.
+- Use `supersedes` when the new artifact replaces the old one as the canonical current version. Use `amends` when the new artifact corrects or clarifies the earlier artifact but both should remain visible in history.
+- If the platform does not expose reliable edit history or does not allow editing, prefer an amendment artifact even for corrections that would otherwise be safe in place.
 
 Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See [Model-Tier Routing](#model-tier-routing).

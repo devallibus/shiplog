@@ -44,6 +44,9 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 | `phase` | no | integer | Shiplog phase number (1-7) when the artifact was created |
 | `profile` | no | string | Active verification profile name, if any |
 | `updated_at` | yes | ISO 8601 | When the envelope was last written or refreshed |
+| `updated_by` | no | string | Latest material editor of this artifact when it was edited in place |
+| `edit_kind` | no | string | Edit classification: `correction`, `amendment`, `rewrite`, or `cosmetic` |
+| `amends` | no | string | Reference to the earlier artifact this one corrects or clarifies without replacing |
 | `supersedes` | no | string | Reference to the artifact this one replaces (see §3) |
 | `superseded_by` | no | string | Back-pointer added to the older artifact when superseded |
 
@@ -52,6 +55,9 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 - **Issue/PR numbers:** bare integers, no `#` prefix — e.g., `issue: 42` not `issue: #42`.
 - **Branch names:** full branch name — e.g., `branch: issue/42-auth-middleware`.
 - **Timestamps:** ISO 8601 with timezone — e.g., `2026-03-14T12:00:00Z`.
+- **`updated_by`:** normalized like the signature body without the role prefix — e.g., `openai/gpt-5.4 (codex, effort: high)`.
+- **`edit_kind`:** use `correction` for factual or signature fixes, `amendment` for clarifications that preserve the original event, `rewrite` for substantial in-place rewrites, and `cosmetic` only when recording a non-semantic cleanup intentionally.
+- **Amendment/supersession references:** use the same `<artifact-location>#<kind>` format for `amends`, `supersedes`, and `superseded_by`.
 - **Supersession references:** `<artifact-location>#<kind>` — e.g., `issue/42#state` or `pr/55#verification`. See §3 for resolution.
 - **Unknown fields:** agents MUST ignore fields they do not recognize. This preserves forward compatibility as the schema evolves.
 
@@ -79,6 +85,7 @@ updated_at: 2026-03-14T14:30:00Z
 | `verification` | Evidence of testing, review, or quality check | accumulating | issues, PRs |
 | `commit-note` | Reasoning behind a specific commit | accumulating | issues |
 | `review-handoff` | Review request or review completion artifact | accumulating | PRs |
+| `amendment` | Correction or clarification for an existing signed artifact | accumulating | issues, PRs |
 | `blocker` | Something preventing progress | latest-wins | issues |
 | `history` | Retrospective summary for knowledge retrieval | latest-wins | issues, PRs |
 
@@ -99,6 +106,8 @@ updated_at: 2026-03-14T14:30:00Z
 
 **`review-handoff`** — Write when requesting or completing a PR review. Distinct from `handoff` (tier/tool switch) — this is specifically about code review.
 
+**`amendment`** — Write when a later model materially corrects, clarifies, or annotates an existing signed artifact without silently erasing the prior text. Include `amends` for additive corrections; include `supersedes` if the amendment becomes the new canonical replacement.
+
 **`blocker`** — Write when something blocks progress. Supersedes the previous blocker if the blocking condition changes. Include `status: blocked`.
 
 **`history`** — Write when summarizing a completed journey (e.g., PR body timeline, session-end recap). Useful for future retrieval queries.
@@ -114,6 +123,7 @@ Envelope `kind` is the machine key. The `[shiplog/<tag>]` heading is the human k
 | `verification` | `commit-note`, `review-handoff` |
 | `commit-note` | `commit-note` |
 | `review-handoff` | `review-handoff` |
+| `amendment` | `amendment` |
 | `blocker` | `blocker` |
 | `history` | `history`, `worklog` |
 
@@ -139,6 +149,12 @@ When a newer artifact intentionally replaces an older one, the author SHOULD add
 - `superseded_by: issue/42#state@2026-03-14T15:00:00Z` on the old artifact (best-effort — editing old comments may not always be practical).
 
 The `@timestamp` suffix disambiguates when multiple artifacts of the same kind exist.
+
+### Amendments versus supersession
+
+- Use `amends` when the new artifact corrects or clarifies an earlier one but the original event should still be read as part of the timeline.
+- Use `supersedes` when the new artifact should be treated as the current canonical replacement for the old one.
+- For in-place edits to an existing artifact, keep the same artifact location, refresh `updated_at`, and record `updated_by` plus `edit_kind` on that artifact instead of inventing a self-reference.
 
 ### When markers are absent
 

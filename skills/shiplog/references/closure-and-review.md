@@ -158,7 +158,7 @@ Disposition: approve
 Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
 ```
 
-This is the temporary format. When #33 (authored-artifact signatures) lands, it will formalize provenance more completely. Until then, this format provides enough structure for auditability.
+This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
 
 ### What constitutes "different model"
 
@@ -172,7 +172,7 @@ This is the temporary format. When #33 (authored-artifact signatures) lands, it 
 When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for PRs to review", "review PR #56"), the reviewing agent should:
 
 1. List open PRs on the repository.
-2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` line, or a newer linked commit-note / handoff artifact) and any existing `Reviewed-by:` sign-offs.
+2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` or `Updated-by:` line, or a newer linked commit-note / handoff / amendment artifact) and any existing `Reviewed-by:` sign-offs.
 3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
 4. **Review PRs where the latest activity is from a different model.** These are candidates for cross-model review.
 5. If all open PRs were last touched by the current model, inform the user:
@@ -181,7 +181,7 @@ When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for
 
 **Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see §4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone — it will miss most AI-operated reviews.
 
-**What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` artifact associated with the work, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog authorship lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
+**What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` or `Updated-by:` artifact associated with the work, or a newer amendment artifact, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog provenance lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
 
 ---
 
