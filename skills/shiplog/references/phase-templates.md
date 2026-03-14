@@ -14,8 +14,6 @@ gh issue create \
   --body "$(cat <<'EOF'
 <!-- shiplog:
 kind: state
-issue: <ISSUE_NUMBER>
-branch: issue/<ISSUE_NUMBER>-<slug>
 status: open
 phase: 1
 updated_at: <ISO_TIMESTAMP>
@@ -155,7 +153,6 @@ gh issue create \
   --body "$(cat <<'EOF'
 <!-- shiplog:
 kind: state
-issue: <NEW_ISSUE>
 status: open
 phase: 3
 updated_at: <ISO_TIMESTAMP>
@@ -187,8 +184,9 @@ EOF
 Cross-reference on the parent:
 ```bash
 gh issue comment <PARENT_ISSUE> --body "<!-- shiplog:
-kind: commit-note
+kind: blocker
 issue: <PARENT>
+status: blocked
 updated_at: <ISO_TIMESTAMP>
 -->
 
@@ -286,7 +284,6 @@ gh pr create --base $BASE_BRANCH \
 <!-- shiplog:
 kind: history
 issue: <ISSUE_NUMBER>
-pr: <PR_NUMBER>
 branch: issue/<ISSUE_NUMBER>-<slug>
 status: resolved
 updated_at: <ISO_TIMESTAMP>
@@ -407,13 +404,13 @@ Target: issue (Full Mode) or `--log` PR (Quiet Mode).
 
 ```markdown
 <!-- shiplog:
-kind: <kind>
+kind: <ENVELOPE_KIND>
 issue: <ID>
 phase: 7
 updated_at: <ISO_TIMESTAMP>
 -->
 
-## [shiplog/<kind>] #<ID>: <brief summary>
+## [shiplog/<tag>] #<ID>: <brief summary>
 
 **Status:** [In progress / Blocked / Approach changed / Milestone reached]
 
@@ -433,7 +430,14 @@ updated_at: <ISO_TIMESTAMP>
 Authored-by: <family>/<version> (<tool>)
 ```
 
-Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`
+Tag-to-kind mapping:
+- `session-start` -> `handoff`
+- `session-resume` -> `state`
+- `milestone` -> `state`
+- `discovery` -> `blocker`
+- `approach-change` -> `state`
+- `blocker` -> `blocker`
+- `session-end` -> `history`
 
 ---
 
