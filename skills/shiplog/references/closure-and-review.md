@@ -256,6 +256,8 @@ Note: Self-review recorded as audit trail. This PR must not merge until an indep
 
 **Self-review is an audit artifact, not a gate-satisfying event.** It exists so the review intent is visible in the timeline, but it confers no merge authorization. There are no exceptions to the independent review requirement.
 
+**Contract requirement:** A self-review artifact MUST include or be immediately followed by a review contract (see "Fallback: Generate a review contract" above). The self-review records intent; the contract enables resolution. Posting a self-review without a contract leaves the PR in a dead-end state where the gate is unsatisfied and no reviewer has the information needed to act.
+
 ### Review completion: default publication
 
 A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
