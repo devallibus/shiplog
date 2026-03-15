@@ -290,9 +290,10 @@ Branches are created in git worktrees by default — one branch, one worktree, o
 
 ## Install
 
-### 1. Cross-platform with `npx skills add`
+### 1. Recommended: install and update with `npx skills`
 
-The fastest verified install path is the Vercel Labs CLI:
+The best default path is the Vercel Labs CLI because it covers Claude Code,
+Codex, and Cursor with one install flow and one update command:
 
 ```bash
 npx skills add devallibus/shiplog --skill shiplog
@@ -306,13 +307,18 @@ npx skills add devallibus/shiplog --skill shiplog --agent codex
 npx skills add devallibus/shiplog --skill shiplog --agent cursor
 ```
 
-Update later with:
+Keep the installed skill current with:
 
 ```bash
 npx skills update
 ```
 
-### 2. Claude Code plugin from a local checkout
+### 2. Fallback install methods
+
+Use these if you specifically want a Claude-only local plugin workflow or do
+not want to use `npx skills`.
+
+#### Claude Code plugin from a local checkout
 
 This repo includes a Claude plugin manifest in `.claude-plugin/plugin.json`.
 To validate and load it from a checkout:
@@ -322,7 +328,7 @@ claude plugins validate .claude-plugin/plugin.json
 claude --plugin-dir .
 ```
 
-### 3. Claude Code skill copy
+#### Claude Code skill copy
 
 If you want the raw skill without the plugin wrapper, copy `skills/shiplog/`
 into Claude Code's skill directory:
@@ -338,11 +344,10 @@ cp -r skills/shiplog .claude/skills/shiplog
 Then invoke with `/shiplog` or let it auto-activate when you create branches,
 issues, or PRs.
 
-### 4. Cursor and generic manual copy
+#### Generic manual copy for Codex, Cursor, and similar tools
 
 If you are not using the `npx skills` flow, you can still install shiplog by
-copying the skill folder into the generic agentskills.io layout used by Codex,
-Cursor, and similar tools:
+copying the skill folder into the generic agentskills.io layout:
 
 ```bash
 cp -r skills/shiplog .agents/skills/shiplog
