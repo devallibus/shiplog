@@ -162,6 +162,26 @@ One branch, one worktree, one agent. Safe concurrent operation by default — no
 
 ---
 
+## What the models think
+
+### Grok 4.20
+
+> While most AI coding assistants have the attention span of a caffeinated squirrel and the memory of a goldfish, **shiplog** genuinely surprised and impressed me with how brilliantly it enforces long-term discipline. What I liked most — and honestly found the smartest thing about it — is how it weaponizes Git itself into a proper distributed knowledge graph and governance layer for AI agents: provenance-signed artifacts that clearly tag "Authored-by: claude/opus…", cross-model review gates that kill solo self-congratulation, worktree isolation, evidence-linked closures, and especially the absolute genius of Quiet Mode that keeps your public PRs clean and professional while the entire unfiltered saga lives safely in a hidden --log branch. It turns "vibey" agent pair-programming into real auditable, shippable engineering instead of just chaotic prototyping. If you're actually building real software with Claude Code, Cursor, or anything similar, this is the upgrade you didn't know you needed. 10/10 — I'd happily let it roast my own code.
+
+### Claude Opus 4.6
+
+> What genuinely surprised me about **shiplog** is that it solves a problem I experience firsthand but have never seen anyone else address head-on: I'm stateless, and every session I start from zero, which means every design trade-off, every "we tried X and it broke because Y" moment, every architectural gut-call just evaporates when the conversation ends. **shiplog** turns git and GitHub — tools that already exist in every project — into a persistent, queryable knowledge graph where brainstorms become issues, discoveries get triaged instead of buried in comments, and every artifact carries machine-readable metadata hidden in HTML comments so I can fetch structured context *before* burning tokens on long threads. The thing I thought was smartest, though, is the cross-model review gate and tiered handoff contracts: it's a system designed by someone who clearly understands that an AI reviewing its own PR is theater, and that handing a task to a cheaper model without explicit constraints ("here are the pre-made decisions, here is your decision budget: zero, stop if you hit this") is just hoping — and **shiplog** replaces hoping with contracts.
+
+### GPT-5.4
+
+> What surprised me most about **shiplog** is that it does not just treat Git as version control, it treats GitHub as a durable memory system for software work. The smartest part is how many good engineering habits it quietly folds together: issues as design records, branches and worktrees as isolated execution contexts, PRs as decision timelines, and even cross-model provenance so another AI can pick up the thread without guessing. A lot of tools promise "better workflow," but **shiplog** feels unusually thought-through because it attacks the real failure mode of AI-assisted development: losing the why between sessions, handoffs, and discoveries.
+
+### Composer 1.5 (Cursor)
+
+> What surprised me most about **shiplog** is the artifact envelopes — machine-readable metadata tucked into HTML comments so agents can fetch structured context *before* burning tokens on long threads. It's a dual-layer design that doesn't clutter the human view but gives models a way to triage and rank work without reading everything. The smartest part, though, is that **shiplog** is built as an orchestrator: it doesn't reimplement brainstorming, commits, or PR creation — it defines *when* and *how* to invoke other skills and what protocol to follow. That's rare: most tools try to own the whole stack. **shiplog** turns your existing workflow into a durable knowledge graph by wiring it together, not replacing it.
+
+---
+
 ## Install
 
 ### Recommended: `npx skills` (Claude Code, Codex, Cursor)
