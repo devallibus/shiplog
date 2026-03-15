@@ -8,7 +8,7 @@ Machine-readable metadata for low-token retrieval of shiplog artifacts. Human-fa
 
 - **Human layer unchanged.** Semantic tags (`[shiplog/plan]`, `[shiplog/discovery]`) and prose remain the primary interface for people scanning the repo.
 - **Machine layer is hidden.** Envelopes live in HTML comments so they never clutter rendered markdown.
-- **Selective retrieval.** Agents fetch envelope metadata first, then read the full body only when needed Ã¢â‚¬â€ reducing token cost on long threads.
+- **Selective retrieval.** Agents fetch envelope metadata first, then read the full body only when needed — reducing token cost on long threads.
 - **Complementary to naming conventions.** The ID-first naming convention (see SKILL.md) handles discovery; envelopes handle selective retrieval once the artifact is found.
 
 ---
@@ -36,7 +36,7 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|
-| `kind` | yes | string | Artifact kind from the canonical vocabulary (see Ã‚Â§2) |
+| `kind` | yes | string | Artifact kind from the canonical vocabulary (see §2) |
 | `issue` | yes* | integer | Linked issue number. *Required unless the artifact is issue-independent. |
 | `pr` | no | integer | Linked PR number, when the artifact lives on or references a PR |
 | `branch` | no | string | Associated branch name |
@@ -47,7 +47,7 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 | `updated_by` | no | string | Latest material editor of this artifact when it was edited in place |
 | `edit_kind` | no | string | Edit classification: `correction`, `amendment`, `rewrite`, or `cosmetic` |
 | `amends` | no | string | Reference to the earlier artifact this one corrects or clarifies without replacing |
-| `supersedes` | no | string | Reference to the artifact this one replaces (see Ã‚Â§3) |
+| `supersedes` | no | string | Reference to the artifact this one replaces (see §3) |
 | `superseded_by` | no | string | Back-pointer added to the older artifact when superseded |
 | `readiness` | no | string | Triage signal: `ready`, `blocked`, `needs-design`, `in-progress`, or `done` |
 | `task_count` | no | integer | Total number of tasks in the issue body |
@@ -68,10 +68,10 @@ Use triage fields on issue-body `state` envelopes so agents can rank work withou
 
 ### Normalization rules
 
-- **Issue/PR numbers:** bare integers, no `#` prefix Ã¢â‚¬â€ e.g., `issue: 42` not `issue: #42`.
-- **Branch names:** full branch name Ã¢â‚¬â€ e.g., `branch: issue/42-auth-middleware`.
-- **Timestamps:** ISO 8601 with timezone Ã¢â‚¬â€ e.g., `2026-03-14T12:00:00Z`.
-- **`updated_by`:** normalized like the signature body without the role prefix Ã¢â‚¬â€ e.g., `openai/gpt-5.4 (codex, effort: high)`.
+- **Issue/PR numbers:** bare integers, no `#` prefix — e.g., `issue: 42` not `issue: #42`.
+- **Branch names:** full branch name — e.g., `branch: issue/42-auth-middleware`.
+- **Timestamps:** ISO 8601 with timezone — e.g., `2026-03-14T12:00:00Z`.
+- **`updated_by`:** normalized like the signature body without the role prefix — e.g., `openai/gpt-5.4 (codex, effort: high)`.
 - **`edit_kind`:** use `correction` for factual or signature fixes, `amendment` for clarifications that preserve the original event, `rewrite` for substantial in-place rewrites, and `cosmetic` only when recording a non-semantic cleanup intentionally.
 - **Amendment/supersession references:** use the same `<artifact-location>#<kind>` format for `amends`, `supersedes`, and `superseded_by`.
 - **Supersession references:** `<artifact-location>#<kind>` - e.g., `issue/42#state` or `pr/55#verification`. See Section 3 for resolution.
@@ -116,21 +116,21 @@ updated_at: 2026-03-14T14:30:00Z
 
 ### Per-kind guidance
 
-**`state`** Ã¢â‚¬â€ Write or refresh when the issue/PR status materially changes (e.g., blocked Ã¢â€ â€™ in-progress, approach changed). Include `status` field. Previous `state` envelopes become historical.
+**`state`** — Write or refresh when the issue/PR status materially changes (e.g., blocked → in-progress, approach changed). Include `status` field. Previous `state` envelopes become historical.
 
-**`handoff`** Ã¢â‚¬â€ Write at tier transitions or tool switches. Include `phase` field. Each handoff is a distinct event in the timeline.
+**`handoff`** — Write at tier transitions or tool switches. Include `phase` field. Each handoff is a distinct event in the timeline.
 
-**`verification`** Ã¢â‚¬â€ Write after running tests, completing a review, or producing evidence. Include `profile` field when a verification profile is active.
+**`verification`** — Write after running tests, completing a review, or producing evidence. Include `profile` field when a verification profile is active.
 
-**`commit-note`** Ã¢â‚¬â€ Write for significant commits. The human-facing `[shiplog/commit-note]` heading carries the reasoning; the envelope adds machine-parseable metadata.
+**`commit-note`** — Write for significant commits. The human-facing `[shiplog/commit-note]` heading carries the reasoning; the envelope adds machine-parseable metadata.
 
-**`review-handoff`** Ã¢â‚¬â€ Write when requesting or completing a PR review. Distinct from `handoff` (tier/tool switch) Ã¢â‚¬â€ this is specifically about code review.
+**`review-handoff`** — Write when requesting or completing a PR review. Distinct from `handoff` (tier/tool switch) — this is specifically about code review.
 
-**`amendment`** Ã¢â‚¬â€ Write when a later model materially corrects, clarifies, or annotates an existing signed artifact without silently erasing the prior text. Include `amends` for additive corrections; include `supersedes` if the amendment becomes the new canonical replacement.
+**`amendment`** — Write when a later model materially corrects, clarifies, or annotates an existing signed artifact without silently erasing the prior text. Include `amends` for additive corrections; include `supersedes` if the amendment becomes the new canonical replacement.
 
-**`blocker`** Ã¢â‚¬â€ Write when something blocks progress. Supersedes the previous blocker if the blocking condition changes. Include `status: blocked`.
+**`blocker`** — Write when something blocks progress. Supersedes the previous blocker if the blocking condition changes. Include `status: blocked`.
 
-**`history`** Ã¢â‚¬â€ Write when summarizing a completed journey (e.g., PR body timeline, session-end recap). Useful for future retrieval queries.
+**`history`** — Write when summarizing a completed journey (e.g., PR body timeline, session-end recap). Useful for future retrieval queries.
 
 ### Relationship to semantic tags
 
@@ -166,7 +166,7 @@ For **latest-wins** kinds (`state`, `blocker`, `history`), the most recent artif
 When a newer artifact intentionally replaces an older one, the author SHOULD add:
 
 - `supersedes: issue/42#state` on the new artifact.
-- `superseded_by: issue/42#state@2026-03-14T15:00:00Z` on the old artifact (best-effort Ã¢â‚¬â€ editing old comments may not always be practical).
+- `superseded_by: issue/42#state@2026-03-14T15:00:00Z` on the old artifact (best-effort — editing old comments may not always be practical).
 
 The `@timestamp` suffix disambiguates when multiple artifacts of the same kind exist.
 
@@ -178,7 +178,7 @@ The `@timestamp` suffix disambiguates when multiple artifacts of the same kind e
 
 ### When markers are absent
 
-If no explicit `supersedes` marker exists, agents fall back to timestamp ordering. This is the expected common case Ã¢â‚¬â€ explicit markers are for clarity, not enforcement.
+If no explicit `supersedes` marker exists, agents fall back to timestamp ordering. This is the expected common case — explicit markers are for clarity, not enforcement.
 
 ### Conflict resolution
 
@@ -201,21 +201,21 @@ Superseded artifacts are historical, not deleted. They remain in the thread for 
 When loading context for an issue or PR, agents should follow this priority:
 
 ```
-1. Discover Ã¢â‚¬â€ find the issue/PR by naming convention or search
+1. Discover — find the issue/PR by naming convention or search
    gh issue list --search "#42"
    gh pr list --search "#42"
 
-2. Envelope scan Ã¢â‚¬â€ fetch shiplog-typed artifacts first
+2. Envelope scan — fetch shiplog-typed artifacts first
    Look for <!-- shiplog: ... --> blocks in:
-   - Issue/PR body (always check first Ã¢â‚¬â€ state envelopes often live here)
+   - Issue/PR body (always check first — state envelopes often live here)
    - Comments (scan for envelope prefix)
 
-3. Prefer structured Ã¢â‚¬â€ for current state, use latest-wins envelopes
-   - Latest `state` envelope Ã¢â€ â€™ current status
-   - Latest `blocker` envelope Ã¢â€ â€™ current blockers
-   - Latest `history` envelope Ã¢â€ â€™ journey summary
+3. Prefer structured — for current state, use latest-wins envelopes
+   - Latest `state` envelope → current status
+   - Latest `blocker` envelope → current blockers
+   - Latest `history` envelope → journey summary
 
-4. Fall back Ã¢â‚¬â€ read unstructured prose only when envelopes are insufficient
+4. Fall back — read unstructured prose only when envelopes are insufficient
    - Discussion comments without envelopes
    - Older timeline entries for historical context
 ```
@@ -230,7 +230,7 @@ gh issue view 42 --json body,comments --jq '
 '
 ```
 
-**Find all state envelopes (apply Ã‚Â§3 resolution to select current):**
+**Find all state envelopes (apply §3 resolution to select current):**
 ```bash
 gh issue view 42 --json body,comments --jq '
   [.body, .comments[].body]
@@ -238,7 +238,7 @@ gh issue view 42 --json body,comments --jq '
 '
 ```
 > The result is a candidate set, not a final answer. Agents must apply the
-> supersession rules from Ã‚Â§3: sort by `updated_at` descending, prefer entries
+> supersession rules from §3: sort by `updated_at` descending, prefer entries
 > with explicit `supersedes` markers, and use the first result as current.
 > Do not assume comment order equals logical currency.
 
@@ -300,7 +300,7 @@ updated_at: 2026-03-14T14:00:00Z
 
 ## [shiplog/session-start] #42: Implementation handoff
 
-**Tier transition:** tier-1 Ã¢â€ â€™ tier-3
+**Tier transition:** tier-1 → tier-3
 [Human-readable handoff content follows...]
 ```
 

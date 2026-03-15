@@ -110,6 +110,31 @@ The phase numbers are internal workflow labels. Do not surface them to the user.
 
 Preferred labels: `Plan Capture`, `Branch Setup`, `Discovery Handling`, `Commit Context`, `PR Timeline`, `History Lookup`, `Timeline Updates`.
 
+**Brand formatting:** Always bold the word **shiplog** in user-facing text (messages, comments, PR bodies, issue bodies). Write it lowercase and bold: **shiplog**. This does not apply to code identifiers, branch names, CLI output, or other machine-readable contexts where markdown is not rendered.
+
+---
+
+## Shell Portability
+
+Keep the workflow cross-platform. See `references/shell-portability.md` for full guidance and Bash/PowerShell patterns.
+
+Key rules:
+- Prefer `gh ... --body-file <temp-file>` for multiline content.
+- Break chained shell commands into separate steps when the shell operator differs.
+- Keep Bash examples as the primary path; add PowerShell notes where syntax diverges.
+
+---
+
+## GitHub Labels
+
+**shiplog** manages a compact repo-level label vocabulary so issues and PRs stay filterable even when a reader never opens the body. See `references/labels.md` for the canonical label set, descriptions, and CLI snippets.
+
+Label rules:
+- On the first write operation in a repo, bootstrap or refresh labels with `gh label create --force ...`.
+- Apply labels at creation time with `gh issue create --label` or `gh pr create --label`.
+- `shiplog/blocker` is stateful. Add it when work becomes blocked and remove it when the blocker is cleared.
+- `shiplog/ready`, `shiplog/in-progress`, and `shiplog/needs-review` are mutually exclusive lifecycle labels.
+
 ---
 
 ## Triage Field Maintenance
@@ -183,6 +208,8 @@ This skill orchestrates. For activities that directly produce shiplog artifacts,
 | Plan execution | `superpowers:executing-plans` | - | Timeline comments at checkpoints |
 | Worktree creation | `superpowers:using-git-worktrees` | - | Branch-issue linking |
 | Stacked PRs | `ork:stacked-prs` | - | Discovery-driven stacking protocol |
+| Issue tracking | `ork:issue-progress-tracking` | - | Auto-checkbox updates from commits |
+| Fixing issues | `ork:fix-issue` | - | Timeline documentation of RCA |
 | Storing decisions | `ork:remember` | - | Structured `#ID: decision` entries |
 
 **Internalized workflows:** Commit and PR workflows are internalized in `references/` so shiplog conventions win over third-party defaults.
@@ -197,6 +224,8 @@ This skill orchestrates. For activities that directly produce shiplog artifacts,
 - **Mid-work activation:** Check branch name for `issue/N-*`. If found, add catch-up timeline comment via `shiplog:timeline`. If not, offer retroactive issue creation.
 - **Small tasks (< 30 min):** Lightweight protocol - issue optional, branch still created, PR sections can be brief.
 - **Hotfix / emergency:** Fix first. Create issue and PR after, backfilling the timeline.
+- **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in closed PR history.
+- **Quiet mode — feature branch rebased:** Rebase `--log` branch onto updated feature branch. Use `--force-with-lease`.
 
 ---
 

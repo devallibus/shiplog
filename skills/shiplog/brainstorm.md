@@ -19,7 +19,7 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
    - **External claims** about third-party tools, URLs, APIs, platform capabilities must be verified against primary sources before they are stated as facts.
    - If an external claim cannot be verified yet, keep it explicitly marked as `[unverified]` and treat it as a hypothesis, not settled input.
 
-3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet â€” the feature branch does not exist until branch setup. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created.
+3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until branch setup. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created.
 
 4. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
 
@@ -52,7 +52,7 @@ updated_at: <ISO_TIMESTAMP>
 
 ## Design Summary
 
-[Key decisions from the brainstorm â€” 3-5 bullet points]
+[Key decisions from the brainstorm — 3-5 bullet points]
 
 ## Approach
 
@@ -103,10 +103,10 @@ using only the information in that task block, without reading the rest of this 
 
 Task ID rules:
 - Every task carries a local ID: `T1`, `T2`, `T3`, etc.
-- IDs are scoped to the issue â€” `T1` in issue #42 is `#42/T1` globally.
+- IDs are scoped to the issue — `T1` in issue #42 is `#42/T1` globally.
 - Commits referencing a task use: `<type>(#<id>/<Tn>): <msg>`.
 - `[tier-3]` tasks MUST be executable without creative judgment.
-- `[tier-1]` tasks require reasoning â€” include **Why tier-1**.
+- `[tier-1]` tasks require reasoning — include **Why tier-1**.
 
 ## Open Questions
 

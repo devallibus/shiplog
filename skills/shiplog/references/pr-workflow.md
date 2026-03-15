@@ -99,7 +99,7 @@ Check whether this PR fully resolves the issue or is a partial delivery.
 
 ## Step 4: Create the PR
 
-Use the shiplog PR timeline template from `phase-templates.md`. The PR body must include:
+Use the shiplog PR timeline template from `../pr.md`. The PR body must include:
 
 1. Envelope metadata (`<!-- shiplog: ... -->`)
 2. Summary
@@ -166,7 +166,7 @@ Do not merge without a review sign-off unless the user explicitly overrides.
 For Quiet Mode, the feature PR is clean (no shiplog content). The `--log` PR carries all the timeline documentation.
 
 1. Create the feature PR with the team's standard template.
-2. Add a final `[shiplog/review-handoff]` comment to the `--log` PR (see `phase-templates.md`).
+2. Add a final `[shiplog/review-handoff]` comment to the `--log` PR (see `../pr.md`).
 3. Keep the `--log` PR labels current: `shiplog/worklog`, `shiplog/quiet-mode`, `shiplog/issue-driven`.
 
 ---

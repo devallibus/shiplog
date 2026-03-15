@@ -16,7 +16,7 @@ Do not close an issue without linked evidence and a verification note.
 |---------------|-------------|
 | Commit URL on default branch | The fix is a code change that has been merged |
 | Merged PR URL | The fix is better represented by the full PR |
-| Discussion or decision artifact | No code change ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the issue was resolved by a decision, policy change, or external action |
+| Discussion or decision artifact | No code change — the issue was resolved by a decision, policy change, or external action |
 
 **Preference order:** Commit on default branch > merged PR > discussion artifact. Use the most specific link available.
 
@@ -29,7 +29,7 @@ Every closure must include a comment (or be closed via PR body `Closes #N` with 
 
 **Evidence:** [URL to commit, PR, or decision artifact]
 **Merged to default branch:** yes | no | n/a
-**Verification:** [1-3 sentences ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â why this evidence satisfies the issue]
+**Verification:** [1-3 sentences — why this evidence satisfies the issue]
 **Disposition:** fully resolved | superseded by #<N> | won't fix (reason)
 ```
 
@@ -162,14 +162,14 @@ Every review comment must include a structured sign-off block:
 ```
 Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | request-changes
-Scope: <what was reviewed ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â e.g., "full diff", "SKILL.md + artifact-envelopes.md">
+Scope: <what was reviewed — e.g., "full diff", "SKILL.md + artifact-envelopes.md">
 ```
 
 **Example:**
 ```
 Reviewed-by: claude/sonnet-4 (claude-code)
 Disposition: approve
-Scope: full diff ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â references/artifact-envelopes.md structure, SKILL.md pointer
+Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
 ```
 
 This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
@@ -206,13 +206,13 @@ When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for
 
 1. List open PRs on the repository.
 2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` or `Updated-by:` line, or a newer linked commit-note / handoff / amendment artifact) and any existing `Reviewed-by:` sign-offs.
-3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â it is the anti-pattern this protocol exists to prevent.
+3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
 4. **Review PRs where the latest activity is from a different model.** These are candidates for cross-model review.
 5. If all open PRs were last touched by the current model, inform the user:
    > "All open PRs were last touched by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
 6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
 
-**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see Ãƒâ€šÃ‚Â§4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â it will miss most AI-operated reviews.
+**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see §4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone — it will miss most AI-operated reviews.
 
 **What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` or `Updated-by:` artifact associated with the work, or a newer amendment artifact, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog provenance lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
 
@@ -249,9 +249,9 @@ If spawning is unavailable, generate a self-contained review contract for the us
 ```markdown
 ## Review Contract
 
-**PR:** #<N> ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â <title>
+**PR:** #<N> — <title>
 **Author:** <model name> (<tool>)
-**Branch:** <branch> ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ <base>
+**Branch:** <branch> → <base>
 **Diff command:** `gh pr diff <N>`
 
 ### What to review
@@ -279,11 +279,11 @@ When cross-model review is genuinely unavailable (single-tool environment, urgen
 
 1. The author signs a self-review clearly marked as non-satisfying.
 2. The sign-off explicitly states that independent review is still required.
-3. The PR stays open ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â merge is blocked until an independent reviewer approves.
+3. The PR stays open — merge is blocked until an independent reviewer approves.
 
 ```
 Reviewed-by: claude/opus-4.6 (claude-code)
-Disposition: self-review (does NOT satisfy gate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â independent review required)
+Disposition: self-review (does NOT satisfy gate — independent review required)
 Scope: full diff
 Note: Self-review recorded as audit trail. This PR must not merge until an independent cross-model review is completed.
 ```
@@ -294,7 +294,7 @@ Note: Self-review recorded as audit trail. This PR must not merge until an indep
 
 ### Review completion: default publication
 
-A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the canonical artifact must be durable and visible on the PR timeline.
+A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
 
 **Default behavior:** After completing the review analysis and summarizing findings to the user, post the signed review artifact on the PR. Then link the posted comment in the user-facing response.
 
@@ -308,7 +308,7 @@ Unless one of these exceptions applies, publication is the assumed completion st
 
 1. Report the blocker to the user immediately.
 2. Provide the exact signed review artifact text in the chat response so the user can post it manually or the agent can retry later.
-3. Do not mark the review as complete ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â note that publication is pending.
+3. Do not mark the review as complete — note that publication is pending.
 4. On next opportunity, retry posting the artifact or confirm the user has posted it.
 
 The signed artifact text is the deliverable. GitHub publication is the delivery mechanism. When the mechanism fails, preserve the deliverable intact and make the failure visible.
@@ -342,7 +342,7 @@ Reviewers must check whether failed attempts, hidden dependencies, risky workaro
 ### After merge
 
 1. Verify the linked issue(s) are closed (GitHub auto-close via `Closes #N`, or manual closure with evidence).
-2. If manual closure is needed, use the closure comment format from Ãƒâ€šÃ‚Â§1.
+2. If manual closure is needed, use the closure comment format from §1.
 3. Post a verification note if the auto-close does not carry sufficient evidence context.
 
 ---
@@ -368,4 +368,4 @@ Commit context comments do not require cross-model review. The review gate appli
 When a PR merges and auto-closes issues via `Closes #N`:
 - The merged PR is the evidence.
 - If the PR body contains a clear evidence table or summary, no additional closure comment is needed.
-- If the relationship between the PR and the issue is non-obvious, add a closure comment per Ãƒâ€šÃ‚Â§1.
+- If the relationship between the PR and the issue is non-obvious, add a closure comment per §1.

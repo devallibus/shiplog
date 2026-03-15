@@ -122,7 +122,7 @@ git log -1 --stat
 
 ## When to add a timeline comment
 
-After committing, decide whether to post a commit-context comment on the issue (Full Mode) or `--log` PR (Quiet Mode). See the commit context template in `phase-templates.md`.
+After committing, decide whether to post a commit-context comment on the issue (Full Mode) or `--log` PR (Quiet Mode). See the commit context template in `../commit.md`.
 
 **Add a context comment when:**
 - Significant new functionality lands
