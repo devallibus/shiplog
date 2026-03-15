@@ -86,6 +86,7 @@ The four fields above (`readiness`, `task_count`, `tasks_complete`, `max_tier`) 
 - **Triage integers:** bare integers — e.g., `task_count: 3` not `task_count: "3"`.
 - **`readiness`:** one of the five canonical values. Do not invent new values.
 - **`max_tier`:** one of `tier-1`, `tier-2`, `tier-3`. Omit when all tasks are complete.
+- **Line endings:** GitHub API responses may use `\r\n` on Windows. Agents MUST normalize to `\n` before parsing envelopes (e.g., `body.replace('\r\n', '\n')`).
 - **Unknown fields:** agents MUST ignore fields they do not recognize. This preserves forward compatibility as the schema evolves.
 
 ### Minimal envelope
