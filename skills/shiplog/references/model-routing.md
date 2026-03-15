@@ -133,7 +133,7 @@ Not all tools support agent-initiated mode switching. Where unavailable, mode ro
 | Tool | Agent can self-switch? | Activation | Fallback |
 |------|----------------------|------------|----------|
 | **Claude Code** | Yes | The agent can invoke `exit_plan_mode` to enter plan-mode workflow. Auto Plan Mode can be configured via `--append-system-prompt`. | N/A — self-switch available |
-| **Codex CLI** | Not yet | Pending [openai/codex#11180](https://github.com/openai/codex/issues/11180). User switches with `/plan` or `Shift+Tab`. | Advisory prompt — ask the user to switch |
+| **Codex CLI** | Not yet | Pending [openai/codex#11180](https://github.com/openai/codex/issues/11180). No documented user-initiated mode switch yet. | Advisory prompt — ask the user to switch |
 | **Cursor** | No | User switches with `Shift+Tab`. Plan Mode, Ask Mode, and Agent Mode are user-controlled. | Advisory prompt — ask the user to switch |
 
 ### Mode routing behavior
@@ -151,7 +151,7 @@ A mode advisory is emitted when the entering phase's recommended mode differs fr
 [shiplog routing] Entering <Phase Name> — recommends tier-X (<profile>), plan mode.
 Switch to plan mode before proceeding.
   Claude Code: agent will enter plan mode automatically.
-  Codex: type /plan or press Shift+Tab.
+  Codex: switch to plan mode if your tool supports it (no documented mechanism yet).
   Cursor: press Shift+Tab to select Plan Mode.
 Continue? (y / or switch first)
 ---
