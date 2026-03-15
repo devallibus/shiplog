@@ -4,6 +4,23 @@ Route AI models to shiplog phases based on cognitive demand. The skill cannot sw
 
 ---
 
+## Phase Entry Check (Step 0)
+
+Every phase begins with this check:
+
+1. Read routing mode from per-issue override > `.shiplog/routing.md` > default (`confirm`).
+2. If work is transferring to another model/tool, write a handoff comment per the Context Handoff Protocol below.
+3. If mode is `off`, skip to Step 1 — but if the tool supports agent-initiated mode switching (Claude Code) and the phase recommends plan mode, enter plan mode silently.
+4. Compare the entering phase's tier and recommended mode to the previous phase's tier and mode. If both are the same, skip to Step 1.
+5. If mode is `confirm`: emit the routing prompt (including mode advisory when the recommended mode changes) and wait for user acknowledgment.
+6. If mode is `warn`: emit the routing banner (including mode advisory) and continue immediately.
+
+**Mode self-switching:** When the entering phase recommends plan mode and the tool supports self-switching (Claude Code), the agent enters plan mode at phase start regardless of routing config. This is a safety measure, not an advisory.
+
+**Routing mismatch:** If the user continues without switching models or modes, proceed normally. Never block or repeat the prompt.
+
+---
+
 ## Routing Behavior
 
 Configure how the skill communicates tier transitions. Set in `.shiplog/routing.md`.

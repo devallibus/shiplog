@@ -174,6 +174,25 @@ Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointe
 
 This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
 
+### Review sign-off comment template
+
+When posting a review as a GitHub comment, wrap the sign-off in an envelope:
+
+```markdown
+<!-- shiplog:
+kind: verification
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+updated_at: <ISO_TIMESTAMP>
+-->
+
+Reviewed-by: <family>/<version> (<tool>)
+Disposition: approve | request-changes
+Scope: <what was reviewed>
+```
+
+See `references/signing.md` for the full signing protocol.
+
 ### What constitutes "different model"
 
 - Different model family (e.g., Opus vs Sonnet, GPT-5 vs Claude).
