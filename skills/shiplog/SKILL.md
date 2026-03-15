@@ -196,25 +196,28 @@ Roles: `Authored-by`, `Updated-by`, `Reviewed-by`. See `references/signing.md` f
 
 ## Integration Map
 
-This skill orchestrates. For activities that directly produce shiplog artifacts, convention-enforced workflows are internalized in `references/`.
+This skill ORCHESTRATES. For activities that directly produce shiplog artifacts (commits, PRs), convention-enforced workflows are internalized in `references/`. For other activities, shiplog delegates to external skills.
 
 | Activity | Primary | External (optional) | Shiplog Adds |
 |----------|---------|---------------------|--------------|
 | Committing | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, context comments |
-| Creating PRs | `references/pr-workflow.md` | `ork:create-pr` | Timeline body, envelopes, labels, review gate |
+| Creating PRs | `references/pr-workflow.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate |
 | Finishing branches | `references/pr-workflow.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
-| Brainstorming | `superpowers:brainstorming` or `ork:brainstorming` | - | Issue creation from output |
-| Planning | `superpowers:writing-plans` | - | Issue task list mirroring |
-| Plan execution | `superpowers:executing-plans` | - | Timeline comments at checkpoints |
-| Worktree creation | `superpowers:using-git-worktrees` | - | Branch-issue linking |
-| Stacked PRs | `ork:stacked-prs` | - | Discovery-driven stacking protocol |
-| Issue tracking | `ork:issue-progress-tracking` | - | Auto-checkbox updates from commits |
-| Fixing issues | `ork:fix-issue` | - | Timeline documentation of RCA |
-| Storing decisions | `ork:remember` | - | Structured `#ID: decision` entries |
+| Brainstorming | `superpowers:brainstorming` or `ork:brainstorming` | — | Issue creation from output |
+| Planning | `superpowers:writing-plans` | — | Issue task list mirroring |
+| Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
+| Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
+| Stacked PRs | `ork:stacked-prs` | — | Discovery-driven stacking protocol |
+| Issue tracking | `ork:issue-progress-tracking` | — | Auto-checkbox updates from commits |
+| Fixing issues | `ork:fix-issue` | — | Timeline documentation of RCA |
+| Storing decisions | `ork:remember` | — | Structured `#ID: decision` entries |
+| Model routing | Built-in | — | Phase entry check (Step 0), routing prompts, handoffs |
 
-**Internalized workflows:** Commit and PR workflows are internalized in `references/` so shiplog conventions win over third-party defaults.
+**Internalized workflows:** Commit and PR workflows are internalized in `references/` to enforce shiplog conventions (ID-first naming, provenance signing, envelope metadata, review gates). External skills may be used alongside for their non-convention features (validation agents, security scanning), but shiplog's conventions take precedence. See `LICENSES/` for attribution of the original skill sources.
 
-**Graceful degradation:** Internalized workflow -> external skill -> direct `gh`/`git` commands.
+**Graceful degradation:** Internalized workflow → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
+
+**Conflict avoidance:** This skill sets the WORKFLOW context. External skills provide IMPLEMENTATION helpers. Shiplog's internalized conventions always take precedence for artifact format, signing, labels, and review gates.
 
 ---
 
@@ -235,6 +238,32 @@ This skill orchestrates. For activities that directly produce shiplog artifacts,
 |-----------|---------|---------|
 | `gh` CLI | GitHub issue/PR/comment operations | `brew install gh` / `winget install GitHub.cli` |
 | `git` | Branch, commit, diff, log | Pre-installed |
-| GitHub remote | Must be in a git repo with GitHub remote | - |
+| GitHub remote | Must be in a git repo with GitHub remote | — |
 
-All recommended skills are optional. Internalized workflows live in `references/`; external skills remain optional enhancements.
+All recommended skills are optional. The current optional integrations are listed below. Without them, shiplog falls back to direct `gh`/`git` commands.
+
+### Internalized Workflows
+
+These workflows are built into shiplog's `references/` and enforce conventions directly. No external plugin required.
+
+| Workflow | Reference | Replaces |
+|----------|-----------|----------|
+| Commit conventions | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` |
+| PR creation conventions | `references/pr-workflow.md` | `ork:create-pr`, `superpowers:finishing-a-development-branch` |
+
+### Optional External Skills
+
+These skills enhance shiplog but are not required. Shiplog's conventions take precedence when both are active.
+
+| Skill | Plugin | What It Adds |
+|-------|--------|-------------|
+| `ork:commit` | OrchestKit | Pre-commit validation (lint, type-check) |
+| `ork:create-pr` | OrchestKit | Parallel validation agents (security, tests, quality) |
+| `ork:stacked-prs` | OrchestKit | Stacked PR mechanics and management |
+| `ork:issue-progress-tracking` | OrchestKit | Auto-checkbox updates from commits |
+| `ork:remember` / `ork:memory` | OrchestKit | Knowledge graph storage and retrieval |
+| `ork:brainstorming` | OrchestKit | Parallel agent brainstorming |
+| `superpowers:brainstorming` | Superpowers | Design-first brainstorming workflow |
+| `superpowers:using-git-worktrees` | Superpowers | Isolated workspace creation |
+| `superpowers:writing-plans` | Superpowers | Structured plan documents |
+| `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
