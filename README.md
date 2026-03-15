@@ -237,6 +237,35 @@ For local iteration without reinstalling after every change.
 - `git` — in a repo with a GitHub remote
 - That's it. Everything else is optional.
 
+## Slash Commands
+
+Invoke specific **shiplog** operations directly instead of loading the full skill:
+
+| Command | What It Does |
+|---------|-------------|
+| `/shiplog hunt` | Scan open issues and PRs, rank by readiness, recommend what to work on next |
+| `/shiplog plan <description>` | Brainstorm a feature and capture it as a GitHub Issue (Phase 1) |
+| `/shiplog start <issue-number>` | Create a branch and worktree from an issue, start a work session (Phase 2) |
+| `/shiplog commit` | Commit with ID-first convention and optional context comment (Phase 4) |
+| `/shiplog pr` | Create a PR with a journey timeline body (Phase 5) |
+| `/shiplog lookup <query>` | Search across issues, PRs, commits, and memory (Phase 6) |
+| `/shiplog models` | Configure model-tier routing for phase transitions |
+| `/shiplog resume` | Resume a work session on the current branch |
+
+Commands are lightweight entry points — each one gathers context and executes a focused workflow. The full `/shiplog` skill remains available for auto-activation.
+
+### Installing Commands
+
+Commands are installed automatically with the plugin. For manual installs, copy the commands directory:
+
+```bash
+# Global (all projects)
+cp -r commands/shiplog ~/.claude/commands/shiplog
+
+# Or project-local
+cp -r commands/shiplog .claude/commands/shiplog
+```
+
 ## Configuration
 
 | File | Purpose |
