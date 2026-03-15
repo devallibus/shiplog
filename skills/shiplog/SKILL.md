@@ -173,6 +173,8 @@ Preferred labels: `Plan Capture` (1), `Branch Setup` (2), `Discovery Handling` (
 
 Use descriptive status language: `capturing the plan`, `creating the branch`, `implementing the change`, `documenting the commit`, `opening the PR`.
 
+**Brand formatting:** Always bold the word **shiplog** in user-facing text (messages, comments, PR bodies, issue bodies). Write it lowercase and bold: **shiplog**. This does not apply to code identifiers, branch names, CLI output, or other machine-readable contexts where markdown is not rendered.
+
 ---
 
 ## Shell Portability
