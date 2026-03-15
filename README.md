@@ -33,6 +33,7 @@ shiplog fixes this by making your git history the single source of truth — not
 | [Verification Profiles](#verification-profiles) | Configurable testing policies: behavior-spec, red-green, structural, mutation |
 | [Artifact Envelopes](#artifact-envelopes) | Machine-readable metadata for low-token agent retrieval |
 | [Agent Identity Signing](#agent-identity-signing) | Provenance tracking on every artifact — who wrote it, which model, which tool |
+| [GitHub Labels](#github-labels) | Shiplog bootstraps and applies a compact label vocabulary to issues and PRs |
 | [Discovery Protocol](#discovery-protocol) | Mid-work findings get tracked as stacked PRs or new issues, never lost |
 | [ID-First Convention](#id-first-convention) | Every artifact keyed by `#ID` — one search finds everything |
 | [Shell Portability](#shell-portability) | Full Bash and PowerShell support, cross-platform from day one |
@@ -239,6 +240,24 @@ gh pr list --search "#42" --state all       # PRs
 git log --all --oneline --grep="#42"         # commits
 ```
 
+## GitHub Labels
+
+shiplog also manages a compact repository label vocabulary so work stays filterable at a glance, even before anyone opens the issue or PR body.
+
+The skill bootstraps labels on first write, applies them at creation time, and backfills them when the mapping is obvious from shiplog conventions like `[shiplog/plan]`, `[shiplog/discovery]`, `Closes #<N>`, or Quiet Mode `--log` branches.
+
+The built-in label set is:
+- `shiplog/plan`
+- `shiplog/discovery`
+- `shiplog/blocker`
+- `shiplog/worklog`
+- `shiplog/history`
+- `shiplog/verification`
+- `shiplog/stacked`
+- `shiplog/issue-driven`
+- `shiplog/quiet-mode`
+
+`shiplog/blocker` is stateful: add it when progress is blocked, remove it when the blocker clears.
 ## Shell Portability
 
 shiplog is cross-platform from day one. All templates and commands work on both Bash (macOS/Linux) and PowerShell (Windows). The key pattern: use `gh ... --body-file <temp-file>` for multiline content instead of inline heredocs.
