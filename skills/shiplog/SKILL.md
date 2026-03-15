@@ -285,7 +285,7 @@ Discovery made during work
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`. When a commit addresses a specific task, include the task ID: `<type>(#<issue-id>/<Tn>): <description>`.
+1. **Create the commit.** Follow the commit workflow in `references/commit-workflow.md`. Format: `<type>(#<issue-id>): <description>`. When a commit addresses a specific task, include the task ID: `<type>(#<issue-id>/<Tn>): <description>`. External commit skills (`ork:commit`, `commit-commands:commit`) may be used for convenience, but the conventions in the commit workflow reference take precedence.
 
 2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
 
@@ -301,7 +301,7 @@ Discovery made during work
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-1. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
+1. **Pre-PR checks.** Follow the PR workflow in `references/pr-workflow.md`. External PR skills (`ork:create-pr`, `superpowers:finishing-a-development-branch`) may be used for their validation features (security scanning, test coverage), but the conventions in the PR workflow reference take precedence for PR title, body, labels, and review gate.
 
 2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Create the PR with `shiplog/history` and `shiplog/issue-driven` already applied. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
 
@@ -345,26 +345,28 @@ Delegate automatic checkbox updates to `ork:issue-progress-tracking` if availabl
 
 ## Integration Map
 
-This skill ORCHESTRATES. It never reimplements.
+This skill ORCHESTRATES. For activities that directly produce shiplog artifacts (commits, PRs), convention-enforced workflows are internalized in `references/`. For other activities, shiplog delegates to external skills.
 
-| Activity | Delegate To | Shiplog Adds |
-|----------|-------------|--------------|
-| Brainstorming | `superpowers:brainstorming` or `ork:brainstorming` | Issue creation from output |
-| Planning | `superpowers:writing-plans` | Issue task list mirroring |
-| Plan execution | `superpowers:executing-plans` | Timeline comments at checkpoints |
-| Committing | `ork:commit` or `commit-commands:commit` | Commit context comments |
-| Creating PRs | `ork:create-pr` | Timeline PR body template |
-| Finishing branches | `superpowers:finishing-a-development-branch` | Knowledge graph storage after |
-| Worktree creation | `superpowers:using-git-worktrees` | Branch-issue linking |
-| Stacked PRs | `ork:stacked-prs` | Discovery-driven stacking protocol |
-| Issue tracking | `ork:issue-progress-tracking` | Richer timeline comments |
-| Storing decisions | `ork:remember` | Structured `#ID: decision` entries |
-| Fixing issues | `ork:fix-issue` | Timeline documentation of RCA |
-| Model routing | Built-in | Phase entry check (Step 0), routing prompts, handoffs |
+| Activity | Primary | External (optional) | Shiplog Adds |
+|----------|---------|---------------------|--------------|
+| Committing | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, context comments |
+| Creating PRs | `references/pr-workflow.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate |
+| Finishing branches | `references/pr-workflow.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
+| Brainstorming | `superpowers:brainstorming` or `ork:brainstorming` | — | Issue creation from output |
+| Planning | `superpowers:writing-plans` | — | Issue task list mirroring |
+| Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
+| Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
+| Stacked PRs | `ork:stacked-prs` | — | Discovery-driven stacking protocol |
+| Issue tracking | `ork:issue-progress-tracking` | — | Richer timeline comments |
+| Storing decisions | `ork:remember` | — | Structured `#ID: decision` entries |
+| Fixing issues | `ork:fix-issue` | — | Timeline documentation of RCA |
+| Model routing | Built-in | — | Phase entry check (Step 0), routing prompts, handoffs |
 
-**Graceful degradation:** Try preferred skill → alternative skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
+**Internalized workflows:** Commit and PR workflows are internalized in `references/` to enforce shiplog conventions (ID-first naming, provenance signing, envelope metadata, review gates). External skills may be used alongside for their non-convention features (validation agents, security scanning), but shiplog's conventions take precedence. See `LICENSES/` for attribution of the original skill sources.
 
-**Conflict avoidance:** This skill sets the WORKFLOW context. Delegated skills set IMPLEMENTATION details. This skill's templates take precedence for knowledge-graph fields.
+**Graceful degradation:** Internalized workflow → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
+
+**Conflict avoidance:** This skill sets the WORKFLOW context. External skills provide IMPLEMENTATION helpers. Shiplog's internalized conventions always take precedence for artifact format, signing, labels, and review gates.
 
 ---
 
@@ -396,19 +398,29 @@ This skill ORCHESTRATES. It never reimplements.
 
 All recommended skills are optional. The current optional integrations are listed below. Without them, shiplog falls back to direct `gh`/`git` commands.
 
-### Recommended Skills
+### Internalized Workflows
+
+These workflows are built into shiplog's `references/` and enforce conventions directly. No external plugin required.
+
+| Workflow | Reference | Replaces |
+|----------|-----------|----------|
+| Commit conventions | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` |
+| PR creation conventions | `references/pr-workflow.md` | `ork:create-pr`, `superpowers:finishing-a-development-branch` |
+
+### Optional External Skills
+
+These skills enhance shiplog but are not required. Shiplog's conventions take precedence when both are active.
 
 | Skill | Plugin | What It Adds |
 |-------|--------|-------------|
-| `ork:commit` | OrchestKit | Conventional commits with validation |
-| `ork:create-pr` | OrchestKit | PR creation with parallel validation agents |
+| `ork:commit` | OrchestKit | Pre-commit validation (lint, type-check) |
+| `ork:create-pr` | OrchestKit | Parallel validation agents (security, tests, quality) |
 | `ork:stacked-prs` | OrchestKit | Stacked PR mechanics and management |
 | `ork:issue-progress-tracking` | OrchestKit | Auto-checkbox updates from commits |
 | `ork:remember` / `ork:memory` | OrchestKit | Knowledge graph storage and retrieval |
 | `ork:brainstorming` | OrchestKit | Parallel agent brainstorming |
 | `superpowers:brainstorming` | Superpowers | Design-first brainstorming workflow |
 | `superpowers:using-git-worktrees` | Superpowers | Isolated workspace creation |
-| `superpowers:finishing-a-development-branch` | Superpowers | Post-implementation options |
 | `superpowers:writing-plans` | Superpowers | Structured plan documents |
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
