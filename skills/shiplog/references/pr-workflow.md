@@ -8,6 +8,8 @@ External PR skills remain usable for their validation features (security scannin
 
 ## Step 1: Pre-flight checks
 
+### Bash
+
 ```bash
 BRANCH=$(git branch --show-current)
 ISSUE=$(echo "$BRANCH" | grep -oE '[0-9]+' | head -1)
@@ -32,7 +34,36 @@ if ! git rev-parse --verify "origin/$BRANCH" &>/dev/null; then
 fi
 ```
 
+### PowerShell
+
+```powershell
+$branch = git branch --show-current
+$issue = ([regex]::Match($branch, '\d+')).Value
+$defaultBranch = gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'
+
+# Verify not on default branch
+if ($branch -eq $defaultBranch) {
+  Write-Host "STOP: Cannot create PR from $branch."
+  exit 1
+}
+
+# Check for uncommitted changes
+if (git status --porcelain) {
+  Write-Host "Uncommitted changes detected. Commit or stash first."
+  exit 1
+}
+
+# Push branch if needed
+git fetch origin
+git show-ref --verify --quiet "refs/remotes/origin/$branch"
+if ($LASTEXITCODE -ne 0) {
+  git push -u origin $branch
+}
+```
+
 ## Step 2: Gather context
+
+### Bash
 
 ```bash
 # Commits in this branch
@@ -43,6 +74,19 @@ git diff "$DEFAULT_BRANCH...HEAD" --stat
 
 # Issue context (if available)
 gh issue view "$ISSUE" --json title,body,labels 2>/dev/null
+```
+
+### PowerShell
+
+```powershell
+# Commits in this branch
+git log --oneline "$defaultBranch..HEAD"
+
+# File change summary
+git diff "$defaultBranch...HEAD" --stat
+
+# Issue context (if available)
+gh issue view $issue --json title,body,labels 2>$null
 ```
 
 ## Step 3: Determine delivery type
@@ -70,12 +114,24 @@ Use the shiplog PR timeline template from `phase-templates.md`. The PR body must
 
 Apply shiplog labels at creation time:
 
+### Bash
+
 ```bash
 gh pr create --base "$DEFAULT_BRANCH" \
   --label "shiplog/history" \
   --label "shiplog/issue-driven" \
   --title "<type>(#$ISSUE): <brief description>" \
   --body-file "$TEMP_FILE"
+```
+
+### PowerShell
+
+```powershell
+gh pr create --base $defaultBranch `
+  --label "shiplog/history" `
+  --label "shiplog/issue-driven" `
+  --title "<type>(#$issue): <brief description>" `
+  --body-file $tempFile
 ```
 
 For stacked PRs, also add `--label "shiplog/stacked"`.

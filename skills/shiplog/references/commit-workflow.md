@@ -8,6 +8,8 @@ External commit skills remain usable as a convenience, but this reference is the
 
 ## Step 1: Pre-commit safety
 
+### Bash
+
 ```bash
 BRANCH=$(git branch --show-current)
 
@@ -18,17 +20,39 @@ if [[ "$BRANCH" == "main" || "$BRANCH" == "master" || "$BRANCH" == "dev" ]]; the
 fi
 ```
 
+### PowerShell
+
+```powershell
+$branch = git branch --show-current
+
+# Must be on an issue branch, not the default branch
+if ($branch -in @('main', 'master', 'dev')) {
+  Write-Host "STOP: Cannot commit directly to $branch. Use issue/<id>-<slug> branch."
+  exit 1
+}
+```
+
 ## Step 2: Determine issue and task context
 
 Extract the issue number from the branch name:
+
+### Bash
 
 ```bash
 ISSUE=$(echo "$BRANCH" | grep -oE '[0-9]+' | head -1)
 ```
 
+### PowerShell
+
+```powershell
+$issue = ([regex]::Match($branch, '\d+')).Value
+```
+
 If the commit addresses a specific task from the issue body, note the task ID (`T1`, `T2`, etc.).
 
 ## Step 3: Stage and review changes
+
+These Git commands are shell-neutral; the same sequence works in Bash and PowerShell.
 
 ```bash
 git status
@@ -43,14 +67,30 @@ Prefer staging specific files over `git add .` to avoid accidentally including s
 
 **Issue-level commit** (most common):
 
+### Bash
+
 ```bash
 git commit -m "<type>(#$ISSUE): <brief description>"
 ```
 
+### PowerShell
+
+```powershell
+git commit -m "<type>(#$issue): <brief description>"
+```
+
 **Task-level commit** (when addressing a specific task):
+
+### Bash
 
 ```bash
 git commit -m "<type>(#$ISSUE/T<n>): <brief description>"
+```
+
+### PowerShell
+
+```powershell
+git commit -m "<type>(#$issue/T<n>): <brief description>"
 ```
 
 ### Commit types
@@ -73,6 +113,8 @@ git commit -m "<type>(#$ISSUE/T<n>): <brief description>"
 - If the commit body is needed, add it after a blank line.
 
 ## Step 5: Verify
+
+This verification step is shell-neutral.
 
 ```bash
 git log -1 --stat
