@@ -10,6 +10,7 @@ For shell portability guidance, see `references/shell-portability.md`.
 
 ```bash
 gh issue create \
+  --label "shiplog/plan" \
   --title "[shiplog/plan] Brief title describing the work" \
   --body "$(cat <<'EOF'
 <!-- shiplog:
@@ -104,6 +105,7 @@ EOF
 ```
 
 On PowerShell, prefer the `--body-file` temp-file pattern from `references/shell-portability.md` instead of translating the heredoc inline.
+Before the first labeled create in a repository, run the bootstrap commands from `references/labels.md`.
 
 ---
 
@@ -220,6 +222,9 @@ git checkout -b <branch>--log
 git commit --allow-empty -m "shiplog: initialize knowledge log"
 git push -u origin <branch>--log
 gh pr create --base <branch> \
+  --label "shiplog/worklog" \
+  --label "shiplog/quiet-mode" \
+  --label "shiplog/issue-driven" \
   --title "[shiplog/worklog] <description>" \
   --body "<!-- shiplog:\nkind: state\nissue: <ISSUE_NUMBER>\nbranch: <branch>--log\nstatus: open\nupdated_at: <ISO_TIMESTAMP>\n-->\n\n## Knowledge Log\n\nTracking decisions and discoveries for this work."
 # If you deferred a brainstorm from PHASE 1, use that saved content as the initial PR body instead of this placeholder.
@@ -247,6 +252,8 @@ updated_at: <ISO_TIMESTAMP>
 
 ```bash
 gh issue create \
+  --label "shiplog/discovery" \
+  --label "shiplog/stacked" \
   --title "[shiplog/discovery] Brief description" \
   --body "$(cat <<'EOF'
 <!-- shiplog:
@@ -289,6 +296,11 @@ updated_at: <ISO_TIMESTAMP>
 -->
 
 [shiplog/discovery] #<PARENT>: Found sub-problem -> created #<NEW_ISSUE>. This is a stacked prerequisite."
+```
+
+Then mark the parent as blocked:
+```bash
+gh issue edit <PARENT_ISSUE> --add-label "shiplog/blocker"
 ```
 
 ---
@@ -377,6 +389,8 @@ ISSUE_NUMBER=<N>
 BASE_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
 
 gh pr create --base $BASE_BRANCH \
+  --label "shiplog/history" \
+  --label "shiplog/issue-driven" \
   --title "<type>(#$ISSUE_NUMBER): Brief description" \
   --body "$(cat <<'EOF'
 <!-- shiplog:

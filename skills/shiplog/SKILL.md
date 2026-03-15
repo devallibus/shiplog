@@ -176,6 +176,19 @@ Key rules:
 
 ---
 
+## GitHub Labels
+
+Shiplog manages a compact repo-level label vocabulary so issues and PRs stay filterable even when a reader never opens the body. See `references/labels.md` for the canonical label set, descriptions, and CLI snippets.
+
+Label rules:
+- On the first write operation in a repo, bootstrap or refresh the Shiplog labels with `gh label create --force ...`.
+- Apply Shiplog labels at creation time with `gh issue create --label` or `gh pr create --label`.
+- When resuming work on an existing issue or PR, backfill missing Shiplog labels when the mapping is high-confidence from the title, body, or branch. Do not remove user labels that are outside the `shiplog/` namespace.
+- `shiplog/blocker` is stateful. Add it when the tracked work becomes blocked and remove it when the blocker is cleared.
+- Keep the set compact. Prefer one artifact label plus at most one or two structural/state labels such as `shiplog/stacked`, `shiplog/quiet-mode`, `shiplog/issue-driven`, or `shiplog/blocker`.
+
+---
+
 ## PHASE 1: Brainstorm-to-Issue
 
 <!-- routing: tier-1 -->
@@ -184,7 +197,7 @@ Key rules:
 
 1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
 
-2. **Capture as GitHub Issue (Full Mode).** Use the issue template from `references/phase-templates.md`. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
+2. **Capture as GitHub Issue (Full Mode).** Before the first labeled create in a repo, bootstrap the Shiplog labels per `references/labels.md`. Use the issue template from `references/phase-templates.md` and create the issue with `shiplog/plan` already applied. The issue body should include: Context, Design Summary, Approach, Alternatives Considered, Tasks (with tier tags and contract fields), and Open Questions. Sign the issue body per [Agent identity signing](#agent-identity-signing).
    Before writing the final issue body, classify factual claims:
    - **Internal claims** about this repository's code, tests, configuration, or committed docs can be verified from the repo itself. The codebase is the source of truth.
    - **External claims** about third-party tools, URLs, APIs, platform capabilities, pricing, distribution channels, or ecosystem behavior must be verified against primary sources before they are stated as facts.
@@ -205,7 +218,7 @@ Key rules:
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-1. **Load context.** `gh issue view <N> --json title,body,labels,comments,milestone` and search knowledge graph.
+1. **Load context.** `gh issue view <N> --json title,body,labels,comments,milestone` and search knowledge graph. If the issue is already a Shiplog artifact but is missing the obvious Shiplog labels, backfill them per `references/labels.md`.
 
 2. **Create branch (worktree-first).** The skill cannot detect concurrent agents, so shared-checkout branch switching is unsafe by default. One branch, one worktree, one agent.
 
@@ -227,7 +240,7 @@ Key rules:
    See `references/shell-portability.md` for shell-specific notes.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
+3. **Post timeline entry.** Full Mode: comment on the issue. Quiet Mode: create `--log` branch + PR targeting the feature branch and label it `shiplog/worklog`, `shiplog/quiet-mode`, and `shiplog/issue-driven`. See `references/phase-templates.md` for templates. Sign the posted artifact per [Agent identity signing](#agent-identity-signing).
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
@@ -250,9 +263,9 @@ Discovery made during work
   +-- Refactoring opportunity?             -> Create issue tagged "refactor"
 ```
 
-**Phase 3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Cross-reference on the parent issue. See `references/phase-templates.md` for the discovery issue template. Sign both the discovery issue and the parent cross-reference comment per [Agent identity signing](#agent-identity-signing).
+**Phase 3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Label the new issue `shiplog/discovery` and `shiplog/stacked`. Cross-reference on the parent issue and add `shiplog/blocker` to the parent while it is blocked. See `references/phase-templates.md` for the discovery issue template. Sign both the discovery issue and the parent cross-reference comment per [Agent identity signing](#agent-identity-signing).
 
-**Phase 3b (independent discovery):** Create new issue (same template without "blocks parent"). Add timeline comment. Continue current work. Sign each posted artifact per [Agent identity signing](#agent-identity-signing).
+**Phase 3b (independent discovery):** Create new issue (same template without "blocks parent") and label it `shiplog/discovery`. Add timeline comment. Continue current work. Sign each posted artifact per [Agent identity signing](#agent-identity-signing).
 
 ---
 
@@ -280,9 +293,9 @@ Discovery made during work
 
 1. **Pre-PR checks.** Delegate to `ork:create-pr` or `superpowers:finishing-a-development-branch`.
 
-2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
+2. **Create PR (Full Mode).** Use the PR timeline template from `references/phase-templates.md`. Create the PR with `shiplog/history` and `shiplog/issue-driven` already applied. Body includes: Summary, `Closes #<N>`, Journey Timeline, Key Decisions, Changes, Testing, and Knowledge for Future Reference. Sign the PR body per [Agent identity signing](#agent-identity-signing).
 
-3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR. Sign the summary comment per [Agent identity signing](#agent-identity-signing).
+3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR and keep its `shiplog/worklog`, `shiplog/quiet-mode`, and `shiplog/issue-driven` labels current. Remove `shiplog/blocker` when the blocker is actually cleared. Sign the summary comment per [Agent identity signing](#agent-identity-signing).
 
 4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules. Sign every review artifact per [Agent identity signing](#agent-identity-signing).
 
@@ -313,6 +326,8 @@ Discovery made during work
 1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign each timeline comment per [Agent identity signing](#agent-identity-signing).
 
 2. **Use the standard format.** See `references/phase-templates.md` for the comment format. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `approach-change`, `blocker`, `session-end`.
+
+3. **Keep state labels honest.** Add `shiplog/blocker` to the tracked issue or `--log` PR when a blocker comment means work cannot proceed. Remove it as soon as a later timeline update or stacked prerequisite resolution clears the block.
 
 Delegate automatic checkbox updates to `ork:issue-progress-tracking` if available.
 
