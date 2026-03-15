@@ -59,7 +59,7 @@ hands a `[tier-3]` task to a cheaper agent.
 Do not encode an `[unverified]` external claim as a fixed requirement unless the task
 includes the verification work needed to resolve it.
 
-- [ ] **Task 1: [Short title]** `[tier-3]`
+- [ ] **T1: [Short title]** `[tier-3]`
   - **What:** [1-2 sentences, exactly what to do - no ambiguity]
   - **Files:** `path/to/file.ts` (create|modify|delete)
   - **Allowed to change:** [`path/to/file.ts`; specific symbols or sections if needed]
@@ -72,12 +72,18 @@ includes the verification work needed to resolve it.
   - **Accept when:** [concrete, testable acceptance criteria]
   - **Context:** [any non-obvious background the implementer needs]
 
-- [ ] **Task 2: [Short title]** `[tier-1]`
+- [ ] **T2: [Short title]** `[tier-1]`
   - **What:** [1-2 sentences]
   - **Files:** `path/to/file.ts`
   - **Decision budget:** [what judgment this task is allowed to exercise]
   - **Accept when:** [criteria]
   - **Why tier-1:** [why this needs reasoning, e.g., "requires evaluating 3 API options"]
+
+Task ID rules:
+- Every task carries a local ID: `T1`, `T2`, `T3`, etc.
+- IDs are scoped to the issue — `T1` in issue #42 is `#42/T1` globally.
+- Commits referencing a task use: `<type>(#<id>/<Tn>): <msg>`.
+- When a PR ships a subset of tasks, use `Addresses #<id> (completes T1, T2)` instead of `Closes #<id>`.
 
 Tier tag rules:
 - `[tier-3]` tasks MUST be executable without creative judgment.
@@ -473,6 +479,58 @@ Authored-by: <family>/<version> (<tool>)
 EOF
 )"
 ```
+
+---
+
+## PHASE 5: Partial-Delivery PR Variant
+
+When a PR ships some tasks but the issue has remaining work (deferred, blocked, or future-phase), use this PR body variant instead of the standard `Closes #N` template.
+
+```markdown
+<!-- shiplog:
+kind: history
+issue: <ISSUE_NUMBER>
+branch: issue/<ISSUE_NUMBER>-<slug>
+status: in-progress
+updated_at: <ISO_TIMESTAMP>
+-->
+
+## Summary
+
+[2-3 sentences: what this PR ships and why it is a partial delivery]
+
+Addresses #<ISSUE_NUMBER> (completes T1, T2, T3)
+
+## Completed Tasks
+
+- [x] **T1:** [title] — [1-sentence summary of what shipped]
+- [x] **T2:** [title] — [1-sentence summary]
+- [x] **T3:** [title] — [1-sentence summary]
+
+## Remaining Tasks
+
+- [ ] **T4:** [title] — [why deferred: blocked on X / next phase / needs design]
+- [ ] **T5:** [title] — [why deferred]
+
+## Blocked On
+
+- [External dependency with link, e.g., `openai/codex#11180` — EnterPlanMode tool]
+- [Or "No external blockers — remaining tasks deferred by choice"]
+
+## Journey Timeline
+
+[Same structure as the standard PR template]
+
+## Knowledge for Future Reference
+
+[Same structure as the standard PR template]
+
+---
+Authored-by: <family>/<version> (<tool>)
+*Captain's log — partial delivery by [shiplog](https://github.com/devallibus/shiplog)*
+```
+
+**When to use:** Any time a PR merges work from an issue but the issue should stay open. The `Addresses #N` link does not trigger GitHub auto-close. After merge, post a `[shiplog/milestone]` comment on the issue listing what shipped and a `[shiplog/blocker]` comment for any externally-blocked tasks.
 
 ---
 

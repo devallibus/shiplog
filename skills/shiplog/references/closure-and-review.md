@@ -100,6 +100,20 @@ Umbrella issues (tracking multiple sub-issues or a roadmap) require:
 - A summary comment on the umbrella linking each child's resolution.
 - If any child is unresolved, the umbrella stays open.
 
+### Partial delivery
+
+When a PR ships some tasks from an issue but other tasks remain (blocked, deferred, or planned for a later phase):
+
+1. **Do not use `Closes #N`.** Use `Addresses #N (completes T1, T2, ...)` in the PR body. This links the PR to the issue without triggering auto-close.
+2. **The issue stays open.** Completed tasks are checked off in the issue body; remaining tasks stay unchecked.
+3. **Post a milestone comment** on the issue after merge, listing what shipped and what remains. Use the `[shiplog/milestone]` tag.
+4. **Post a blocker comment** if remaining tasks are blocked on an external dependency. Reference the upstream issue (e.g., `openai/codex#11180`). Use the `[shiplog/blocker]` tag.
+5. **Final closure** happens when the last remaining task ships (via a follow-up PR with `Closes #N`) or when all remaining tasks are explicitly cancelled with a rationale.
+
+**What counts as evidence for partial delivery:** The merged PR is evidence for the tasks it completes. It is NOT evidence for the tasks that remain. The issue stays open because the remaining gap is acknowledged, not ignored.
+
+**External blockers:** When tasks are blocked on upstream work outside this repository, the blocker comment should include a link to the upstream issue or tracking artifact. This makes the dependency searchable and auditable.
+
 ---
 
 ## 2. Closure Scope
