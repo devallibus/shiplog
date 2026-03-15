@@ -244,6 +244,7 @@ If spawning is unavailable, generate a self-contained review contract for the us
 - [ ] No unintended side effects or regressions
 - [ ] Cross-references between files are consistent
 - [ ] Templates and examples are correct
+- [ ] Relevant implementation issues are durably captured (timeline comments or linked issues) — not trapped in chat-only memory
 
 ### Output required
 Sign-off comment with:
@@ -305,6 +306,12 @@ A PR may be merged when:
 2. All `request-changes` reviews have been addressed (new review cycle or author response).
 3. The PR body includes `Closes #<N>` linking to the tracking issue.
 4. The issue closure will have linked evidence (the merged PR itself serves as evidence).
+
+### Implementation issue capture check
+
+As part of every review, the reviewer must check whether relevant implementation issues (failed attempts, hidden dependencies, workarounds, scope surprises, verification gaps) are durably captured as timeline comments or linked issues. If the PR timeline or commit history suggests implementation friction that is not captured in any durable artifact, the reviewer should request changes with a note explaining what needs to be recorded.
+
+This is a workflow completeness check, not a code quality check. The reviewer is not evaluating whether the implementation approach was correct — only whether knowledge that would otherwise be lost has been persisted.
 
 ### Risk-based review requirements
 

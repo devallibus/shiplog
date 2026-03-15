@@ -109,7 +109,7 @@ See `references/model-routing.md` for routing prompt format, handoff template, a
 
 All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 
-**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `review-handoff`, `worklog`, `history`, `amendment`. Format: `[shiplog/<kind>] <human title>`.
+**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `implementation-issue`, `review-handoff`, `worklog`, `history`, `amendment`. Format: `[shiplog/<kind>] <human title>`.
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|
@@ -278,6 +278,42 @@ Discovery made during work
 **Phase 3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Label the new issue `shiplog/discovery` and `shiplog/stacked`. Cross-reference on the parent issue and add `shiplog/blocker` to the parent while it is blocked. See `references/phase-templates.md` for the discovery issue template. Sign both the discovery issue and the parent cross-reference comment per [Agent identity signing](#agent-identity-signing).
 
 **Phase 3b (independent discovery):** Create new issue (same template without "blocks parent") and label it `shiplog/discovery`. Add timeline comment. Continue current work. Sign each posted artifact per [Agent identity signing](#agent-identity-signing).
+
+---
+
+## Mandatory Issue Capture
+
+Implementation trouble that materially affects the work must be durably recorded before the agent proceeds to the next material step or ends the turn. This extends the Discovery Protocol — Phase 3 handles pre-identified sub-problems; this rule covers implementation friction that surfaces during execution.
+
+### What counts as a relevant implementation issue
+
+- **Failed attempts:** An approach that was tried and abandoned, even if a working alternative was found.
+- **Hidden dependencies:** Requirements or coupling not visible from the plan or task contract.
+- **Risky workarounds:** Temporary fixes, known-fragile code paths, or deliberate tech debt.
+- **Scope surprises:** Work that turned out larger, smaller, or different than the task described.
+- **Verification gaps:** Tests that could not be written, checks that were skipped, or coverage blind spots.
+- **Environment or tooling friction:** Build failures, dependency conflicts, or platform quirks that affected the implementation path.
+
+### What does NOT require capture
+
+- Normal iteration (try, adjust, succeed) where the final approach is obvious from the diff.
+- Minor typos or lint fixes resolved in the same commit.
+- Expected complexity that matches the task description.
+
+### Capture rule
+
+When a relevant implementation issue occurs, the agent must create a durable artifact **before** proceeding to the next material step or ending the turn:
+
+| Situation | Artifact | Where |
+|-----------|----------|-------|
+| Issue is local and resolved inline | Timeline comment (`[shiplog/implementation-issue]`) | Issue (Full Mode) or `--log` PR (Quiet Mode) |
+| Issue warrants follow-up, scope split, or long-term retrieval | New linked issue | GitHub issue with cross-reference on parent |
+
+The timeline comment is the minimum — one paragraph explaining what happened, why it matters, and how it was resolved (or why it was deferred). The linked issue follows the Phase 3b template when the implementation issue is independent, or Phase 3a when it blocks current work.
+
+### Why mandatory
+
+Chat-only knowledge is the failure mode this rule prevents. An implementation issue that exists only in the conversation context will be invisible to future agents, reviewers, and the project timeline. The "nothing gets lost" principle requires that knowledge threatening to get lost is captured at the moment it appears, not after the session ends.
 
 ---
 

@@ -426,6 +426,9 @@ Closes #<ISSUE_NUMBER>
 - [Discovery 1: what surprised us]
 - [Discovery 2: what we learned]
 
+### Implementation Issues
+- [Issue 1: what happened, how it was resolved — or "None"]
+
 ### Key Decisions Made
 
 | Decision | Choice | Why |
@@ -610,9 +613,43 @@ Tag-to-kind mapping:
 - `session-resume` -> `state`
 - `milestone` -> `state`
 - `discovery` -> `blocker`
+- `implementation-issue` -> `state`
 - `approach-change` -> `state`
 - `blocker` -> `blocker`
 - `session-end` -> `history`
+
+---
+
+## Implementation-Issue Timeline Comment
+
+Use this when a relevant implementation issue surfaces during execution and is
+resolved inline. Post on the tracked issue (Full Mode) or `--log` PR (Quiet Mode).
+See `SKILL.md` § Mandatory Issue Capture for the decision rule on when to use
+this comment vs. opening a new linked issue.
+
+```markdown
+<!-- shiplog:
+kind: state
+issue: <ID>
+updated_at: <ISO_TIMESTAMP>
+-->
+
+## [shiplog/implementation-issue] #<ID>: <brief summary>
+
+**Category:** failed attempt | hidden dependency | risky workaround | scope surprise | verification gap | tooling friction
+**Severity:** blocking (work stopped) | material (changed approach) | informational (worth recording)
+
+**What happened:**
+[1-3 sentences: what went wrong or what was unexpected]
+
+**Resolution:**
+[How it was handled — fix applied, workaround accepted, deferred to #<N>, or still open]
+
+**Impact on the work:**
+[How this affected scope, timeline, approach, or confidence in the result]
+
+Authored-by: <family>/<version> (<tool>)
+```
 
 ---
 

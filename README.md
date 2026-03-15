@@ -112,6 +112,17 @@ Discovery made during work
 
 Stacked prerequisites get their own issue and branch with cross-references on the parent. Nothing gets lost.
 
+### Implementation issue capture
+
+Implementation trouble that materially affects the work, including failed attempts, hidden dependencies, risky workarounds, scope surprises, and verification gaps, must be recorded durably before the agent moves on.
+
+| Situation | Action |
+|-----------|--------|
+| Resolved inline | Post a `[shiplog/implementation-issue]` timeline comment |
+| Warrants follow-up or long-term retrieval | Open a new linked issue |
+
+Reviewers treat uncaptured implementation issues as a workflow defect, because otherwise that knowledge stays trapped in chat-only memory.
+
 ### Task-level delivery
 
 Ship incrementally. Commits reference tasks (`feat(#42/T1): add JWT validation`), partial-delivery PRs use `Addresses #42 (completes T1, T2)`, and the issue stays open for remaining work. No premature closures, no lost track.
@@ -147,6 +158,8 @@ gh pr list --search "#42" --state all       # PRs
 git log --all --oneline --grep="#42"         # commits
 git log --all --oneline --grep="#42/T1"     # task-level commits
 ```
+
+Timeline comments use semantic tags such as `plan`, `session-start`, `session-resume`, `commit-note`, `discovery`, `implementation-issue`, `milestone`, `approach-change`, `blocker`, `review-handoff`, `worklog`, `history`, and `session-end`.
 
 ### GitHub labels
 
