@@ -20,6 +20,7 @@ Configurable testing and semantic-stability profiles for shiplog. Verification i
 | `none` | No verification requirements | silent |
 | `behavior-spec` | Acceptance scenarios for new/changed behavior | per-issue opt-in |
 | `red-green` | Fail-first unit tests for changed behavior | per-issue opt-in |
+| `self-audit` | Implementation quality self-review before commit | per-issue opt-in |
 | `structural` | Structural quality analysis on changed modules | per-issue opt-in |
 | `mutation` | Differential mutation testing on changed modules | strict-profile opt-in |
 
@@ -58,6 +59,9 @@ behavior-spec, red-green
 
 ### red-green
 - fail_first_evidence: true
+
+### self-audit
+- on_finding: fix-before-proceed
 
 ### structural
 - threshold: crap <= 8
@@ -205,6 +209,7 @@ Add to the Phase 5 PR timeline Testing section:
 | Test results summary | Every commit with test changes | Commit comment |
 | Existing scenarios modified | Always — this is a change signal | Commit comment + issue timeline |
 | Deferred verification | When something was intentionally skipped | Commit comment, PR body |
+| Self-audit findings | When self-audit is active | Commit comment |
 | Structural analysis results | When structural profile is active | PR body |
 | Mutation results | When mutation profile is active | PR body |
 
@@ -221,7 +226,74 @@ This makes behavior drift traceable. If a reviewer sees modified scenarios witho
 
 ---
 
-## 5. Structural and Mutation Gates
+## 5. Self-Audit Protocol
+
+The `self-audit` profile requires the agent to review its own diff for implementation quality issues before committing. This catches redundancy, dead code, and missed simplifications before they reach the cross-model review gate.
+
+### Scope
+
+Only files changed in the current branch compared to the base branch — the same scoping as `structural`.
+
+### Review checklist
+
+The agent reviews its diff against these questions:
+
+1. **Simpler approach?** Is there a better or simpler way to achieve the same result?
+2. **Redundant code?** Does any redundant code remain — copy-pasted blocks, near-duplicate logic?
+3. **Duplicate logic?** Was logic introduced that could reuse an existing function or utility in the codebase?
+4. **Dead code?** Is there dead or unused code left behind — unreachable branches, unused imports, orphaned helpers?
+
+If findings exist, the agent acts according to the `on_finding` setting. If no issues are found, the agent briefly confirms the implementation is clean and proceeds.
+
+### Configuration
+
+```markdown
+### self-audit
+- on_finding: fix-before-proceed | warn | log
+```
+
+| `on_finding` | Behavior |
+|--------------|----------|
+| `fix-before-proceed` | Agent must fix issues before committing (default) |
+| `warn` | Log findings in the commit context, continue |
+| `log` | Record silently in verification evidence |
+
+**Default:** `fix-before-proceed` — issues are resolved inline before the commit happens.
+
+### Execution order
+
+When composed with other profiles, `self-audit` runs **first** — fix quality issues before verifying behavior. A clean implementation produces more meaningful test results.
+
+```
+self-audit → behavior-spec → red-green → structural → mutation
+```
+
+### When not applicable
+
+Documentation-only, config-only, or template-only changes may not benefit from self-audit. In this case:
+
+- Log `Self-audit: not applicable (docs-only change)` in the commit context.
+- The profile does not block — it just requires the exemption to be explicit.
+
+### Self-audit evidence
+
+In the commit context:
+
+```markdown
+- **Self-audit:** clean | N findings fixed | not applicable (reason)
+```
+
+When `on_finding` is `warn` or `log`, include the findings:
+
+```markdown
+- **Self-audit:** 2 findings (warn)
+  - Unused import `parseConfig` in `src/auth.ts`
+  - Near-duplicate validation logic in `handleLogin` / `handleRegister`
+```
+
+---
+
+## 6. Structural and Mutation Gates
 
 ### Structural analysis
 

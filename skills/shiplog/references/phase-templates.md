@@ -339,6 +339,8 @@ updated_at: <ISO_TIMESTAMP>
 - **Scenarios:** [added N, changed M, existing passed K]
 - **Tests:** [added N, changed M, all passing]
 - **Deferred:** [anything intentionally skipped, with reason]
+[If self-audit profile active]:
+- **Self-audit:** clean | N findings fixed | not applicable (reason)
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
@@ -376,6 +378,8 @@ updated_at: <ISO_TIMESTAMP>
 - **Scenarios:** [added N, changed M, existing passed K]
 - **Tests:** [added N, changed M, all passing]
 - **Deferred:** [anything intentionally skipped, with reason]
+[If self-audit profile active]:
+- **Self-audit:** clean | N findings fixed | not applicable (reason)
 
 **Discovered:** [Anything unexpected, or "Nothing unexpected"]
 
@@ -442,6 +446,7 @@ Closes #<ISSUE_NUMBER>
 - [x] [What was tested and how]
 - [x] All existing tests pass
 - [x] [Verification-profile-specific checks, e.g., "Fail-first confirmed", "No existing scenarios modified"]
+- [x] Self-audit: implementation reviewed for redundancy, dead code, and simplification opportunities
 
 **Verification summary:** [scenarios added/changed, tests added/changed, deferred items]
 
