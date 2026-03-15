@@ -29,6 +29,8 @@ shiplog fixes this by making your git history the single source of truth — not
 | [Cross-Model Review](#cross-model-review) | No PR merges without independent review from a different model or a human |
 | [Evidence-Linked Closure](#evidence-linked-closure) | No issue closes without linked proof (commit, PR, or decision artifact) |
 | [Model-Tier Routing](#model-tier-routing) | Route reasoning models to planning, fast models to implementation |
+| [Mode Routing](#mode-routing) | Advise or trigger plan mode for analysis phases, agent mode for execution |
+| [Task-Level Delivery](#task-level-delivery) | Ship issues incrementally with task IDs and partial-delivery PRs |
 | [Delegation Contracts](#delegation-contracts) | Structured handoffs with allowed files, stop conditions, decision budgets |
 | [Verification Profiles](#verification-profiles) | Configurable testing policies: behavior-spec, red-green, structural, mutation |
 | [Artifact Envelopes](#artifact-envelopes) | Machine-readable metadata for low-token agent retrieval |
@@ -53,15 +55,15 @@ main
 
 ## The 7 Phases
 
-| Phase | Trigger | What Happens | Default Tier |
-|-------|---------|-------------|-------------|
-| 1. Brainstorm-to-Issue | "Let's plan X" | Brainstorm captured as GitHub Issue with tier-aware task list | tier-1 (reasoning) |
-| 2. Issue-to-Branch | "Work on #42" | Worktree created, timeline started, plan loaded | tier-2 (capable) |
-| 3. Discovery Protocol | Sub-problem found | Stacked PR, new issue, or inline fix — nothing lost | tier-2 (capable) |
-| 4. Commit-with-Context | Ready to commit | Commit + reasoning comment with verification evidence | tier-3 (fast) |
-| 5. PR-as-Timeline | Work complete | PR with full journey timeline, decisions table, lessons learned | tier-1 (reasoning) |
-| 6. Knowledge Retrieval | "Where did we decide X?" | Search across issues, PRs, commits, and memory | tier-2 (capable) |
-| 7. Timeline Maintenance | Mid-work | Session, milestone, blocker, and approach-change comments | tier-3 (fast) |
+| Phase | Trigger | What Happens | Tier | Mode |
+|-------|---------|-------------|------|------|
+| 1. Brainstorm-to-Issue | "Let's plan X" | Brainstorm captured as GitHub Issue with tier-aware task list | tier-1 | plan |
+| 2. Issue-to-Branch | "Work on #42" | Worktree created, timeline started, plan loaded | tier-2 | plan then agent |
+| 3. Discovery Protocol | Sub-problem found | Stacked PR, new issue, or inline fix — nothing lost | tier-2 | plan then agent |
+| 4. Commit-with-Context | Ready to commit | Commit + reasoning comment with verification evidence | tier-3 | agent |
+| 5. PR-as-Timeline | Work complete | PR with full journey timeline, decisions table, lessons learned | tier-1 | plan |
+| 6. Knowledge Retrieval | "Where did we decide X?" | Search across issues, PRs, commits, and memory | tier-2 | plan |
+| 7. Timeline Maintenance | Mid-work | Session, milestone, blocker, and approach-change comments | tier-3 | agent |
 
 ## Cross-Model Review
 
@@ -104,6 +106,35 @@ Assign AI model tiers to phases — use your best model for brainstorming and PR
 | tier-3 (fast) | Execution speed, template filling, routine ops | Claude Haiku, Cursor Composer, GPT-4o-mini |
 
 Configure per-project in `.shiplog/routing.md` or per-issue in the issue body. A first-activation setup wizard detects your platform and suggests model assignments.
+
+## Mode Routing
+
+Each phase also has a recommended **execution mode** — plan mode for analysis phases, agent mode for execution phases. This prevents agents from making premature changes during brainstorming, discovery classification, PR synthesis, or code review.
+
+| Phase | Recommended Mode | Why |
+|-------|-----------------|-----|
+| Brainstorm-to-Issue | plan | Design work — no code changes |
+| Issue-to-Branch | plan then agent | Load context, then create branch |
+| Discovery Protocol | plan then agent | Classify before acting |
+| Commit-with-Context | agent | Staging and committing |
+| PR-as-Timeline | plan | Narrative synthesis |
+| Knowledge Retrieval | plan | Read-only search |
+| Timeline Maintenance | agent | Posting updates |
+
+**Tool support varies:** Claude Code agents can self-switch to plan mode (via `exit_plan_mode`). For Codex and Cursor, mode routing is advisory — shiplog prompts the user to switch, using the same `confirm`/`warn`/`off` setting as tier routing.
+
+See `references/model-routing.md` for the full mode routing reference.
+
+## Task-Level Delivery
+
+Issues carry task IDs (`T1`, `T2`, ...) for granular tracking. When some tasks are ready but others are blocked or deferred, ship what's done:
+
+- Commits reference tasks: `feat(#42/T1): add JWT validation`
+- Partial-delivery PRs use `Addresses #42 (completes T1, T2)` instead of `Closes #42`
+- The issue stays open with completed tasks checked off
+- Milestone and blocker comments track progress and external dependencies
+
+This lets you ship incrementally without closing issues prematurely or losing track of remaining work.
 
 ## Delegation Contracts
 
@@ -225,8 +256,11 @@ All artifacts use `#ID` as the primary key for fast retrieval:
 |----------|-----------|---------|
 | Branch | `issue/<id>-<slug>` | `issue/42-auth-middleware` |
 | Commit | `<type>(#<id>): <msg>` | `feat(#42): add JWT validation` |
+| Commit (task) | `<type>(#<id>/<Tn>): <msg>` | `feat(#42/T2): add middleware chain` |
 | PR title | `<type>(#<id>): <msg>` | `feat(#42): add auth middleware` |
-| PR body | `Closes #<id>` | `Closes #42` |
+| PR body (closes) | `Closes #<id>` | `Closes #42` |
+| PR body (partial) | `Addresses #<id> (completes ...)` | `Addresses #42 (completes T1, T2)` |
+| Task in issue | `- [ ] **T<n>: Title** [tier-N]` | `- [ ] **T1: Add JWT** [tier-3]` |
 | Timeline comment | `[shiplog/<kind>] #<id>: ...` | `[shiplog/discovery] #42: race condition` |
 | Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
 | Memory | `#<id>: <decision>` | `#42: chose JWT over sessions` |
@@ -238,6 +272,7 @@ Retrieve everything about issue 42:
 gh issue list --search "#42" --state all    # issues
 gh pr list --search "#42" --state all       # PRs
 git log --all --oneline --grep="#42"         # commits
+git log --all --oneline --grep="#42/T1"     # commits for task T1
 ```
 
 ## GitHub Labels

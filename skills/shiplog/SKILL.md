@@ -47,6 +47,8 @@ The skill cannot switch models — only the user can. Routing is purely advisory
 | **tier-2** (capable) | Context loading, judgment, structured docs | Phase 2, Phase 3, Phase 6 |
 | **tier-3** (fast) | Execution, routine commits, templates | Phase 4, Phase 7 |
 
+In addition to tier, each phase has a recommended **execution mode** (plan or agent). Some tools support agent-initiated mode switching (Claude Code); for others, mode routing is advisory. See `references/model-routing.md` for the mode routing reference, capability table, and prompt format.
+
 ### Routing behavior
 
 Configured in `.shiplog/routing.md` (one field). Resolution order: per-issue `## Model Routing` > `.shiplog/routing.md` > built-in default (`confirm`).
@@ -67,12 +69,14 @@ Every phase begins with this check:
 
 1. Read routing mode from per-issue override > `.shiplog/routing.md` > default (`confirm`).
 2. If work is transferring to another model/tool, write a handoff comment per `references/model-routing.md`.
-3. If mode is `off`, skip to Step 1.
-4. Compare the entering phase's tier to the previous phase's tier. If same, skip to Step 1.
-5. If mode is `confirm`: emit the routing prompt and wait for user acknowledgment.
-6. If mode is `warn`: emit the routing banner and continue immediately.
+3. If mode is `off`, skip to Step 1 — but if the tool supports agent-initiated mode switching (Claude Code) and the phase recommends plan mode, enter plan mode silently.
+4. Compare the entering phase's tier and recommended mode to the previous phase's tier and mode. If both are the same, skip to Step 1.
+5. If mode is `confirm`: emit the routing prompt (including mode advisory when the recommended mode changes) and wait for user acknowledgment.
+6. If mode is `warn`: emit the routing banner (including mode advisory) and continue immediately.
 
-**Routing mismatch:** If the user continues without switching models, proceed normally. Never block or repeat the prompt.
+**Mode self-switching:** When the entering phase recommends plan mode and the tool supports self-switching (Claude Code), the agent enters plan mode at phase start regardless of routing config. This is a safety measure, not an advisory.
+
+**Routing mismatch:** If the user continues without switching models or modes, proceed normally. Never block or repeat the prompt.
 
 See `references/model-routing.md` for routing prompt format, handoff template, and tier reference table.
 
@@ -111,8 +115,11 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 |----------|-----------|---------|
 | Branch | `issue/<id>-<slug>` | `issue/42-auth-middleware` |
 | Commit | `<type>(#<id>): <msg>` | `feat(#42): add JWT validation` |
+| Commit (task) | `<type>(#<id>/<Tn>): <msg>` | `feat(#42/T2): add middleware chain` |
 | PR title | `<type>(#<id>): <msg>` | `feat(#42): add auth middleware` |
-| PR body | `Closes #<id>` | `Closes #42` |
+| PR body (closes) | `Closes #<id>` | `Closes #42` |
+| PR body (partial) | `Addresses #<id> (completes ...)` | `Addresses #42 (completes T1, T2)` |
+| Task in issue | `- [ ] **T<n>: Title** [tier-N]` | `- [ ] **T1: Add JWT** [tier-3]` |
 | Timeline comment | `[shiplog/<kind>] #<id>: ...` | `[shiplog/discovery] #42: race condition` |
 | Stacked branch | `issue/<new-id>-<slug>` | `issue/43-fix-race-condition` |
 | Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
@@ -127,9 +134,12 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 | Knowledge PR title | `[shiplog/worklog] <desc>` | `[shiplog/worklog] auth middleware decisions` |
 | Knowledge PR base | the feature branch | base: `feature/auth-middleware` |
 
+**Task IDs:** Tasks in issue bodies carry local IDs (`T1`, `T2`, ...) scoped to the issue. Task IDs appear in commit messages as `#<id>/<Tn>` and in timeline comments as `#<id>/<Tn>`. They are not globally unique — the issue number provides the namespace.
+
 **Retrieval:**
 - `gh issue list --search "#42"` — everything linked to issue 42
 - `git log --grep="#42"` — all commits for issue 42
+- `git log --grep="#42/T1"` — commits for task T1 of issue 42
 - `gh pr list --search "#42"` — PRs closing issue 42
 - `gh pr list --search "[shiplog/"` — all knowledge PRs (quiet mode)
 
@@ -191,7 +201,7 @@ Label rules:
 
 ## PHASE 1: Brainstorm-to-Issue
 
-<!-- routing: tier-1 -->
+<!-- routing: tier-1, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0). On first activation, if `.shiplog/routing.md` is missing, run the setup prompt first.
 
@@ -214,7 +224,7 @@ Label rules:
 
 ## PHASE 2: Issue-to-Branch
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan then agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -249,7 +259,7 @@ Label rules:
 
 ## PHASE 3: Discovery Protocol
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan then agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -271,11 +281,11 @@ Discovery made during work
 
 ## PHASE 4: Commit-with-Context
 
-<!-- routing: tier-3 -->
+<!-- routing: tier-3, agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
-1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`.
+1. **Delegate the commit.** Use `ork:commit` > `commit-commands:commit` > manual `git commit`. Format: `<type>(#<issue-id>): <description>`. When a commit addresses a specific task, include the task ID: `<type>(#<issue-id>/<Tn>): <description>`.
 
 2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). See `references/phase-templates.md` for the commit context template. Sign the comment per [Agent identity signing](#agent-identity-signing).
 
@@ -287,7 +297,7 @@ Discovery made during work
 
 ## PHASE 5: PR-as-Timeline
 
-<!-- routing: tier-1 -->
+<!-- routing: tier-1, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -299,7 +309,7 @@ Discovery made during work
 
 4. **Review gate.** Every PR requires cross-model review before merge. See `references/closure-and-review.md` for the review protocol, sign-off format, and merge authorization rules. Sign every review artifact per [Agent identity signing](#agent-identity-signing).
 
-5. **Link and store.** PR body includes `Closes #<issue>`. Store key learning in knowledge graph.
+5. **Link and store.** PR body includes `Closes #<issue>` when the PR fully resolves the issue. For partial delivery — when some tasks are complete but others are blocked or deferred — use `Addresses #<issue> (completes T1, T2, ...)` and list remaining tasks in the PR body. The issue stays open. Post a `[shiplog/milestone]` comment on the issue after merge listing what shipped, and a `[shiplog/blocker]` comment for any externally-blocked tasks. See `references/closure-and-review.md` §1 for the partial-delivery rules. Store key learning in knowledge graph.
 
 6. **Closure verification (optional).** When an issue will be closed manually or the mapping between the evidence and the issue is non-obvious, optionally delegate a bounded verifier agent per `references/closure-and-review.md`. The verifier audits the evidence and returns a verification note, but the higher-tier actor still decides whether to close, keep open, or escalate.
 
@@ -307,7 +317,7 @@ Discovery made during work
 
 ## PHASE 6: Knowledge Retrieval
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 1. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
@@ -319,7 +329,7 @@ Discovery made during work
 
 ## PHASE 7: Timeline Maintenance
 
-<!-- routing: tier-3 -->
+<!-- routing: tier-3, agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
