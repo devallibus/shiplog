@@ -100,7 +100,7 @@ behavior-spec, red-green, structural
 
 ### Per-task override
 
-In the task contract (see phase-templates.md), the **Verification** field specifies what the implementer must check. This is the most granular level — it tells the agent exactly what to run and what evidence to produce.
+In the task contract (see `brainstorm.md` issue template), the **Verification** field specifies what the implementer must check. This is the most granular level — it tells the agent exactly what to run and what evidence to produce.
 
 ### Surfacing during handoffs
 
@@ -376,7 +376,7 @@ When multiple modules are changed:
 
 ## Integration Points
 
-### With contract fields (phase-templates.md)
+### With contract fields (task templates)
 
 Task contracts should reference the active profile in the **Verification** field:
 

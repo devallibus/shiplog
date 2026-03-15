@@ -1,6 +1,6 @@
 # shiplog
 
-**The captain's log for your codebase.** Every decision, discovery, and trade-off — captured in GitHub as you ship.
+**The captain's log for your codebase.** Every decision, discovery, and trade-off â€” captured in GitHub as you ship.
 
 ## Quick Install
 
@@ -16,27 +16,27 @@ Works with Claude Code, Codex, and Cursor. Only requires [`gh` CLI](https://cli.
 
 You brainstormed a design with Claude yesterday. Today, a new session starts from scratch. The reasoning behind that auth middleware? Gone. The three alternatives you rejected? Nowhere to be found. Last week's architectural decision? Buried in a chat log you can't search.
 
-**shiplog** makes your git history remember everything. Not just *what* changed — but *why* it changed, what you considered, and what you discovered along the way.
+**shiplog** makes your git history remember everything. Not just *what* changed â€” but *why* it changed, what you considered, and what you discovered along the way.
 
 ```
-Brainstorm → Issue → Branch → Commits → PR
-    ↑                           ↑
-    |         Discoveries → New Issues / Stacked PRs
+Brainstorm â†’ Issue â†’ Branch â†’ Commits â†’ PR
+    â†‘                           â†‘
+    |         Discoveries â†’ New Issues / Stacked PRs
     |
-    └── Search it all later: issues, PRs, commits, memory
+    â””â”€â”€ Search it all later: issues, PRs, commits, memory
 ```
 
 ## What you get
 
-**Every brainstorm becomes a GitHub Issue.** Design decisions, alternatives considered, and a task list — all searchable forever.
+**Every brainstorm becomes a GitHub Issue.** Design decisions, alternatives considered, and a task list â€” all searchable forever.
 
-**Every commit carries context.** Not just "add JWT validation" — but *why* JWT over sessions, what you tried first, and what to watch out for.
+**Every commit carries context.** Not just "add JWT validation" â€” but *why* JWT over sessions, what you tried first, and what to watch out for.
 
 **Every PR tells the full story.** A timeline of the entire journey: what was planned, what was discovered mid-work, what changed and why.
 
-**Nothing falls through the cracks.** Find a sub-problem while coding? **shiplog** routes it — fix inline, stack a prerequisite PR, or spin off a new issue. Your discovery is never lost.
+**Nothing falls through the cracks.** Find a sub-problem while coding? **shiplog** routes it â€” fix inline, stack a prerequisite PR, or spin off a new issue. Your discovery is never lost.
 
-**Any model can pick up where another left off.** Every artifact is signed with who wrote it (which AI model, which tool). Context handoffs between models are first-class — not copy-paste.
+**Any model can pick up where another left off.** Every artifact is signed with who wrote it (which AI model, which tool). Context handoffs between models are first-class â€” not copy-paste.
 
 ---
 
@@ -57,14 +57,14 @@ Your existing workflow, with a knowledge trail that persists across sessions, mo
 
 ### Two modes
 
-**Full Mode** (default) — Knowledge goes directly into issues and PRs. Perfect for personal projects and open source.
+**Full Mode** (default) â€” Knowledge goes directly into issues and PRs. Perfect for personal projects and open source.
 
-**Quiet Mode** — Your team sees clean PRs. The full reasoning lives in a separate `--log` branch, one click away.
+**Quiet Mode** â€” Your team sees clean PRs. The full reasoning lives in a separate `--log` branch, one click away.
 
 ```
 main
-  └── feature/auth-middleware            ← Clean PR (team sees this)
-        └── feature/auth-middleware--log  ← Knowledge trail (one click away)
+  â””â”€â”€ feature/auth-middleware            â† Clean PR (team sees this)
+        â””â”€â”€ feature/auth-middleware--log  â† Knowledge trail (one click away)
 ```
 
 ---
@@ -77,7 +77,7 @@ No PR merges without review from a *different* AI model or a human. A single mod
 
 ### Agent identity signing
 
-Every artifact carries a provenance signature — `Authored-by: claude/opus-4.6 (claude-code)`. The signing system auto-detects the current model from the platform and makes everything searchable:
+Every artifact carries a provenance signature â€” `Authored-by: claude/opus-4.6 (claude-code)`. The signing system auto-detects the current model from the platform and makes everything searchable:
 
 ```bash
 gh issue list --search "Authored-by: claude/"   # all Claude artifacts
@@ -104,10 +104,10 @@ Find a bug while building a feature? **shiplog** classifies it and routes it:
 
 ```
 Discovery made during work
-  ├── Small fix (< 30 min)?         → Fix inline, add timeline comment
-  ├── Prerequisite for current work? → Stack a new branch/PR
-  ├── Independent but important?     → Create new issue, continue
-  └── Refactoring opportunity?       → Create issue tagged "refactor"
+  â”œâ”€â”€ Small fix (< 30 min)?         â†’ Fix inline, add timeline comment
+  â”œâ”€â”€ Prerequisite for current work? â†’ Stack a new branch/PR
+  â”œâ”€â”€ Independent but important?     â†’ Create new issue, continue
+  â””â”€â”€ Refactoring opportunity?       â†’ Create issue tagged "refactor"
 ```
 
 Stacked prerequisites get their own issue and branch with cross-references on the parent. Nothing gets lost.
@@ -118,7 +118,7 @@ Ship incrementally. Commits reference tasks (`feat(#42/T1): add JWT validation`)
 
 ### Verification profiles
 
-Configurable testing policies that travel with every task — even when delegated to a faster model:
+Configurable testing policies that travel with every task â€” even when delegated to a faster model:
 
 | Profile | Purpose |
 |---------|---------|
@@ -131,15 +131,15 @@ Profiles are composable and hierarchical (project > issue > task, tighten-only).
 
 ### Artifact envelopes
 
-Machine-readable metadata hidden in HTML comments. Agents fetch metadata first, read full bodies only when needed — saving tokens on long threads. Humans see clean markdown; machines get structured data.
+Machine-readable metadata hidden in HTML comments. Agents fetch metadata first, read full bodies only when needed â€” saving tokens on long threads. Humans see clean markdown; machines get structured data.
 
 ### Evidence-linked closure
 
-No issue closes without proof. Merged PRs, commit URLs, or decision artifacts — every closure needs linked evidence. Ambiguous matches are escalated, never silently closed.
+No issue closes without proof. Merged PRs, commit URLs, or decision artifacts â€” every closure needs linked evidence. Ambiguous matches are escalated, never silently closed.
 
 ### ID-first convention
 
-Every artifact keyed by `#ID` — branches, commits, PRs, tasks, timeline comments. One search finds everything:
+Every artifact keyed by `#ID` â€” branches, commits, PRs, tasks, timeline comments. One search finds everything:
 
 ```bash
 gh issue list --search "#42" --state all    # issues
@@ -158,7 +158,7 @@ Cross-platform from day one. Full Bash and PowerShell support using `gh ... --bo
 
 ### Worktree-first workflow
 
-One branch, one worktree, one agent. Safe concurrent operation by default — no branch-switching conflicts when multiple sessions are active.
+One branch, one worktree, one agent. Safe concurrent operation by default â€” no branch-switching conflicts when multiple sessions are active.
 
 ---
 
@@ -233,8 +233,8 @@ For local iteration without reinstalling after every change.
 
 ### Requirements
 
-- [`gh` CLI](https://cli.github.com/) — authenticated with `gh auth login`
-- `git` — in a repo with a GitHub remote
+- [`gh` CLI](https://cli.github.com/) â€” authenticated with `gh auth login`
+- `git` â€” in a repo with a GitHub remote
 - That's it. Everything else is optional.
 
 ## Configuration
@@ -248,7 +248,7 @@ Both optional. **shiplog** works without any configuration.
 
 ## Companion skills
 
-**shiplog** orchestrates other skills for richer workflows. All optional — without them, it falls back to direct `gh`/`git` commands.
+**shiplog** orchestrates other skills for richer workflows. All optional â€” without them, it falls back to direct `gh`/`git` commands.
 
 | Skill | Plugin | What It Adds |
 |-------|--------|-------------|
