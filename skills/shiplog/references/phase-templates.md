@@ -17,6 +17,10 @@ gh issue create \
 kind: state
 status: open
 phase: 1
+readiness: ready
+task_count: <N>
+tasks_complete: 0
+max_tier: <tier-N>
 updated_at: <ISO_TIMESTAMP>
 -->
 
@@ -570,6 +574,27 @@ Authored-by: <family>/<version> (<tool>)
 ### Timeline
 [Chronological narrative of how this evolved]
 ```
+
+## PHASE 6: Triage Scan Output
+
+Use this format when running a backlog triage scan. Parse envelope triage fields from issue bodies and cross-reference with open PRs.
+
+```markdown
+## Shiplog Triage Scan
+
+| # | Title | Readiness | Tasks | Max Tier | PR | Labels |
+|---|-------|-----------|-------|----------|----|--------|
+| 42 | Auth middleware | ready | 0/3 | tier-2 | — | `plan` |
+| 43 | Fix race condition | in-progress | 1/2 | tier-3 | #55 | `discovery` |
+| 44 | Refactor logging | done | 3/3 | — | #56 (open) | `plan`, `needs-review` |
+| 45 | Redesign auth flow | needs-design | 0/4 | tier-1 | — | `plan` |
+| 46 | Fix CSS glitch | blocked | 0/1 | tier-3 | — | `plan`, `blocker` |
+
+**Legend:** Readiness from envelope `readiness` field. Tasks = `tasks_complete`/`task_count`. PR = linked open PR if any.
+**Quick filters:** `gh issue list --label shiplog/ready` | `gh issue list --label shiplog/in-progress` | `gh issue list --label shiplog/needs-review`
+```
+
+When an issue body lacks triage envelope fields, infer what you can from the body (count task checkboxes, check for tier markers) and mark the readiness column as `?` to indicate missing metadata.
 
 ---
 

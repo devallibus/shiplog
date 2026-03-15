@@ -326,6 +326,12 @@ Discovery made during work
 2. **Prefer structured envelopes.** When artifacts carry machine-readable envelopes, fetch envelope metadata before reading full threads. See `references/artifact-envelopes.md` for the envelope format, artifact kinds, supersession model, and `gh` query patterns.
 3. **Search knowledge graph.** `/ork:memory search "keyword"` if available.
 4. **Compile summary.** See `references/phase-templates.md` for the retrieval summary format.
+5. **Triage scan (backlog queries).** When the user asks to find issues to implement, PRs to review, or needs a backlog overview, run a triage scan instead of fetching individual issue bodies:
+   1. Fetch all open issues with bodies in one call: `gh issue list --state open --json number,title,labels,body --limit 50`.
+   2. Parse the `<!-- shiplog: ... -->` envelope from each body to extract triage fields (`readiness`, `task_count`, `tasks_complete`, `max_tier`).
+   3. Cross-reference with open PRs (`gh pr list --state open --json number,title,head`) to detect issues that are "implemented but not merged."
+   4. Output a compact triage table. See `references/phase-templates.md` for the triage scan output template.
+   5. Only read full issue bodies for issues the user selects from the table.
 
 ---
 
