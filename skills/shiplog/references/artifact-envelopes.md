@@ -49,6 +49,30 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 | `amends` | no | string | Reference to the earlier artifact this one corrects or clarifies without replacing |
 | `supersedes` | no | string | Reference to the artifact this one replaces (see §3) |
 | `superseded_by` | no | string | Back-pointer added to the older artifact when superseded |
+| `readiness` | no | string | Triage signal: `ready`, `blocked`, `needs-design`, `in-progress`, or `done` (see §Triage fields) |
+| `task_count` | no | integer | Total number of tasks in the issue body |
+| `tasks_complete` | no | integer | Number of tasks with checked checkboxes |
+| `max_tier` | no | string | Highest tier among remaining (unchecked) tasks: `tier-1`, `tier-2`, or `tier-3` |
+
+### Triage fields
+
+The four fields above (`readiness`, `task_count`, `tasks_complete`, `max_tier`) exist specifically for **bulk triage** — letting agents rank and filter issues without reading full bodies.
+
+**When to include:** On `state` envelopes in issue bodies (Phase 1 creation and subsequent updates). Not needed on comments, PR bodies, or non-issue artifacts.
+
+**`readiness` values:**
+
+| Value | Meaning |
+|-------|---------|
+| `ready` | Tasks are scoped, no blockers, no unresolved tier-1 decisions. An agent can start work. |
+| `blocked` | A blocker prevents progress. Check for `shiplog/blocker` label or blocker comment. |
+| `needs-design` | Open tier-1 decisions or unresolved questions remain before implementation can begin. |
+| `in-progress` | Work has started (branch exists). |
+| `done` | All tasks complete. Issue may need PR creation or review to close. |
+
+**Derivation rule:** `readiness` is stated explicitly for fast parsing, but agents can cross-check: if `tasks_complete == task_count` and `task_count > 0`, readiness should be `done`. If `status` is `blocked`, readiness should be `blocked`.
+
+**`max_tier` rule:** Computed from unchecked tasks only. If all tasks are complete, omit or set to the lowest tier among completed tasks. This tells agents whether remaining work requires reasoning (tier-1) or is purely mechanical (tier-3).
 
 ### Normalization rules
 
@@ -59,6 +83,9 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 - **`edit_kind`:** use `correction` for factual or signature fixes, `amendment` for clarifications that preserve the original event, `rewrite` for substantial in-place rewrites, and `cosmetic` only when recording a non-semantic cleanup intentionally.
 - **Amendment/supersession references:** use the same `<artifact-location>#<kind>` format for `amends`, `supersedes`, and `superseded_by`.
 - **Supersession references:** `<artifact-location>#<kind>` — e.g., `issue/42#state` or `pr/55#verification`. See §3 for resolution.
+- **Triage integers:** bare integers — e.g., `task_count: 3` not `task_count: "3"`.
+- **`readiness`:** one of the five canonical values. Do not invent new values.
+- **`max_tier`:** one of `tier-1`, `tier-2`, `tier-3`. Omit when all tasks are complete.
 - **Unknown fields:** agents MUST ignore fields they do not recognize. This preserves forward compatibility as the schema evolves.
 
 ### Minimal envelope
@@ -251,15 +278,19 @@ This reduces token cost on issues with long discussion threads.
 
 ## Examples
 
-### Issue body with envelope
+### Issue body with envelope (including triage fields)
 
 ```markdown
 <!-- shiplog:
 kind: state
 issue: 42
 branch: issue/42-auth-middleware
-status: in-progress
-phase: 2
+status: open
+phase: 1
+readiness: ready
+task_count: 3
+tasks_complete: 0
+max_tier: tier-2
 updated_at: 2026-03-14T12:00:00Z
 -->
 
