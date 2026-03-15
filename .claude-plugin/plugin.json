@@ -7,5 +7,6 @@
   },
   "homepage": "https://github.com/devallibus/shiplog",
   "repository": "https://github.com/devallibus/shiplog",
-  "license": "MIT"
+  "license": "MIT",
+  "skills": "./skills/"
 }

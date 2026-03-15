@@ -1,0 +1,15 @@
+{
+  "name": "shiplog",
+  "owner": {
+    "name": "devallibus"
+  },
+  "metadata": {
+    "description": "Git-as-knowledge-graph workflow for traceability across issues, branches, commits, reviews, and PRs."
+  },
+  "plugins": [
+    {
+      "name": "shiplog",
+      "source": "./"
+    }
+  ]
+}
