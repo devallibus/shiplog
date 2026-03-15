@@ -107,6 +107,16 @@ Task ID rules:
 - Commits referencing a task use: `<type>(#<id>/<Tn>): <msg>`.
 - `[tier-3]` tasks MUST be executable without creative judgment.
 - `[tier-1]` tasks require reasoning — include **Why tier-1**.
+- Open Questions cross-check: before assigning `[tier-3]`, verify that
+  no field in the task assumes an answer to any item listed in
+  `## Open Questions`. If the task hardcodes a value that Open Questions
+  marks as undecided, either resolve the open question first (move the
+  decision into the task contract and remove it from Open Questions) or
+  promote the task to `[tier-2]` or `[tier-1]`.
+- `[tier-3]` tasks must use the full contract format (all fields from the
+  tier-3 template above). Compressed or abbreviated formats are acceptable
+  only for `[tier-1]` and `[tier-2]` tasks, which carry their own decision
+  budgets. If a field is not applicable, write `none` rather than omitting it.
 
 ## Open Questions
 
