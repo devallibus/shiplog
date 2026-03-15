@@ -71,7 +71,7 @@ Once the design is approved, create a **shiplog** issue using the template in `.
 5. **Provenance signature** — `Authored-by:` per `signing.md`
 6. **Label** — `shiplog/plan` applied at creation time
 
-Bootstrap **shiplog** labels first if this is the first labeled create in the repo (see `labels.md`).
+Bootstrap **shiplog** labels first if this is the first labeled create in the repo (see `labels.md`). Use the portable `--body-file` pattern from `shell-portability.md` for the issue body.
 
 ## Transition
 
