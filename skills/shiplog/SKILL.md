@@ -198,6 +198,28 @@ Label rules:
 - When resuming work on an existing issue or PR, backfill missing Shiplog labels when the mapping is high-confidence from the title, body, or branch. Do not remove user labels that are outside the `shiplog/` namespace.
 - `shiplog/blocker` is stateful. Add it when the tracked work becomes blocked and remove it when the blocker is cleared.
 - Keep the set compact. Prefer one artifact label plus at most one or two structural/state labels such as `shiplog/stacked`, `shiplog/quiet-mode`, `shiplog/issue-driven`, or `shiplog/blocker`.
+- **Lifecycle labels** (`shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`) are mutually exclusive — only one active at a time. See `references/labels.md` for transition commands.
+
+---
+
+## Triage Field Maintenance
+
+Issue envelope triage fields (`readiness`, `task_count`, `tasks_complete`, `max_tier`) and lifecycle labels must be kept current so triage scans (Phase 6) produce accurate results.
+
+**When to update:**
+
+| Event | Envelope update | Label update |
+|-------|----------------|--------------|
+| Issue created (Phase 1) | Set all four triage fields at creation | Apply `shiplog/ready` if tasks are scoped and no blockers |
+| Branch created (Phase 2) | Set `readiness: in-progress` | Replace lifecycle label with `shiplog/in-progress` |
+| Task checked off (Phase 4) | Increment `tasks_complete`, recompute `max_tier` from remaining tasks | — |
+| All tasks complete | Set `readiness: done`, clear `max_tier` | — |
+| Blocker found (Phase 3) | Set `readiness: blocked` | Add `shiplog/blocker` (lifecycle label stays as-is) |
+| Blocker cleared | Restore previous `readiness` (`in-progress` or `ready`) | Remove `shiplog/blocker` |
+| PR created (Phase 5) | Set `readiness: done` if all tasks shipped | Replace lifecycle label with `shiplog/needs-review` |
+| PR merged and issue closed | — | Remove all lifecycle labels |
+
+**How to update:** Edit the issue body in place — refresh the `<!-- shiplog: ... -->` envelope fields and `updated_at`. This is an envelope-only edit; it does not require `Updated-by:` provenance since triage fields are derived metadata, not authored content.
 
 ---
 
