@@ -108,6 +108,7 @@ Closes #<ISSUE_NUMBER>
 
 ---
 Authored-by: <family>/<version> (<tool>)
+Last-code-by: <family>/<version> (<tool>)
 *Captain's log - PR timeline by [shiplog](https://github.com/devallibus/shiplog)*
 ```
 
@@ -201,5 +202,6 @@ Addresses #<ISSUE_NUMBER> (completes T1, T2, T3)
 
 ---
 Authored-by: <family>/<version> (<tool>)
+Last-code-by: <family>/<version> (<tool>)
 *Captain's log - partial delivery by [shiplog](https://github.com/devallibus/shiplog)*
 ```
