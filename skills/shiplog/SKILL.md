@@ -203,7 +203,7 @@ This skill ORCHESTRATES. For activities that directly produce shiplog artifacts 
 | Committing | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, context comments |
 | Creating PRs | `references/pr-workflow.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate |
 | Finishing branches | `references/pr-workflow.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
-| Brainstorming | `superpowers:brainstorming` or `ork:brainstorming` | — | Issue creation from output |
+| Brainstorming | `references/brainstorm-workflow.md` | `superpowers:brainstorming`, `ork:brainstorming` | Design-to-issue capture with task contracts |
 | Planning | `superpowers:writing-plans` | — | Issue task list mirroring |
 | Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
 | Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
@@ -250,6 +250,7 @@ These workflows are built into shiplog's `references/` and enforce conventions d
 |----------|-----------|----------|
 | Commit conventions | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` |
 | PR creation conventions | `references/pr-workflow.md` | `ork:create-pr`, `superpowers:finishing-a-development-branch` |
+| Brainstorm capture | `references/brainstorm-workflow.md` | `superpowers:brainstorming` (output capture) |
 
 ### Optional External Skills
 
@@ -262,8 +263,8 @@ These skills enhance shiplog but are not required. Shiplog's conventions take pr
 | `ork:stacked-prs` | OrchestKit | Stacked PR mechanics and management |
 | `ork:issue-progress-tracking` | OrchestKit | Auto-checkbox updates from commits |
 | `ork:remember` / `ork:memory` | OrchestKit | Knowledge graph storage and retrieval |
-| `ork:brainstorming` | OrchestKit | Parallel agent brainstorming |
-| `superpowers:brainstorming` | Superpowers | Design-first brainstorming workflow |
+| `ork:brainstorming` | OrchestKit | Parallel agent exploration (steps 1-4) |
+| `superpowers:brainstorming` | Superpowers | Visual companion, design dialogue (steps 1-4) |
 | `superpowers:using-git-worktrees` | Superpowers | Isolated workspace creation |
 | `superpowers:writing-plans` | Superpowers | Structured plan documents |
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
