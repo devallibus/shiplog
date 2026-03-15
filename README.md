@@ -258,6 +258,7 @@ The built-in label set is:
 - `shiplog/quiet-mode`
 
 `shiplog/blocker` is stateful: add it when progress is blocked, remove it when the blocker clears.
+
 ## Shell Portability
 
 shiplog is cross-platform from day one. All templates and commands work on both Bash (macOS/Linux) and PowerShell (Windows). The key pattern: use `gh ... --body-file <temp-file>` for multiline content instead of inline heredocs.
