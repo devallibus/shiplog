@@ -51,15 +51,16 @@ When no `.shiplog/routing.md` exists, or when the user runs `/shiplog models`:
 
 ## Default Phase-to-Tier Mapping
 
-| Phase | Default Tier | Rationale |
-|-------|--------------|-----------|
-| 1. Brainstorm-to-Issue | tier-1 | Creative architecture, exploring design alternatives |
-| 2. Issue-to-Branch | tier-2 | Context loading, plan assessment, approach formulation |
-| 3. Discovery Protocol | tier-2 | Scope judgment — categorizing discoveries requires cross-cutting analysis |
-| 4. Commit-with-Context | tier-3 | Structured template, low creativity |
-| 5. PR-as-Timeline | tier-1 | Narrative synthesis, journey reflection, extracting lessons |
-| 6. Knowledge Retrieval | tier-2 | Search synthesis, connecting dots across artifacts |
-| 7. Timeline Maintenance | tier-3 | Checkpoint updates, template filling |
+| Phase | Default Tier | Recommended Mode | Rationale |
+|-------|--------------|-----------------|-----------|
+| 1. Brainstorm-to-Issue | tier-1 | plan | Analysis and design — no code changes expected |
+| 2. Issue-to-Branch | tier-2 | plan then agent | Load context in plan mode, then switch to agent to create branch |
+| 3. Discovery Protocol | tier-2 | plan then agent | Classify the discovery before acting on it |
+| 4. Commit-with-Context | tier-3 | agent | Pure execution — staging, committing, posting |
+| 5. PR-as-Timeline | tier-1 | plan | Narrative synthesis — composing the PR body, not touching code |
+| 6. Knowledge Retrieval | tier-2 | plan | Read-only search and synthesis |
+| 7. Timeline Maintenance | tier-3 | agent | Posting comments and updates |
+| Review execution | — | plan | Reviewing a diff should not modify code |
 
 ---
 
@@ -110,6 +111,72 @@ routing: off
 ```
 
 This silences routing prompts for that specific issue only. Useful for simple tasks where tier switching adds no value.
+
+---
+
+## Mode Routing
+
+In addition to tier routing (which model), shiplog recommends an **execution mode** (plan vs. agent) for each phase. Plan mode prevents premature execution during analysis phases; agent mode is for phases that create or modify artifacts.
+
+### Mode definitions
+
+| Mode | Purpose | What the agent may do |
+|------|---------|----------------------|
+| **plan** | Analysis, design, classification, synthesis | Read files, search, compose text. No file writes, no shell commands that modify state. |
+| **agent** | Execution, creation, modification | Full tool access — write files, run commands, post artifacts. |
+| **plan then agent** | Two-step phases | Start in plan mode for context loading or classification, then switch to agent mode for execution within the same phase. |
+
+### Mode switching capability by tool
+
+Not all tools support agent-initiated mode switching. Where unavailable, mode routing is advisory — the skill prompts the user to switch, just like tier routing.
+
+| Tool | Agent can self-switch? | Activation | Fallback |
+|------|----------------------|------------|----------|
+| **Claude Code** | Yes | The agent can invoke `exit_plan_mode` to enter plan-mode workflow. Auto Plan Mode can be configured via `--append-system-prompt`. | N/A — self-switch available |
+| **Codex CLI** | Not yet | Pending [openai/codex#11180](https://github.com/openai/codex/issues/11180). User switches with `/plan` or `Shift+Tab`. | Advisory prompt — ask the user to switch |
+| **Cursor** | No | User switches with `Shift+Tab`. Plan Mode, Ask Mode, and Agent Mode are user-controlled. | Advisory prompt — ask the user to switch |
+
+### Mode routing behavior
+
+Mode advisories follow the same `confirm` / `warn` / `off` routing config as tier advisories — they share the same setting in `.shiplog/routing.md`. Mode transitions are checked alongside tier transitions in the phase entry check.
+
+A mode advisory is emitted when the entering phase's recommended mode differs from the previous phase's mode.
+
+### Mode routing prompt format
+
+#### `confirm` mode
+
+```
+---
+[shiplog routing] Entering <Phase Name> — recommends tier-X (<profile>), plan mode.
+Switch to plan mode before proceeding.
+  Claude Code: agent will enter plan mode automatically.
+  Codex: type /plan or press Shift+Tab.
+  Cursor: press Shift+Tab to select Plan Mode.
+Continue? (y / or switch first)
+---
+```
+
+#### `warn` mode
+
+```
+---
+[shiplog routing] Entering <Phase Name> — recommends tier-X (<profile>), plan mode.
+---
+```
+
+#### `off` mode
+
+No mode advisory prompt. For tools with self-switch capability (Claude Code), the agent still enters plan mode silently when the phase recommends it.
+
+### Tool-conditional self-switching
+
+When the recommended mode is `plan` and the tool supports agent-initiated mode switching:
+
+1. **Claude Code:** The agent should enter plan mode at the start of the phase. This prevents accidental file modifications during analysis phases. The agent exits plan mode when the phase transitions to agent work or when the next phase begins.
+2. **Codex / Cursor:** The skill emits an advisory prompt per the routing config. If the user does not switch, proceed normally — never block.
+
+When the recommended mode is `plan then agent`, the plan-mode portion covers context loading and classification. The agent switches to (or the user is prompted for) agent mode when the phase reaches its execution step.
 
 ---
 

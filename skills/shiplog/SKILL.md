@@ -47,6 +47,8 @@ The skill cannot switch models — only the user can. Routing is purely advisory
 | **tier-2** (capable) | Context loading, judgment, structured docs | Phase 2, Phase 3, Phase 6 |
 | **tier-3** (fast) | Execution, routine commits, templates | Phase 4, Phase 7 |
 
+In addition to tier, each phase has a recommended **execution mode** (plan or agent). Some tools support agent-initiated mode switching (Claude Code); for others, mode routing is advisory. See `references/model-routing.md` for the mode routing reference, capability table, and prompt format.
+
 ### Routing behavior
 
 Configured in `.shiplog/routing.md` (one field). Resolution order: per-issue `## Model Routing` > `.shiplog/routing.md` > built-in default (`confirm`).
@@ -67,12 +69,14 @@ Every phase begins with this check:
 
 1. Read routing mode from per-issue override > `.shiplog/routing.md` > default (`confirm`).
 2. If work is transferring to another model/tool, write a handoff comment per `references/model-routing.md`.
-3. If mode is `off`, skip to Step 1.
-4. Compare the entering phase's tier to the previous phase's tier. If same, skip to Step 1.
-5. If mode is `confirm`: emit the routing prompt and wait for user acknowledgment.
-6. If mode is `warn`: emit the routing banner and continue immediately.
+3. If mode is `off`, skip to Step 1 — but if the tool supports agent-initiated mode switching (Claude Code) and the phase recommends plan mode, enter plan mode silently.
+4. Compare the entering phase's tier and recommended mode to the previous phase's tier and mode. If both are the same, skip to Step 1.
+5. If mode is `confirm`: emit the routing prompt (including mode advisory when the recommended mode changes) and wait for user acknowledgment.
+6. If mode is `warn`: emit the routing banner (including mode advisory) and continue immediately.
 
-**Routing mismatch:** If the user continues without switching models, proceed normally. Never block or repeat the prompt.
+**Mode self-switching:** When the entering phase recommends plan mode and the tool supports self-switching (Claude Code), the agent enters plan mode at phase start regardless of routing config. This is a safety measure, not an advisory.
+
+**Routing mismatch:** If the user continues without switching models or modes, proceed normally. Never block or repeat the prompt.
 
 See `references/model-routing.md` for routing prompt format, handoff template, and tier reference table.
 
@@ -184,7 +188,7 @@ Key rules:
 
 ## PHASE 1: Brainstorm-to-Issue
 
-<!-- routing: tier-1 -->
+<!-- routing: tier-1, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0). On first activation, if `.shiplog/routing.md` is missing, run the setup prompt first.
 
@@ -207,7 +211,7 @@ Key rules:
 
 ## PHASE 2: Issue-to-Branch
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan then agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -242,7 +246,7 @@ Key rules:
 
 ## PHASE 3: Discovery Protocol
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan then agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -264,7 +268,7 @@ Discovery made during work
 
 ## PHASE 4: Commit-with-Context
 
-<!-- routing: tier-3 -->
+<!-- routing: tier-3, agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -280,7 +284,7 @@ Discovery made during work
 
 ## PHASE 5: PR-as-Timeline
 
-<!-- routing: tier-1 -->
+<!-- routing: tier-1, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
@@ -300,7 +304,7 @@ Discovery made during work
 
 ## PHASE 6: Knowledge Retrieval
 
-<!-- routing: tier-2 -->
+<!-- routing: tier-2, plan -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 1. **Search git history.** Issues, PRs, commits via `gh` and `git log --grep`.
@@ -312,7 +316,7 @@ Discovery made during work
 
 ## PHASE 7: Timeline Maintenance
 
-<!-- routing: tier-3 -->
+<!-- routing: tier-3, agent -->
 
 0. **Routing check (Step 0).** Run the [phase entry check](#phase-entry-check-step-0).
 
