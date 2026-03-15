@@ -59,11 +59,13 @@ Authored-by: <family>/<version> (<tool>)
 | `session-start` | `handoff` |
 | `session-resume` | `state` |
 | `milestone` | `state` |
-| `discovery` | `blocker` |
+| `discovery` | `state` |
 | `implementation-issue` | `state` |
 | `approach-change` | `state` |
 | `blocker` | `blocker` |
 | `session-end` | `history` |
+
+Use `kind: blocker` only when the discovery actually prevents progress. Informational discoveries stay `state` artifacts, while blocking discoveries should use the explicit `blocker` tag or the blocker-specific template.
 
 ---
 

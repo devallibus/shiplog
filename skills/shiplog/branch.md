@@ -102,10 +102,29 @@ If you deferred a brainstorm from plan capture, use that saved content as the in
 
 Then post a session-start comment on the `--log` PR:
 ```bash
-gh pr comment <LOG_PR_NUMBER> --body "[shiplog/session-start] Work started. Approach: [1-2 sentences]"
+gh pr comment <LOG_PR_NUMBER> --body-file <temp-file>
 ```
 
-On PowerShell, use backtick for line continuation instead of `\`, or pass via `--body-file`.
+Comment body:
+```markdown
+<!-- shiplog:
+kind: handoff
+issue: <ISSUE_NUMBER>
+phase: 2
+updated_at: <ISO_TIMESTAMP>
+-->
+
+## [shiplog/session-start] <Brief description of the work>
+
+**Branch:** `<branch>--log`
+**Approach:** [1-2 sentences about the plan for this session]
+
+---
+Authored-by: <family>/<version> (<tool>)
+*Captain's log — session start*
+```
+
+Use the portable temp-file pattern from `references/shell-portability.md`.
 
 ---
 
