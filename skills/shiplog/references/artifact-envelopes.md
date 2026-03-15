@@ -49,6 +49,22 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 | `amends` | no | string | Reference to the earlier artifact this one corrects or clarifies without replacing |
 | `supersedes` | no | string | Reference to the artifact this one replaces (see §3) |
 | `superseded_by` | no | string | Back-pointer added to the older artifact when superseded |
+| `readiness` | no | string | Triage signal: `ready`, `blocked`, `needs-design`, `in-progress`, or `done` |
+| `task_count` | no | integer | Total number of tasks in the issue body |
+| `tasks_complete` | no | integer | Number of checked tasks |
+| `max_tier` | no | string | Highest tier among remaining tasks: `tier-1`, `tier-2`, or `tier-3` |
+
+### Triage fields
+
+Use triage fields on issue-body `state` envelopes so agents can rank work without reading the whole issue body.
+
+| Value | Meaning |
+|-------|---------|
+| `ready` | Tasks are scoped and implementation can begin |
+| `blocked` | A blocker prevents progress |
+| `needs-design` | Open tier-1 decisions remain |
+| `in-progress` | Work has started |
+| `done` | All tasks are complete |
 
 ### Normalization rules
 
@@ -58,7 +74,11 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 - **`updated_by`:** normalized like the signature body without the role prefix — e.g., `openai/gpt-5.4 (codex, effort: high)`.
 - **`edit_kind`:** use `correction` for factual or signature fixes, `amendment` for clarifications that preserve the original event, `rewrite` for substantial in-place rewrites, and `cosmetic` only when recording a non-semantic cleanup intentionally.
 - **Amendment/supersession references:** use the same `<artifact-location>#<kind>` format for `amends`, `supersedes`, and `superseded_by`.
-- **Supersession references:** `<artifact-location>#<kind>` — e.g., `issue/42#state` or `pr/55#verification`. See §3 for resolution.
+- **Supersession references:** `<artifact-location>#<kind>` - e.g., `issue/42#state` or `pr/55#verification`. See Section 3 for resolution.
+- **Triage integers:** use bare integers, not quoted strings.
+- **`readiness`:** use only `ready`, `blocked`, `needs-design`, `in-progress`, or `done`.
+- **`max_tier`:** use `tier-1`, `tier-2`, or `tier-3`; omit it when all tasks are complete.
+- **Line endings:** normalize `\r\n` to `\n` before parsing envelopes on Windows.
 - **Unknown fields:** agents MUST ignore fields they do not recognize. This preserves forward compatibility as the schema evolves.
 
 ### Minimal envelope

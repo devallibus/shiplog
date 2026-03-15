@@ -174,6 +174,25 @@ Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointe
 
 This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
 
+### Review sign-off comment template
+
+When posting a review as a GitHub comment, wrap the sign-off in an envelope:
+
+```markdown
+<!-- shiplog:
+kind: verification
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+updated_at: <ISO_TIMESTAMP>
+-->
+
+Reviewed-by: <family>/<version> (<tool>)
+Disposition: approve | request-changes
+Scope: <what was reviewed>
+```
+
+See `references/signing.md` for the full signing protocol.
+
 ### What constitutes "different model"
 
 - Different model family (e.g., Opus vs Sonnet, GPT-5 vs Claude).
@@ -244,6 +263,7 @@ If spawning is unavailable, generate a self-contained review contract for the us
 - [ ] No unintended side effects or regressions
 - [ ] Cross-references between files are consistent
 - [ ] Templates and examples are correct
+- [ ] Relevant implementation issues are durably captured
 
 ### Output required
 Sign-off comment with:
@@ -305,6 +325,10 @@ A PR may be merged when:
 2. All `request-changes` reviews have been addressed (new review cycle or author response).
 3. The PR body includes `Closes #<N>` linking to the tracking issue.
 4. The issue closure will have linked evidence (the merged PR itself serves as evidence).
+
+### Implementation issue capture check
+
+Reviewers must check whether failed attempts, hidden dependencies, risky workarounds, scope surprises, and verification gaps were captured as durable artifacts instead of remaining in chat-only memory.
 
 ### Risk-based review requirements
 
