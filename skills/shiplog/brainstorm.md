@@ -10,7 +10,7 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`. On first activation, if `.shiplog/routing.md` is missing, run the setup prompt first.
 
-1. **Run the brainstorm.** Delegate to `superpowers:brainstorming` or `ork:brainstorming`, or brainstorm inline for quick discussions.
+1. **Run the brainstorm.** Follow `references/brainstorm-workflow.md` for the design exploration process. External skills (`superpowers:brainstorming`, `ork:brainstorming`) may be used for the exploration phase (steps 1-4) but output capture (steps 5-6) follows the internalized workflow.
 
 2. **Capture as GitHub Issue (Full Mode).** Before the first labeled create in a repo, bootstrap the Shiplog labels per `references/labels.md`. Create the issue with `shiplog/plan` already applied using the template below. Sign the issue body per `references/signing.md`.
 
