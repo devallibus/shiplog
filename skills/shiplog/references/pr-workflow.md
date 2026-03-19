@@ -95,7 +95,7 @@ Check whether this PR fully resolves the issue or is a partial delivery.
 
 **Full delivery:** All tasks in the issue are complete. Use `Closes #<id>`.
 
-**Partial delivery:** Some tasks are complete but others are blocked or deferred. Use `Addresses #<id> (completes T1, T2, ...)` — this does not trigger GitHub auto-close.
+**Partial delivery:** Some tasks are complete but others are blocked or deferred. Use `Addresses #<id> (completes T1, T2, ...)` â€” this does not trigger GitHub auto-close.
 
 ## Step 4: Create the PR
 
@@ -178,8 +178,8 @@ For Quiet Mode, the feature PR is clean (no shiplog content). The `--log` PR car
 
 When implementation is complete and all tests pass, present these options:
 
-1. **Push and create PR** — the standard shiplog path (this workflow).
-2. **Keep the branch** — for further work before PR.
+1. **Push and create PR** â€” the standard shiplog path (this workflow).
+2. **Keep the branch** â€” for further work before PR.
 
 Shiplog does not support direct local merges without a PR, because every merge must go through the review gate. If the user requests a local merge, note the review requirement and offer to create a PR instead.
 
@@ -192,4 +192,3 @@ This workflow internalizes conventions from:
 - [Superpowers](https://github.com/obra/superpowers) `superpowers:finishing-a-development-branch` (MIT License)
 
 See `LICENSES/` for full license texts.
-

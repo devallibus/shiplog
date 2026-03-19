@@ -16,7 +16,7 @@ Do not close an issue without linked evidence and a verification note.
 |---------------|-------------|
 | Commit URL on default branch | The fix is a code change that has been merged |
 | Merged PR URL | The fix is better represented by the full PR |
-| Discussion or decision artifact | No code change — the issue was resolved by a decision, policy change, or external action |
+| Discussion or decision artifact | No code change â€” the issue was resolved by a decision, policy change, or external action |
 
 **Preference order:** Commit on default branch > merged PR > discussion artifact. Use the most specific link available.
 
@@ -29,7 +29,7 @@ Every closure must include a comment (or be closed via PR body `Closes #N` with 
 
 **Evidence:** [URL to commit, PR, or decision artifact]
 **Merged to default branch:** yes | no | n/a
-**Verification:** [1-3 sentences — why this evidence satisfies the issue]
+**Verification:** [1-3 sentences â€” why this evidence satisfies the issue]
 **Disposition:** fully resolved | superseded by #<N> | won't fix (reason)
 ```
 
@@ -163,7 +163,7 @@ Every review comment must include a structured sign-off block:
 ```
 Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | approve-with-follow-ups | request-changes
-Scope: <what was reviewed — e.g., "full diff", "SKILL.md + artifact-envelopes.md">
+Scope: <what was reviewed â€” e.g., "full diff", "SKILL.md + artifact-envelopes.md">
 Follow-ups: #<issue-number> | none
 ```
 
@@ -173,7 +173,7 @@ When using `approve-with-follow-ups`, the `Follow-ups:` field must reference a v
 ```
 Reviewed-by: claude/sonnet-4 (claude-code)
 Disposition: approve
-Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
+Scope: full diff â€” references/artifact-envelopes.md structure, SKILL.md pointer
 Follow-ups: none
 ```
 
@@ -181,7 +181,7 @@ Follow-ups: none
 ```
 Reviewed-by: claude/opus-4.6 (claude-code)
 Disposition: approve-with-follow-ups
-Scope: full diff — 19 files, sub-skill decomposition
+Scope: full diff â€” 19 files, sub-skill decomposition
 Follow-ups: #119
 Findings:
 - F1: brainstorm.md envelope missing triage fields [follow-up]
@@ -260,16 +260,24 @@ Read the PR body's review snapshot first. If the snapshot is missing, stale, or 
 4. **Review PRs where the last code author is a different model.** These are candidates for cross-model review. A model that originally opened a PR CAN gate-satisfy a review if a different model subsequently pushed code changes - the gate is about who last changed the code, not who opened the PR.
 5. If all open PRs were last coded by the current model, inform the user:
    > "All open PRs were last coded by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
-6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as self-review per Section 4 audit trail rules.
+6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
+
 The PR body review snapshot is the latest-wins summary. Read it first for current state, then verify against signed review comments when the snapshot is missing, stale, or needs explanation.
+
 **Provenance fallback chain for determining last code author:**
+
 Use the first available signal - each level is less authoritative than the one above:
-1. **Last-code-by:** in the PR body - authoritative. This field tracks who most recently pushed code to the branch. See eferences/signing.md ? Code Provenance.
-2. **Updated-by:** in the PR body - approximate. May reflect artifact text edits rather than code changes, but is the best proxy when Last-code-by: is absent.
-3. **Authored-by:** in the PR body - original author. May be stale if another model pushed code later.
+
+1. **`Last-code-by:`** in the PR body - authoritative. This field tracks who most recently pushed code to the branch. See `references/signing.md` code provenance.
+2. **`Updated-by:`** in the PR body - approximate. May reflect artifact text edits rather than code changes, but is the best proxy when `Last-code-by:` is absent.
+3. **`Authored-by:`** in the PR body - original author. May be stale if another model pushed code later.
 4. **Git commit author** on the PR branch - last resort. Requires an additional API call and uses git metadata rather than signed artifacts, but provides ground truth when no signed field exists.
+
 If none of these signals are available, treat code authorship as unknown and do not claim a gate-satisfying review.
-**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see ?4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for Reviewed-by: and Disposition: lines. Do not rely on the formal reviews API endpoint alone - it will miss most AI-operated reviews.---
+
+**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see Section 4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone - it will miss most AI-operated reviews.
+
+---
 
 ## 4. Review Execution Ladder
 
@@ -302,9 +310,9 @@ If spawning is unavailable, generate a self-contained review contract for the us
 ```markdown
 ## Review Contract
 
-**PR:** #<N> — <title>
+**PR:** #<N> â€” <title>
 **Author:** <model name> (<tool>)
-**Branch:** <branch> ? <base>
+**Branch:** <branch> â†’ <base>
 **Diff command:** `gh pr diff <N>`
 
 ### What to review
@@ -333,11 +341,11 @@ When cross-model review is genuinely unavailable (single-tool environment, urgen
 
 1. The author signs a self-review clearly marked as non-satisfying.
 2. The sign-off explicitly states that independent review is still required.
-3. The PR stays open — merge is blocked until an independent reviewer approves.
+3. The PR stays open â€” merge is blocked until an independent reviewer approves.
 
 ```
 Reviewed-by: claude/opus-4.6 (claude-code)
-Disposition: self-review (does NOT satisfy gate — independent review required)
+Disposition: self-review (does NOT satisfy gate â€” independent review required)
 Scope: full diff
 Note: Self-review recorded as audit trail. This PR must not merge until an independent cross-model review is completed.
 ```
@@ -348,7 +356,7 @@ Note: Self-review recorded as audit trail. This PR must not merge until an indep
 
 ### Review completion: default publication
 
-A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
+A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol â€” the canonical artifact must be durable and visible on the PR timeline.
 
 **Default behavior:** After completing the review analysis and summarizing findings to the user, post the signed review artifact on the PR. Then link the posted comment in the user-facing response.
 
@@ -364,7 +372,7 @@ Unless one of these exceptions applies, publication is the assumed completion st
 
 1. Report the blocker to the user immediately.
 2. Provide the exact signed review artifact text in the chat response so the user can post it manually or the agent can retry later.
-3. Do not mark the review as complete — note that publication is pending.
+3. Do not mark the review as complete â€” note that publication is pending.
 4. On next opportunity, retry posting the artifact or confirm the user has posted it.
 
 The signed artifact text is the deliverable. GitHub publication is the delivery mechanism. When the mechanism fails, preserve the deliverable intact and make the failure visible.
@@ -399,7 +407,7 @@ Reviewers must check whether failed attempts, hidden dependencies, risky workaro
 ### After merge
 
 1. Verify the linked issue(s) are closed (GitHub auto-close via `Closes #N`, or manual closure with evidence).
-2. If manual closure is needed, use the closure comment format from §1.
+2. If manual closure is needed, use the closure comment format from Â§1.
 3. Post a verification note if the auto-close does not carry sufficient evidence context.
 4. If any approving review used `approve-with-follow-ups`, verify the follow-up issue referenced in `Follow-ups:` is open and correctly lists the non-blocking findings from the review.
 
@@ -426,5 +434,4 @@ Commit context comments do not require cross-model review. The review gate appli
 When a PR merges and auto-closes issues via `Closes #N`:
 - The merged PR is the evidence.
 - If the PR body contains a clear evidence table or summary, no additional closure comment is needed.
-- If the relationship between the PR and the issue is non-obvious, add a closure comment per §1.
-
+- If the relationship between the PR and the issue is non-obvious, add a closure comment per Â§1.
