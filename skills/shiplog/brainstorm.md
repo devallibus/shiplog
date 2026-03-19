@@ -45,7 +45,7 @@ kind: state
 status: open
 phase: 1
 readiness: needs-design
-task_count: 0
+task_count: 2
 tasks_complete: 0
 max_tier: tier-1
 updated_at: <ISO_TIMESTAMP>
