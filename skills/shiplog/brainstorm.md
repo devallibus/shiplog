@@ -18,6 +18,7 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
    - **Internal claims** about this repository's code, tests, configuration, or committed docs can be verified from the repo itself.
    - **External claims** about third-party tools, URLs, APIs, platform capabilities must be verified against primary sources before they are stated as facts.
    - If an external claim cannot be verified yet, keep it explicitly marked as `[unverified]` and treat it as a hypothesis, not settled input.
+   - Do not turn an unverified claim into a task requirement, acceptance criterion, or architectural decision without a verification step.
 
 3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until branch setup. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created.
 
@@ -43,6 +44,10 @@ Issue body content:
 kind: state
 status: open
 phase: 1
+readiness: needs-design
+task_count: 0
+tasks_complete: 0
+max_tier: tier-1
 updated_at: <ISO_TIMESTAMP>
 -->
 
