@@ -8,7 +8,7 @@ description: Scan open issues and PRs, rank by readiness, recommend what to work
 - Repo: !`gh repo view --json nameWithOwner --jq '.nameWithOwner'`
 - Current branch: !`git branch --show-current`
 - Open issues with labels: !`gh issue list --state open --json number,title,labels --limit 30`
-- Open PRs with review status: !`gh pr list --state open --json number,title,reviewDecision,reviews,isDraft,body --limit 20`
+- Open PRs with review status: !`gh pr list --state open --json number,title,reviewDecision,reviews,isDraft,body,url --limit 20`
 
 ## Your Task
 
@@ -52,25 +52,35 @@ Group open issues by their lifecycle label:
 
 ### Step 2: Categorize PRs
 
-Group open PRs by review status:
+Group open PRs by **shiplog** review status.
+
+For each open PR, inspect signed review artifacts in the PR body and comments by searching for:
+- `Reviewed-by:`
+- `Disposition: approve`
+- `Disposition: request-changes`
+
+Use `gh pr view <N> --json body,comments,reviewDecision,reviews` when the list output is not enough.
+
+Treat signed **shiplog** review comments as the authoritative review signal. Formal GitHub `reviews` / `reviewDecision` fields are advisory only and must not override a signed `Reviewed-by:` comment artifact.
 
 | Priority | Status | Action Needed |
 |----------|--------|---------------|
-| 1 | No reviews, not draft | Needs review — can we review and merge? |
-| 2 | Changes requested | Needs fixes then re-review |
-| 3 | Approved | Ready to merge |
+| 1 | No signed review artifact, not draft | Needs first review |
+| 2 | Latest signed review is `request-changes` | Needs fixes then re-review |
+| 3 | Latest signed review is `approve` | Ready to merge if other gates are satisfied |
 | 4 | Draft | Still in progress |
 
 ### Step 2a: Check PR Code Authorship Against Agent Identity
 
-For each PR from Step 2, determine who **last changed the code** using the provenance fallback chain from `references/signing.md` § Code Provenance:
+For each PR from Step 2, determine who **last changed the code** using this fallback chain:
 
 1. **`Last-code-by:`** in the PR body (authoritative)
-2. **`Updated-by:`** in the PR body (approximate — may reflect text edits, not code)
-3. **`Authored-by:`** in the PR body (original author — may be stale)
-4. If none found, the code author is **unknown**
+2. **`Updated-by:`** in the PR body (approximate - may reflect text edits, not code)
+3. **`Authored-by:`** in the PR body (original author - may be stale)
+4. **Latest commit author on the PR branch** (last resort - inspect the PR branch's newest commit)
+5. If none of these signals are available, the code author is **unknown**
 
-Extract the `<family>/<version>` from the first available field and compare against your identity from Step 0.
+Extract the `<family>/<version>` from the first available signal and compare against your identity from Step 0.
 
 Classify each PR:
 
@@ -78,14 +88,14 @@ Classify each PR:
 |----------------|-----------|-----------------|
 | **cross-model** | Last code author is a different model family or version | Gate-satisfying review |
 | **same-model** | Last code author matches your identity | Cannot gate-satisfy review (audit trail only) |
-| **unknown** | No provenance fields found in PR body | Cannot assume cross-model — treat as blocked |
+| **unknown** | No signed provenance field or commit-author signal is available | Cannot assume cross-model - treat as blocked |
 
 ### Step 3: Present the Hunt Report
 
 Display a compact table with your identity header and reviewability annotations:
 
 ```
-HUNT REPORT — <repo> (<date>)
+HUNT REPORT - <repo> (<date>)
 Agent: <identity>, <tier>
 ================================
 
@@ -106,9 +116,13 @@ ISSUES NEEDING PLANNING:
 ```
 
 Where `<reviewability>` is one of:
-- `✓ cross-model (last code: <identity>)` — you can gate-satisfy review
-- `⊘ same-model (last code: <identity>)` — review blocked, same model
-- `? unknown author` — no provenance, treat as blocked
+- `approved + cross-model (last code: <identity>)` - reviewed and mergeable from a shiplog perspective
+- `request-changes + cross-model (last code: <identity>)` - reviewed, waiting on fixes
+- `no signed review + cross-model (last code: <identity>)` - you can perform the first gate-satisfying review
+- `same-model (last code: <identity>)` - review blocked, same model
+- `unknown author` - no provenance or commit fallback available, treat as blocked
+
+If formal GitHub review badges disagree with signed **shiplog** comments, prefer the signed comment artifacts and note the mismatch briefly.
 
 ### Step 4: Recommend
 
@@ -121,8 +135,9 @@ End with 1-3 concrete recommendations **filtered by what you can actually do**.
 | Action | Cross-model PR | Same-model PR | Unknown PR |
 |--------|---------------|---------------|------------|
 | Gate-satisfying review | Yes | No | No |
-| Self-review (audit trail) | — | Only if user confirms | — |
-| Fix requested changes | Yes (if you authored the code) | Yes | — |
+| Merge after signed approve | Yes | No | No |
+| Self-review (audit trail) | - | Only if user confirms | - |
+| Fix requested changes | Yes (if you authored the code) | Yes | - |
 
 #### Tier constraints
 
@@ -136,16 +151,19 @@ Read tier tags from issue task lists (e.g., `[tier-1]`, `[tier-2]`, `[tier-3]`).
 
 #### Recommendation templates
 
-**When cross-model PRs exist:**
-> Review PR #N — cross-model, you can gate-satisfy review
+**When cross-model PRs need first review:**
+> Review PR #N - no signed review yet, cross-model, you can gate-satisfy review
+
+**When a PR already has signed approval:**
+> PR #N already has a signed cross-model approve comment. If the branch is mergeable and no newer code changed the authorship story, it is the top merge candidate.
 
 **When all PRs are same-model or unknown:**
-> All open PRs were last coded by [your identity]. Cross-model review requires a different model (e.g., switch to [suggested alternative]). You can still implement ready issues.
+> No open PR currently allows you to add a new gate-satisfying review. Same-model PRs need a different reviewer; unknown-author PRs need provenance clarified first. You can still implement ready issues.
 
 **When issues are above your tier:**
-> Issue #N has tier-1 tasks — needs a reasoning model (e.g., Opus). Consider implementing tier-2/tier-3 issues instead.
+> Issue #N has tier-1 tasks - needs a reasoning model (e.g., Opus). Consider implementing tier-2/tier-3 issues instead.
 
 **When issues could be delegated down:**
-> Issue #N has only tier-3 tasks — could delegate to a faster model for efficiency.
+> Issue #N has only tier-3 tasks - could delegate to a faster model for efficiency.
 
 Keep the report concise. The user wants to know what to do next, not read every issue body.
