@@ -51,6 +51,12 @@ Apply the `shiplog/plan` label at creation time.
 
 Classify all factual claims as internal (verifiable from the repo) or external (needs primary source). Mark unverified external claims as `[unverified]`.
 
+### Step 3b: Validate Before Posting
+
+Before posting the issue body, check:
+1. **Tier-3 / Open Questions cross-check:** Does any `[tier-3]` task hardcode a value that is listed as undecided in Open Questions? If yes, either resolve the question (remove it from Open Questions and commit the decision in the task contract) or promote the task to a higher tier.
+2. **Tier-3 contract completeness:** Does every `[tier-3]` task use the full 11-field contract format from `references/phase-templates.md`? Compressed formats are only acceptable for tier-1 and tier-2 tasks.
+
 ### Step 4: Sign the Artifact
 
 End the issue body with:
