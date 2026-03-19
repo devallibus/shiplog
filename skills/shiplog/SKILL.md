@@ -190,7 +190,9 @@ The timeline comment is the minimum: one paragraph explaining what happened, why
 
 Every shiplog artifact must carry a provenance signature: `<role>: <family>/<version> (<tool>[, <qualifier>])`
 
-Roles: `Authored-by`, `Updated-by`, `Reviewed-by`. See `references/signing.md` for full rules, edit provenance, and model detection.
+Roles: `Authored-by`, `Updated-by`, `Reviewed-by`, `Last-code-by`. See `references/signing.md` for full rules, edit provenance, code provenance, and model detection.
+
+**Searching:** `Last-code-by:` → most recent code author on a PR branch. See `references/signing.md` for all searchable provenance fields.
 
 ---
 

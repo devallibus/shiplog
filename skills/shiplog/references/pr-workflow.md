@@ -109,7 +109,7 @@ Use the shiplog PR timeline template from `../pr.md`. The PR body must include:
 6. Changes (commit list)
 7. Testing / Verification
 8. Knowledge for Future Reference
-9. Provenance signature (`Authored-by:`)
+9. Provenance signature (`Authored-by:`, `Last-code-by:`)
 
 ### Labels
 

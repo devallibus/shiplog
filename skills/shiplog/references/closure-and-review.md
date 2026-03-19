@@ -256,17 +256,26 @@ Read the PR body's review snapshot first. If the snapshot is missing, stale, or 
 
 1. List open PRs on the repository.
 2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` or `Updated-by:` line, or a newer linked commit-note / handoff / amendment artifact) and any existing `Reviewed-by:` sign-offs.
-3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
-4. **Review PRs where the latest activity is from a different model.** These are candidates for cross-model review.
-5. If all open PRs were last touched by the current model, inform the user:
-   > "All open PRs were last touched by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
+3. **Skip PRs where the last code author matches your model and version.** Reviewing your own code adds no independent assurance - it is the anti-pattern this protocol exists to prevent.
+4. **Review PRs where the last code author is a different model.** These are candidates for cross-model review. A model that originally opened a PR CAN gate-satisfy a review if a different model subsequently pushed code changes - the gate is about who last changed the code, not who opened the PR.
+5. If all open PRs were last coded by the current model, inform the user:
+   > "All open PRs were last coded by [model]. Cross-model review requires a different model. Would you like me to review anyway as an audit trail (non-gate-satisfying)?"
 6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
-
-**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see §4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone — it will miss most AI-operated reviews.
 
 The PR body review snapshot is the latest-wins summary. Read it first for current state, then verify against signed review comments when the snapshot is missing, stale, or needs explanation.
 
-**What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` or `Updated-by:` artifact associated with the work, or a newer amendment artifact, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog provenance lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
+**Provenance fallback chain for determining last code author:**
+
+Use the first available signal - each level is less authoritative than the one above:
+
+1. **`Last-code-by:`** in the PR body - authoritative. This field tracks who most recently pushed code to the branch. See `references/signing.md` code provenance.
+2. **`Updated-by:`** in the PR body - approximate. May reflect artifact text edits rather than code changes, but is the best proxy when `Last-code-by:` is absent.
+3. **`Authored-by:`** in the PR body - original author. May be stale if another model pushed code later.
+4. **Git commit author** on the PR branch - last resort. Requires an additional API call and uses git metadata rather than signed artifacts, but provides ground truth when no signed field exists.
+
+If none of these signals are available, treat code authorship as unknown and do not claim a gate-satisfying review.
+
+**Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see Section 4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone - it will miss most AI-operated reviews.
 
 ---
 
