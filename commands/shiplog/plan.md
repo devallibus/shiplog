@@ -24,7 +24,9 @@ Run a focused brainstorm on the feature. Consider:
 - What alternatives exist?
 - What are the risks and open questions?
 
-If `superpowers:brainstorming` or `ork:brainstorming` is available, delegate to it. Otherwise brainstorm inline.
+If `superpowers:brainstorming` or `ork:brainstorming` is available, delegate the exploration to it (steps 1-4 of the brainstorm workflow). Otherwise brainstorm inline.
+
+**Output capture:** Regardless of how the exploration is done, the output MUST be captured following `skills/shiplog/references/brainstorm-workflow.md` (steps 5-6). This ensures the issue body uses shiplog conventions: envelope metadata, task contracts with tier annotations, claim verification, and provenance signing.
 
 ### Step 2: Bootstrap Labels
 
@@ -41,15 +43,16 @@ gh label create "shiplog/issue-driven" --color "D4C5F9" --description "Branch/PR
 
 ### Step 3: Create the Issue
 
-Create a GitHub issue using the shiplog Phase 1 template. The issue body must include:
-- An envelope comment (HTML comment with `kind: state`, `status: open`, `phase: 1`)
+Create a GitHub issue following the Issue Capture section of `skills/shiplog/references/brainstorm-workflow.md` and the template in `skills/shiplog/brainstorm.md`. The issue body must include:
+- An envelope comment (HTML comment with `kind: state`, `status: open`, `phase: 1`, triage fields)
 - Context, Design Summary, Approach, Alternatives Considered
-- Tasks with tier tags (`[tier-1]`, `[tier-2]`, `[tier-3]`) and contract fields
+- Sources and Verification Status for external claims
+- Tasks with tier tags (`[tier-1]`, `[tier-2]`, `[tier-3]`) and contract fields (acceptance criteria, decision budgets)
 - Open Questions (if any)
 
 Apply the `shiplog/plan` label at creation time.
 
-Classify all factual claims as internal (verifiable from the repo) or external (needs primary source). Mark unverified external claims as `[unverified]`.
+Classify all factual claims as internal (verifiable from the repo) or external (needs primary source). Mark unverified external claims as `[unverified]`. Do not turn an unverified claim into a task requirement without verification.
 
 ### Step 4: Sign the Artifact
 
