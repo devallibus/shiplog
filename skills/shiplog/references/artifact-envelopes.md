@@ -53,6 +53,12 @@ Place the envelope at the **top** of the artifact body (issue body, PR body, or 
 | `task_count` | no | integer | Total number of tasks in the issue body |
 | `tasks_complete` | no | integer | Number of checked tasks |
 | `max_tier` | no | string | Highest tier among remaining tasks: `tier-1`, `tier-2`, or `tier-3` |
+| `review_status` | no | string | PR review snapshot: `awaiting-review`, `changes-requested`, `approved`, or `needs-rereview` |
+| `last_reviewed_at` | no | ISO 8601 | Timestamp of the latest signed review reflected in the PR body snapshot |
+| `last_reviewed_by` | no | string | Reviewer identity for the latest signed review reflected in the PR body snapshot |
+| `reviewed_commit` | no | string | Commit SHA covered by the latest signed review reflected in the PR body snapshot |
+| `review_source` | no | string | Comment URL or artifact reference for the latest signed review reflected in the PR body snapshot |
+| `needs_rereview_since` | no | string | Commit SHA that made the prior review stale; omit when the snapshot is current |
 
 ### Triage fields
 
@@ -66,6 +72,17 @@ Use triage fields on issue-body `state` envelopes so agents can rank work withou
 | `in-progress` | Work has started |
 | `done` | All tasks are complete |
 
+### PR review snapshot fields
+
+Use review snapshot fields on PR-body `history` envelopes so agents can determine current review state without replaying the full PR comment thread.
+
+| Value | Meaning |
+|-------|---------|
+| `awaiting-review` | No signed review has been reflected in the PR body yet |
+| `changes-requested` | The latest signed review asked for fixes and no newer code has cleared that state |
+| `approved` | The latest signed review approved the reviewed commit and no newer code has made that review stale |
+| `needs-rereview` | New code landed after the latest signed review, so review must happen again before merge |
+
 ### Normalization rules
 
 - **Issue/PR numbers:** bare integers, no `#` prefix — e.g., `issue: 42` not `issue: #42`.
@@ -78,6 +95,10 @@ Use triage fields on issue-body `state` envelopes so agents can rank work withou
 - **Triage integers:** use bare integers, not quoted strings.
 - **`readiness`:** use only `ready`, `blocked`, `needs-design`, `in-progress`, or `done`.
 - **`max_tier`:** use `tier-1`, `tier-2`, or `tier-3`; omit it when all tasks are complete.
+- **`review_status`:** use only `awaiting-review`, `changes-requested`, `approved`, or `needs-rereview`.
+- **`last_reviewed_by`:** normalize like the signature body without the role prefix.
+- **`review_source`:** use the signed review comment URL when available.
+- **`needs_rereview_since`:** use the first commit SHA that invalidated the prior review; omit the field when the snapshot is current.
 - **Line endings:** normalize `\r\n` to `\n` before parsing envelopes on Windows.
 - **Unknown fields:** agents MUST ignore fields they do not recognize. This preserves forward compatibility as the schema evolves.
 
@@ -267,6 +288,19 @@ This reduces token cost on issues with long discussion threads.
 - **Verifier agents** should check for `verification` envelopes to find prior evidence before producing their own.
 - **Recovery flows** should check for `blocker` and `state` envelopes to understand where work was interrupted.
 
+### PR review retrieval
+
+For PR review triage, start with the PR body's latest-wins `history` artifact and its review snapshot fields:
+
+- `review_status`
+- `last_reviewed_by`
+- `last_reviewed_at`
+- `reviewed_commit`
+- `review_source`
+- `needs_rereview_since`
+
+If those fields are missing, stale, or contradicted by newer code or newer signed review artifacts, fall back to the signed `verification` comments on the PR thread.
+
 ---
 
 ## Examples
@@ -314,6 +348,7 @@ pr: 55
 branch: issue/42-auth-middleware
 status: resolved
 updated_at: 2026-03-14T18:00:00Z
+review_status: awaiting-review
 -->
 
 ## Summary
@@ -321,5 +356,14 @@ updated_at: 2026-03-14T18:00:00Z
 This PR adds JWT-based auth middleware.
 
 Closes #42
+
+## Review Status
+
+- **Current state:** awaiting review
+- **Last reviewed by:** none yet
+- **Last reviewed at:** n/a
+- **Reviewed commit:** n/a
+- **Source artifact:** none yet
+- **Needs re-review since:** no
 [Rest of PR timeline template...]
 ```

@@ -46,6 +46,7 @@ issue: <ISSUE_NUMBER>
 branch: issue/<ISSUE_NUMBER>-<slug>
 status: resolved
 updated_at: <ISO_TIMESTAMP>
+review_status: awaiting-review
 -->
 
 ## Summary
@@ -53,6 +54,15 @@ updated_at: <ISO_TIMESTAMP>
 [2-3 sentences: what this PR does and why]
 
 Closes #<ISSUE_NUMBER>
+
+## Review Status
+
+- **Current state:** awaiting review
+- **Last reviewed by:** none yet
+- **Last reviewed at:** n/a
+- **Reviewed commit:** n/a
+- **Source artifact:** none yet
+- **Needs re-review since:** no
 
 ## Journey Timeline
 
@@ -102,6 +112,7 @@ Authored-by: <family>/<version> (<tool>)
 ```
 
 The PR body is large enough that `--body-file` should be the preferred portable path.
+After every signed review comment and every post-review code push, refresh this review snapshot in place per `references/closure-and-review.md` and `references/signing.md`.
 
 ---
 
@@ -148,6 +159,7 @@ issue: <ISSUE_NUMBER>
 branch: issue/<ISSUE_NUMBER>-<slug>
 status: in-progress
 updated_at: <ISO_TIMESTAMP>
+review_status: awaiting-review
 -->
 
 ## Summary
@@ -155,6 +167,15 @@ updated_at: <ISO_TIMESTAMP>
 [2-3 sentences: what this PR ships and why it is a partial delivery]
 
 Addresses #<ISSUE_NUMBER> (completes T1, T2, T3)
+
+## Review Status
+
+- **Current state:** awaiting review
+- **Last reviewed by:** none yet
+- **Last reviewed at:** n/a
+- **Reviewed commit:** n/a
+- **Source artifact:** none yet
+- **Needs re-review since:** no
 
 ## Completed Tasks
 
