@@ -9,5 +9,6 @@ Template content now lives with the phase-specific sub-skills:
 - `../pr.md` for PR body templates and partial-delivery variants
 - `../timeline.md` for timeline, implementation-issue, milestone, blocker, and closure artifacts
 - `../lookup.md` for retrieval and triage-scan output formats
+- `closure-and-review.md` for review sign-off format, dispositions (approve, approve-with-follow-ups, request-changes, comment), and follow-up capture rules
 
 See `../SKILL.md` and the phase files above for the current canonical workflow.

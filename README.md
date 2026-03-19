@@ -73,7 +73,7 @@ main
 
 ### Cross-model review
 
-No PR merges without review from a *different* AI model or a human. A single model authoring, reviewing, and merging its own work is the anti-pattern **shiplog** prevents. Reviews carry signed `Reviewed-by:` lines, support three dispositions (approve, request-changes, comment), and generate self-contained review contracts when spawning a reviewer isn't possible.
+No PR merges without review from a *different* AI model or a human. A single model authoring, reviewing, and merging its own work is the anti-pattern **shiplog** prevents. Reviews carry signed `Reviewed-by:` lines, support four dispositions (approve, approve-with-follow-ups, request-changes, comment), and generate self-contained review contracts when spawning a reviewer isn't possible.
 
 ### Agent identity signing
 

@@ -145,11 +145,12 @@ The review loop is part of the safety model. If shiplog captures the workflow bu
 
 ### Review artifacts
 
-A review produces one of three artifacts:
+A review produces one of four artifacts:
 
 | Artifact | Meaning |
 |----------|---------|
 | **Approve** | No issues found; merge is authorized |
+| **Approve with follow-ups** | Non-blocking findings exist; merge is authorized after a tracking issue is filed for the findings |
 | **Request changes** | Issues found; author must address before re-review |
 | **Comment** | Observations that do not block merge |
 
@@ -161,16 +162,33 @@ Every review comment must include a structured sign-off block:
 
 ```
 Reviewed-by: <family>/<version> (<tool>)
-Disposition: approve | request-changes
+Disposition: approve | approve-with-follow-ups | request-changes
 Scope: <what was reviewed — e.g., "full diff", "SKILL.md + artifact-envelopes.md">
+Follow-ups: #<issue-number> | none
 ```
 
-**Example:**
+When using `approve-with-follow-ups`, the `Follow-ups:` field must reference a valid open issue containing the non-blocking findings. Create the tracking issue **before** posting the review sign-off.
+
+**Example (clean approve):**
 ```
 Reviewed-by: claude/sonnet-4 (claude-code)
 Disposition: approve
 Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
+Follow-ups: none
 ```
+
+**Example (approve with follow-ups):**
+```
+Reviewed-by: claude/opus-4.6 (claude-code)
+Disposition: approve-with-follow-ups
+Scope: full diff — 19 files, sub-skill decomposition
+Follow-ups: #119
+Findings:
+- F1: brainstorm.md envelope missing triage fields [follow-up]
+- F2: unverified-claim guardrail truncated [follow-up]
+```
+
+The `[follow-up]` tag distinguishes non-blocking items from blocking ones. All `[follow-up]`-tagged findings must appear in the referenced tracking issue.
 
 This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
 
@@ -187,8 +205,9 @@ updated_at: <ISO_TIMESTAMP>
 -->
 
 Reviewed-by: <family>/<version> (<tool>)
-Disposition: approve | request-changes
+Disposition: approve | approve-with-follow-ups | request-changes
 Scope: <what was reviewed>
+Follow-ups: #<issue-number> | none
 ```
 
 See `references/signing.md` for the full signing protocol.
@@ -262,7 +281,7 @@ All AI agents authenticate as the repository owner's GitHub account. Formal same
 **Workaround:**
 - Use signed review comments as the canonical review artifact.
 - Post a comment review artifact for every outcome, including approve, request-changes, and non-blocking feedback.
-- Include the full signed disposition block (`Reviewed-by:`, `Disposition: approve | request-changes`, `Scope:`) in the comment body.
+- Include the full signed disposition block (`Reviewed-by:`, `Disposition: approve | approve-with-follow-ups | request-changes`, `Scope:`, `Follow-ups:`) in the comment body.
 - The cross-model provenance in the `Reviewed-by:` line is the authoritative review signal for shiplog, not the GitHub review badge.
 - Merge authorization follows the shiplog sign-off (see Section 5), not GitHub `reviewDecision`, review badges, or formal review states.
 
@@ -301,9 +320,10 @@ If spawning is unavailable, generate a self-contained review contract for the us
 ### Output required
 Sign-off comment with:
 - Reviewed-by line
-- Disposition (approve / request-changes)
+- Disposition (approve / approve-with-follow-ups / request-changes)
 - Scope of review
-- Any findings
+- Follow-ups: #<issue-number> or none
+- Any findings (tag non-blocking items with `[follow-up]`)
 ```
 
 ### When independent review is unavailable: audit trail only
@@ -356,10 +376,11 @@ The signed artifact text is the deliverable. GitHub publication is the delivery 
 
 A PR may be merged when:
 
-1. At least one cross-model review with `Disposition: approve` exists.
+1. At least one cross-model review with `Disposition: approve` or `Disposition: approve-with-follow-ups` exists.
 2. All `request-changes` reviews have been addressed (new review cycle or author response).
-3. The PR body includes `Closes #<N>` linking to the tracking issue.
-4. The issue closure will have linked evidence (the merged PR itself serves as evidence).
+3. If any approving review uses `approve-with-follow-ups`, the `Follow-ups:` field must reference a valid open issue containing the non-blocking findings. Do not merge until this issue exists.
+4. The PR body includes `Closes #<N>` linking to the tracking issue.
+5. The issue closure will have linked evidence (the merged PR itself serves as evidence).
 
 ### Implementation issue capture check
 
@@ -379,6 +400,7 @@ Reviewers must check whether failed attempts, hidden dependencies, risky workaro
 1. Verify the linked issue(s) are closed (GitHub auto-close via `Closes #N`, or manual closure with evidence).
 2. If manual closure is needed, use the closure comment format from §1.
 3. Post a verification note if the auto-close does not carry sufficient evidence context.
+4. If any approving review used `approve-with-follow-ups`, verify the follow-up issue referenced in `Follow-ups:` is open and correctly lists the non-blocking findings from the review.
 
 ---
 
