@@ -24,9 +24,9 @@ Run a focused brainstorm on the feature. Consider:
 - What alternatives exist?
 - What are the risks and open questions?
 
-If `superpowers:brainstorming` or `ork:brainstorming` is available, delegate the exploration to it (steps 1-4 of the brainstorm workflow). Otherwise brainstorm inline.
+Follow the full brainstorm process defined in `references/brainstorm-workflow.md` (steps 1-6). This ensures the exploration, output capture, and issue creation all use shiplog conventions: envelope metadata, task contracts with tier annotations, claim verification, and provenance signing.
 
-**Output capture:** Regardless of how the exploration is done, the output MUST be captured following `skills/shiplog/references/brainstorm-workflow.md` (steps 5-6). This ensures the issue body uses shiplog conventions: envelope metadata, task contracts with tier annotations, claim verification, and provenance signing.
+If `superpowers:brainstorming` or `ork:brainstorming` is available, they may optionally be used for the exploration phase (steps 1-4). The output capture (steps 5-6) MUST route through `references/brainstorm-workflow.md`.
 
 ### Step 2: Bootstrap Labels
 
@@ -43,7 +43,7 @@ gh label create "shiplog/issue-driven" --color "D4C5F9" --description "Branch/PR
 
 ### Step 3: Create the Issue
 
-Create a GitHub issue following the Issue Capture section of `skills/shiplog/references/brainstorm-workflow.md` and the template in `skills/shiplog/brainstorm.md`. The issue body must include:
+Create a GitHub issue following the Issue Capture section of `references/brainstorm-workflow.md` and the template in `skills/shiplog/brainstorm.md`. The issue body must include:
 - An envelope comment (HTML comment with `kind: state`, `status: open`, `phase: 1`, triage fields)
 - Context, Design Summary, Approach, Alternatives Considered
 - Sources and Verification Status for external claims
