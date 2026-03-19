@@ -193,6 +193,35 @@ Scope: <what was reviewed>
 
 See `references/signing.md` for the full signing protocol.
 
+### PR-body review snapshot
+
+Each shiplog PR body should also carry a latest-wins review snapshot on the PR's main `history` artifact. The signed review comment is the evidence trail. The PR body snapshot is the current summary used for low-token retrieval and triage.
+
+Minimum snapshot fields:
+
+- `Current state:` `awaiting review` | `changes requested` | `approved` | `needs re-review`
+- `Last reviewed by:`
+- `Last reviewed at:`
+- `Reviewed commit:`
+- `Source artifact:`
+- `Needs re-review since:`
+
+Mirror these values in the PR body's envelope fields when practical:
+
+- `review_status`
+- `last_reviewed_by`
+- `last_reviewed_at`
+- `reviewed_commit`
+- `review_source`
+- `needs_rereview_since`
+
+### Snapshot update rules
+
+1. **On PR creation:** initialize the snapshot as `awaiting review`.
+2. **After posting a signed review comment:** update the PR body snapshot in place to match that signed review artifact.
+3. **After code lands on the PR branch following a signed review:** mark the snapshot `needs re-review`, keep the last reviewed identity and source, and record the commit that made the prior review stale.
+4. **For legacy PRs without the snapshot:** fall back to signed review comments and backfill the snapshot on the next material PR-body edit when convenient.
+
 ### What constitutes "different model"
 
 - Different model family (e.g., Opus vs Sonnet, GPT-5 vs Claude).
@@ -204,6 +233,8 @@ See `references/signing.md` for the full signing protocol.
 
 When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for PRs to review", "review PR #56"), the reviewing agent should:
 
+Read the PR body's review snapshot first. If the snapshot is missing, stale, or contradicted by newer code, fall back to the signed `Reviewed-by:` comment artifacts directly before deciding what still needs review.
+
 1. List open PRs on the repository.
 2. For each PR, inspect the newest signed shiplog author-side artifact you can verify for that work (for example the PR body `Authored-by:` or `Updated-by:` line, or a newer linked commit-note / handoff / amendment artifact) and any existing `Reviewed-by:` sign-offs.
 3. **Skip PRs where the newest verifiable author-side artifact or most recent review sign-off was authored by the same model and version.** Reviewing your own work adds no independent assurance — it is the anti-pattern this protocol exists to prevent.
@@ -213,6 +244,8 @@ When asked to review PRs, whether one PR or many (e.g., "review PRs", "check for
 6. Only proceed with self-authored PR review if the user explicitly confirms after the reminder. Mark such reviews as `self-review` per Section 4 audit trail rules.
 
 **Where to find review artifacts:** Shiplog review sign-offs are posted as issue/PR comments, not formal GitHub review events (see §4 GitHub API constraint). When checking for existing reviews, search the PR body plus issue/PR comments for `Reviewed-by:` and `Disposition:` lines. Do not rely on the formal reviews API endpoint alone — it will miss most AI-operated reviews.
+
+The PR body review snapshot is the latest-wins summary. Read it first for current state, then verify against signed review comments when the snapshot is missing, stale, or needs explanation.
 
 **What counts as "last touched":** The most recent signed shiplog artifact you can verify on either side: (a) the newest author-side `Authored-by:` or `Updated-by:` artifact associated with the work, or a newer amendment artifact, or (b) the most recent review `Reviewed-by:` sign-off. Do not treat raw Git commit metadata as model provenance; shiplog provenance lives in signed artifacts, not the commit object. If the branch moved after the last visible signed author artifact and the responsible model is unclear, treat authorship as unknown and do not claim a gate-satisfying same-model review.
 
@@ -297,6 +330,8 @@ Note: Self-review recorded as audit trail. This PR must not merge until an indep
 A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
 
 **Default behavior:** After completing the review analysis and summarizing findings to the user, post the signed review artifact on the PR. Then link the posted comment in the user-facing response.
+
+**Snapshot follow-through:** After posting the signed review comment, refresh the PR body review snapshot in place so future retrieval flows can read current review state from the PR body first.
 
 **Explicit exceptions (require user opt-in):**
 - The user explicitly requested a dry run or local-only review.

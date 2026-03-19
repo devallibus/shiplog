@@ -54,21 +54,31 @@ Group open issues by their lifecycle label:
 
 Group open PRs by **shiplog** review status.
 
-For each open PR, inspect signed review artifacts in the PR body and comments by searching for:
+For each open PR, inspect the PR body review snapshot first by looking for:
+- `## Review Status`
+- `review_status:`
+- `Last reviewed by:`
+- `Last reviewed at:`
+- `Reviewed commit:`
+- `Source artifact:`
+- `Needs re-review since:`
+
+If the snapshot is missing, stale, or contradicted by newer code, inspect signed review artifacts in the PR comments by searching for:
 - `Reviewed-by:`
 - `Disposition: approve`
 - `Disposition: request-changes`
 
-Use `gh pr view <N> --json body,comments,reviewDecision,reviews` when the list output is not enough.
+Use `gh pr view <N> --json body,comments,reviewDecision,reviews,commits` when the list output is not enough.
 
-Treat signed **shiplog** review comments as the authoritative review signal. Formal GitHub `reviews` / `reviewDecision` fields are advisory only and must not override a signed `Reviewed-by:` comment artifact.
+Treat the PR body snapshot as the current summary, signed **shiplog** review comments as the evidence trail, and formal GitHub `reviews` / `reviewDecision` fields as advisory only.
 
 | Priority | Status | Action Needed |
 |----------|--------|---------------|
-| 1 | No signed review artifact, not draft | Needs first review |
-| 2 | Latest signed review is `request-changes` | Needs fixes then re-review |
-| 3 | Latest signed review is `approve` | Ready to merge if other gates are satisfied |
-| 4 | Draft | Still in progress |
+| 1 | `awaiting-review` or no review snapshot, not draft | Needs first review |
+| 2 | `needs-rereview` | New code landed after review; needs a fresh review |
+| 3 | `changes-requested` | Needs fixes, then re-review |
+| 4 | `approved` | Ready to merge if other gates are satisfied |
+| 5 | Draft | Still in progress |
 
 ### Step 2a: Check PR Code Authorship Against Agent Identity
 
@@ -117,12 +127,14 @@ ISSUES NEEDING PLANNING:
 
 Where `<reviewability>` is one of:
 - `approved + cross-model (last code: <identity>)` - reviewed and mergeable from a shiplog perspective
-- `request-changes + cross-model (last code: <identity>)` - reviewed, waiting on fixes
-- `no signed review + cross-model (last code: <identity>)` - you can perform the first gate-satisfying review
+- `changes-requested + cross-model (last code: <identity>)` - fixes are needed before another review
+- `needs-rereview + cross-model (last code: <identity>)` - prior review is stale; you can perform the next gate-satisfying review
+- `awaiting-review + cross-model (last code: <identity>)` - you can perform the first gate-satisfying review
 - `same-model (last code: <identity>)` - review blocked, same model
 - `unknown author` - no provenance or commit fallback available, treat as blocked
 
-If formal GitHub review badges disagree with signed **shiplog** comments, prefer the signed comment artifacts and note the mismatch briefly.
+If the PR body snapshot disagrees with signed **shiplog** review comments, prefer the newer signed comment artifact, note the mismatch briefly, and treat the snapshot as stale until it is refreshed.
+If formal GitHub review badges disagree with the snapshot or signed comments, prefer shiplog artifacts and note the mismatch briefly.
 
 ### Step 4: Recommend
 
@@ -152,13 +164,16 @@ Read tier tags from issue task lists (e.g., `[tier-1]`, `[tier-2]`, `[tier-3]`).
 #### Recommendation templates
 
 **When cross-model PRs need first review:**
-> Review PR #N - no signed review yet, cross-model, you can gate-satisfy review
+> Review PR #N - the PR body snapshot says awaiting review, and you can gate-satisfy the first review.
+
+**When a PR needs re-review after new code:**
+> Review PR #N - the PR body snapshot says needs re-review, so the earlier review is stale and you can provide the next gate-satisfying review.
 
 **When a PR already has signed approval:**
-> PR #N already has a signed cross-model approve comment. If the branch is mergeable and no newer code changed the authorship story, it is the top merge candidate.
+> PR #N already has an approved review snapshot. If the branch is mergeable and `Needs re-review since` is still `no`, it is the top merge candidate.
 
 **When all PRs are same-model or unknown:**
-> No open PR currently allows you to add a new gate-satisfying review. Same-model PRs need a different reviewer; unknown-author PRs need provenance clarified first. You can still implement ready issues.
+> No open PR currently allows you to add a new gate-satisfying review. Same-model PRs need a different reviewer; unknown-author PRs need provenance clarified first; legacy PRs without snapshots may need comment fallback before triage. You can still implement ready issues.
 
 **When issues are above your tier:**
 > Issue #N has tier-1 tasks - needs a reasoning model (e.g., Opus). Consider implementing tier-2/tier-3 issues instead.

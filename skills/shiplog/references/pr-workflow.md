@@ -104,11 +104,12 @@ Use the shiplog PR timeline template from `../pr.md`. The PR body must include:
 1. Envelope metadata (`<!-- shiplog: ... -->`)
 2. Summary
 3. `Closes #N` or `Addresses #N (completes ...)`
-4. Journey Timeline (discoveries, decisions)
-5. Changes (commit list)
-6. Testing / Verification
-7. Knowledge for Future Reference
-8. Provenance signature (`Authored-by:`)
+4. Review Status snapshot
+5. Journey Timeline (discoveries, decisions)
+6. Changes (commit list)
+7. Testing / Verification
+8. Knowledge for Future Reference
+9. Provenance signature (`Authored-by:`)
 
 ### Labels
 
@@ -149,6 +150,8 @@ Every PR requires cross-model review before merge. After creating the PR:
 2. See `closure-and-review.md` for the full review protocol.
 3. The review must come from a different model than the one that authored the PR.
 4. Sign the review artifact per the agent identity signing rules.
+5. After each signed review comment, refresh the PR body's review snapshot in place.
+6. If new code lands after a review, flip the snapshot to `needs re-review` before asking for another review.
 
 Do not merge without a review sign-off unless the user explicitly overrides.
 

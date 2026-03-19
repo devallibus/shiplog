@@ -44,6 +44,7 @@ If a shiplog artifact carries an incorrect or incomplete signature, correct it i
 - `Authored-by:` records the original author of an artifact body.
 - `Updated-by:` records a later model or human who materially edits that same artifact body. Preserve the original `Authored-by:` line and append a new `Updated-by:` line for each material edit, newest last.
 - `Reviewed-by:` is review-only. Do not use it for authorship or edit attribution.
+- Updating a PR body's review snapshot after publishing a signed review comment or after pushing code that makes a prior review stale counts as a material edit.
 - A **material edit** changes meaning, facts, scope, requirements, acceptance criteria, verification results, review disposition, or a handoff contract. Typos, formatting cleanups, and link-only fixes are cosmetic and do not need `Updated-by:`.
 
 ---
@@ -56,6 +57,15 @@ If a shiplog artifact carries an incorrect or incomplete signature, correct it i
 Use `supersedes` when the new artifact replaces the old one as canonical. Use `amends` when the new artifact corrects or clarifies but both should remain visible.
 
 If the platform does not expose reliable edit history, prefer an amendment artifact.
+
+### PR body review snapshot maintenance
+
+When a PR body carries the current review snapshot:
+
+- Post the signed `Reviewed-by:` comment first. That comment is the review evidence.
+- Then refresh the PR body snapshot in place so retrieval flows can read current review state without replaying the comment thread.
+- If new code lands after the latest signed review, update the snapshot to `needs-rereview` and record the commit that made the prior review stale.
+- Use the standard `Updated-by:` footer and envelope `updated_by` / `edit_kind` fields for these edits. Do not create a separate provenance role for review snapshots.
 
 ### In-Place Edit Footer
 
