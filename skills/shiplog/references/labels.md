@@ -2,6 +2,8 @@
 
 Use this file when Shiplog needs to bootstrap, apply, or repair repository labels.
 
+**Kind source of truth:** The canonical mapping from envelope `kind:` to title tags and GitHub labels lives in `SKILL.md` — "Canonical Kind → Tag → Label Map" section. This file documents the label bootstrap commands, colors, and descriptions; it does not duplicate the kind map.
+
 ## Canonical label set
 
 | Label | Use when | Color | Description |

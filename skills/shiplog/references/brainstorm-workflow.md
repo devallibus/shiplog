@@ -68,7 +68,7 @@ Once the design is approved, create a **shiplog** issue using the template in `.
 2. **Context, Design Summary, Approach, Alternatives** — from the brainstorm
 3. **Sources and Verification Status** — for external claims
 4. **Task contracts** — structured `T1`, `T2`, ... with tier annotations, file lists, acceptance criteria, and decision budgets per `../brainstorm.md`
-5. **Provenance signature** — `Authored-by:` per `signing.md`
+5. **Provenance signature** — `Authored-by:` per the signing spec — see SKILL.md §8 (Agent Identity Signing)
 6. **Label** — `shiplog/plan` applied at creation time
 
 Bootstrap **shiplog** labels first if this is the first labeled create in the repo (see `labels.md`). Use the portable `--body-file` pattern from `shell-portability.md` for the issue body.

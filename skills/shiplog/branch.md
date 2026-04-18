@@ -6,7 +6,7 @@ description: "Phase 2: Create a branch from an issue, set up worktree, and post 
 # Branch Setup (Phase 2)
 
 <!-- routing: tier-2, plan then agent -->
-<!-- cross-cutting: references/model-routing.md (Step 0), references/signing.md, references/labels.md, references/shell-portability.md, references/orchestrator-protocol.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/labels.md, references/shell-portability.md, references/orchestrator-protocol.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`.
 
@@ -33,7 +33,7 @@ description: "Phase 2: Create a branch from an issue, set up worktree, and post 
    If a delegated lane later uses a forked workspace, tmux session, or other runtime-specific isolation backend, keep this feature branch/worktree as the canonical shiplog record for the work.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-3. **Post timeline entry.** Comment on the issue using the session-start template below. Record the workspace path when known. Sign per `references/signing.md`.
+3. **Post timeline entry.** Comment on the issue using the session-start template below. Record the workspace path when known. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.

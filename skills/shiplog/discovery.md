@@ -6,7 +6,7 @@ description: "Phase 3: Handle mid-work discoveries — fix inline, stack a prere
 # Discovery Handling (Phase 3)
 
 <!-- routing: tier-2, plan then agent -->
-<!-- cross-cutting: references/model-routing.md (Step 0), references/signing.md, references/labels.md, references/shell-portability.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/labels.md, references/shell-portability.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`.
 
@@ -20,9 +20,9 @@ Discovery made during work
   +-- Refactoring opportunity?             -> Create issue tagged "refactor"
 ```
 
-**3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Label the new issue `shiplog/discovery` and `shiplog/stacked`. Cross-reference on the parent issue and add `shiplog/blocker` to the parent while it is blocked. Sign both artifacts per `references/signing.md`.
+**3a (stack a prerequisite):** Commit current progress. Create a new issue first (so the ID exists), then create the stacked branch. Label the new issue `shiplog/discovery` and `shiplog/stacked`. Cross-reference on the parent issue and add `shiplog/blocker` to the parent while it is blocked. Sign both artifacts per the signing spec — see SKILL.md §8 (Agent Identity Signing).
 
-**3b (independent discovery):** Create new issue (same template without "blocks parent") and label it `shiplog/discovery`. Add timeline comment. Continue current work. Sign per `references/signing.md`.
+**3b (independent discovery):** Create new issue (same template without "blocks parent") and label it `shiplog/discovery`. Add timeline comment. Continue current work. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
 
 ---
 
