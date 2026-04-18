@@ -170,7 +170,7 @@ updated_at: 2026-03-14T14:30:00Z
 
 **`blocker`** — Write when something blocks progress. Supersedes the previous blocker if the blocking condition changes. Include `status: blocked`.
 
-**`history`** — Write when summarizing a completed journey (e.g., PR body timeline, session-end recap). Useful for future retrieval queries.
+**`history`** — Write when summarizing a completed journey (e.g., PR body timeline, retrospective recap). Useful for future retrieval queries.
 
 ### Relationship to semantic tags
 
@@ -185,7 +185,7 @@ Envelope `kind` is the machine key. The `[shiplog/<tag>]` heading is the human k
 | `review-handoff` | `review-handoff` |
 | `amendment` | `amendment` |
 | `blocker` | `blocker` |
-| `history` | `history`, `session-end` |
+| `history` | `history` |
 
 One comment may carry a human tag and a different envelope kind when the machine purpose differs from the human-facing label. The envelope is authoritative for retrieval; the tag is authoritative for human scanning.
 
