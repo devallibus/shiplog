@@ -57,11 +57,11 @@ Apply lifecycle label: `gh issue edit 999 --add-label "shiplog/ready"`
 
 ### Step 2 — Branch Setup (`/shiplog start`)
 
-Load `commands/shiplog/start.md`. Create the branch from master tip:
+Load `commands/shiplog/start.md`. Create the branch from the default branch tip (substitute your repo's default branch, e.g. `main` or `master`):
 
 ```bash
-git fetch origin master
-git checkout -b issue/999-rate-limit-headers origin/master
+git fetch origin <default-branch>
+git checkout -b issue/999-rate-limit-headers origin/<default-branch>
 ```
 
 Swap label and update envelope:
