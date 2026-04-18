@@ -15,6 +15,155 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 
 ---
 
+## Golden-Path Walkthrough
+
+A complete issue-to-merge example using a concrete fake issue `#999`. Follow this sequence and every artifact produced will pass the acceptance checklists in `commands/shiplog/*.md`.
+
+### Step 1 — Plan Capture (`/shiplog plan`)
+
+A brainstorm produces: "Add rate-limit headers to the API so clients can back off intelligently." Load `commands/shiplog/plan.md` and create the issue:
+
+```bash
+gh issue create \
+  --title "[shiplog/plan] Add rate-limit headers to API" \
+  --label "shiplog/plan" \
+  --body-file .tmp-plan.md
+```
+
+Issue body (excerpt):
+```
+<!-- shiplog:
+kind: state
+status: open
+phase: 1
+readiness: ready
+task_count: 2
+tasks_complete: 0
+max_tier: tier-2
+updated_at: 2026-04-18T10:00:00Z
+-->
+## Tasks
+- [ ] **T1: Add X-RateLimit-* headers to response middleware** `[tier-2]`
+  - **What:** Inject X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset on every API response.
+  - **Verification:** curl the endpoint; confirm all three headers are present.
+- [ ] **T2: Document header semantics in API reference** `[tier-2]`
+  - **What:** Add a "Rate Limiting" section to docs/api-reference.md.
+  - **Verification:** Section exists and matches header values in integration test.
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Apply lifecycle label: `gh issue edit 999 --add-label "shiplog/ready"`
+
+### Step 2 — Branch Setup (`/shiplog start`)
+
+Load `commands/shiplog/start.md`. Create the branch from master tip:
+
+```bash
+git fetch origin master
+git checkout -b issue/999-rate-limit-headers origin/master
+```
+
+Swap label and update envelope:
+```bash
+gh issue edit 999 --remove-label "shiplog/ready" --add-label "shiplog/in-progress"
+# Edit issue body: readiness: ready → readiness: in-progress
+```
+
+Post session-start comment:
+```
+[shiplog/session-start] #999: Starting work
+
+**Branch:** `issue/999-rate-limit-headers`
+**Starting tasks:** T1, T2
+**Plan:** Add headers in middleware (T1) then document (T2).
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+### Step 3 — Commit Context (`/shiplog commit`)
+
+After implementing T1, load `commands/shiplog/commit.md` and commit:
+
+```bash
+git add src/middleware/rate_limit.ts
+git commit -F .tmp-commit-msg.md
+# Commit message: feat(#999/T1): add X-RateLimit-* headers to response middleware
+#
+# Injects the three standard headers into every API response via middleware.
+#
+# Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Post commit-note on the issue:
+```
+[shiplog/commit-note] #999: a1b2c3d feat(#999/T1): add X-RateLimit-* headers
+
+**What:** Middleware now injects X-RateLimit-Limit, -Remaining, and -Reset.
+**Why:** Clients need these to implement back-off without polling.
+**Verification:** curl localhost:3000/api/health — all three headers present.
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Repeat for T2 commit (`docs(#999/T2): document rate-limit headers in API reference`).
+
+### Step 4 — PR Timeline (`/shiplog pr`)
+
+Load `commands/shiplog/pr.md`. Push and create the PR:
+
+```bash
+git push -u origin issue/999-rate-limit-headers
+gh pr create \
+  --title "feat(#999): add rate-limit headers to API" \
+  --label "shiplog/history" \
+  --label "shiplog/issue-driven" \
+  --body-file .tmp-pr-body.md
+```
+
+PR body includes: envelope (`kind: history`), summary, `Closes #999`, Journey Timeline with both commits, Verification checklist, Reviews placeholder, and sig block:
+```
+Authored-by: claude/sonnet-4.6 (claude-code)
+Last-code-by: claude/sonnet-4.6 (claude-code)
+*Captain's log — PR timeline by **shiplog***
+```
+
+Transition issue label:
+```bash
+gh issue edit 999 --remove-label "shiplog/in-progress" --add-label "shiplog/needs-review"
+```
+
+### Step 5 — Cross-Model Review (`/shiplog review`)
+
+A different model (e.g., `openai/gpt-5.4 (codex)`) loads `commands/shiplog/review.md`, reads the diff, and posts the signed review comment on the PR:
+
+```
+[shiplog/review-handoff] #999: Review of PR #<PR>
+
+Middleware approach is correct. Headers match RFC 6585 semantics.
+
+Reviewed-by: openai/gpt-5.4 (codex, effort: high)
+Disposition: approve
+Scope: full diff
+Follow-ups: none
+```
+
+The reviewer then updates the PR body review snapshot in place:
+```
+Current state: approved
+Last reviewed by: openai/gpt-5.4 (codex, effort: high)
+Last reviewed at: 2026-04-18T15:00:00Z
+Reviewed commit: a1b2c3d
+Source artifact: <URL to review comment>
+Needs re-review since: —
+```
+
+### Step 6 — Merge
+
+Cross-model gate is satisfied (`Last-code-by: claude/sonnet-4.6` ≠ `Reviewed-by: openai/gpt-5.4`). Merge the PR. Remove all lifecycle labels from issue #999. GitHub closes #999 automatically via `Closes #999`.
+
+---
+
 ## When This Skill Activates
 
 **User-invocable:** `/shiplog`, `/shiplog models`, `/shiplog <phase>`
