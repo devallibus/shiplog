@@ -4,71 +4,117 @@ description: Brainstorm a feature and capture it as a GitHub Issue
 argument-hint: <feature description>
 ---
 
-## Context
+Capture a brainstorm as a durable planning issue. The issue becomes the single source of truth for the feature: envelope metadata, task contracts, open questions, and provenance signature — all in one body.
 
-- Repo: !`gh repo view --json nameWithOwner --jq '.nameWithOwner'`
-- Default branch: !`gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name'`
-- Existing labels: !`gh label list --json name --jq '.[].name' --limit 50`
+## Policy
 
-## Your Task
+Convert a brainstorm to a planning issue when:
+- The scope is too large for a single commit (more than one logical change)
+- The work requires tracking decisions over time
+- Multiple tasks with dependencies exist
+- Cross-model review will be required before shipping
 
-You are executing shiplog Phase 1: Brainstorm-to-Issue.
+**Issue envelope requirements (mandatory):**
+- `kind: state` — planning issues carry state kind
+- `status: open`
+- `phase: 1`
+- `readiness: ready` — if tasks are scoped and no blockers exist; `readiness: blocked` if a known blocker exists at creation
+- `task_count` — count of `- [ ]` task lines
+- `tasks_complete: 0` — always 0 at creation
+- `max_tier` — highest `[tier-N]` tag among unchecked tasks
 
-**Feature to plan:** $ARGUMENTS
+**Triage field derivation** (from `references/artifact-envelopes.md` §1): `task_count`, `tasks_complete`, and `max_tier` are derived from the task list, not hand-written. Only `readiness` is hand-set. Count `- [ ]` and `- [x]` lines; `max_tier` is the highest `[tier-N]` among unchecked tasks.
 
-### Step 1: Brainstorm
+**Brainstorm external skills** (`superpowers:brainstorming`, `ork:brainstorming`) may be used for the exploration phase. Output capture MUST use this sub-skill's template — do not let external skills write the issue body directly.
 
-Run a focused brainstorm on the feature. Consider:
-- What problem does this solve and why now?
-- What are the key design decisions?
-- What alternatives exist?
-- What are the risks and open questions?
+**Label at creation:** Apply `shiplog/plan` when posting the issue.
 
-Follow the full brainstorm process defined in `references/brainstorm-workflow.md` (steps 1-6). This ensures the exploration, output capture, and issue creation all use shiplog conventions: envelope metadata, task contracts with tier annotations, claim verification, and provenance signing.
+## Query / Template
 
-If `superpowers:brainstorming` or `ork:brainstorming` is available, they may optionally be used for the exploration phase (steps 1-4). The output capture (steps 5-6) MUST route through `references/brainstorm-workflow.md`.
+### Bootstrap labels (first run in a repo only)
 
-### Step 2: Bootstrap Labels
-
-If the repo does not already have shiplog labels (`shiplog/plan`, `shiplog/ready`, etc.), bootstrap them:
-```
+```bash
 gh label create "shiplog/plan" --color "0B7285" --description "Brainstorm captured as a planning issue" --force
 gh label create "shiplog/ready" --color "2DA44E" --description "Ready to implement" --force
 gh label create "shiplog/in-progress" --color "FBCA04" --description "Implementation in progress" --force
 gh label create "shiplog/needs-review" --color "D93F0B" --description "Awaiting review" --force
-gh label create "shiplog/discovery" --color "1D6F42" --description "Work discovered during another issue or PR" --force
 gh label create "shiplog/history" --color "5319E7" --description "PR with a shiplog journey timeline" --force
 gh label create "shiplog/issue-driven" --color "D4C5F9" --description "Branch/PR driven by an issue" --force
+gh label create "shiplog/blocker" --color "B60205" --description "Something blocking progress" --force
 ```
 
-### Step 3: Create the Issue
+### Create the issue
 
-Create a GitHub issue following the Issue Capture section of `references/brainstorm-workflow.md` and the template in `skills/shiplog/brainstorm.md`. The issue body must include:
-- An envelope comment (HTML comment with `kind: state`, `status: open`, `phase: 1`, triage fields)
-- Context, Design Summary, Approach, Alternatives Considered
-- Sources and Verification Status for external claims
-- Tasks with tier tags (`[tier-1]`, `[tier-2]`, `[tier-3]`) and contract fields (acceptance criteria, decision budgets)
-- Open Questions (if any)
-
-Apply the `shiplog/plan` label at creation time.
-
-Classify all factual claims as internal (verifiable from the repo) or external (needs primary source). Mark unverified external claims as `[unverified]`. Do not turn an unverified claim into a task requirement without verification.
-
-### Step 3b: Validate Before Posting
-
-Before posting the issue body, check:
-1. **Tier-3 / Open Questions cross-check:** Does any `[tier-3]` task hardcode a value that is listed as undecided in Open Questions? If yes, either resolve the question (remove it from Open Questions and commit the decision in the task contract) or promote the task to a higher tier.
-2. **Tier-3 contract completeness:** Does every `[tier-3]` task use the full 11-field contract format from `references/phase-templates.md`? Compressed formats are only acceptable for tier-1 and tier-2 tasks.
-
-### Step 4: Sign the Artifact
-
-End the issue body with:
-```
-Authored-by: <model-family>/<model-version> (<tool>)
+```bash
+gh issue create \
+  --title "[shiplog/plan] <feature title>" \
+  --label "shiplog/plan" \
+  --body-file <temp-file>
 ```
 
-Detect your model identity from the system prompt.
+### Planning issue body template
 
-### Step 5: Report
+```markdown
+<!-- shiplog:
+kind: state
+status: open
+phase: 1
+readiness: ready
+task_count: <N>
+tasks_complete: 0
+max_tier: tier-<N>
+updated_at: <ISO_TIMESTAMP>
+-->
 
-Show the user the created issue number and URL. Ask if they want to start working on it (which would trigger Phase 2).
+## Context
+
+<1–3 paragraphs: what problem this solves, why now, key constraints>
+
+## Design Summary
+
+<Key design decisions in bullet form>
+
+## Approach
+
+<How the work will be done — phases, key steps>
+
+## Alternatives Considered
+
+- **<Alternative A>:** rejected because <reason>
+
+## Tasks
+
+- [ ] **T1: <Title>** `[tier-<N>]`
+  - **What:** <what this task does>
+  - **Files:** <files affected>
+  - **Allowed to change:** <explicit scope>
+  - **Must not change:** <explicit constraints>
+  - **Forbidden judgment calls:** <what the implementor must NOT decide>
+  - **Verification:** <how to confirm this task is done>
+
+- [ ] **T2: <Title>** `[tier-<N>]`
+  - (same fields)
+
+## Open Questions
+
+- <question 1> — unresolved, must be answered before T<N>
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+### After creation — mark issue ready
+
+If the issue was created with `readiness: ready` and tasks are fully scoped, apply the lifecycle label:
+
+```bash
+gh issue edit <N> --add-label "shiplog/ready"
+```
+
+## Acceptance Checklist
+
+- [ ] Issue envelope has all five triage fields (`kind`, `readiness`, `task_count`, `tasks_complete`, `max_tier`)
+- [ ] `max_tier` matches the highest `[tier-N]` tag in the unchecked task list
+- [ ] Every task has at minimum: What, Verification fields
+- [ ] `shiplog/plan` label applied at creation
+- [ ] Issue body ends with `Authored-by: <family>/<version> (<tool>)`
+- [ ] No unverified external claims are embedded as task requirements without `[unverified]` annotation
