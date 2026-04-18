@@ -166,7 +166,7 @@ Envelope `kind` is the machine key. The `[shiplog/<tag>]` heading is the human k
 | `review-handoff` | `review-handoff` |
 | `amendment` | `amendment` |
 | `blocker` | `blocker` |
-| `history` | `history`, `worklog` |
+| `history` | `history`, `session-end` |
 
 One comment may carry a human tag and a different envelope kind when the machine purpose differs from the human-facing label. The envelope is authoritative for retrieval; the tag is authoritative for human scanning.
 
