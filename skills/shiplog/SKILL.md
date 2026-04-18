@@ -187,23 +187,22 @@ Cross-model gate is satisfied (`Last-code-by: claude/sonnet-4.6` ≠ `Reviewed-b
 
 ---
 
-## Decision Tree
+## Verb Grid
 
-Match the user's intent and load the corresponding sub-skill:
+Each `/shiplog <phase>` slash command maps to one sub-skill file. Load the file for that phase — it owns policy, templates, and acceptance checklist.
 
-```
-User request arrives
-  +--> [If .shiplog/routing.md missing: run setup from references/model-routing.md]
-  +--> ["/shiplog models": re-run setup prompt, update config]
-  |
-  +-- "Let's brainstorm/plan/design X" -> shiplog:brainstorm
-  +-- "Work on issue #N"               -> shiplog:branch
-  +-- "I found a sub-problem"          -> shiplog:discovery
-  +-- "Let's commit"                   -> shiplog:commit
-  +-- "Ready for PR"                   -> shiplog:pr
-  +-- "Where did we decide X?"         -> shiplog:lookup
-  +-- Currently mid-work on a branch    -> shiplog:timeline
-```
+| Command | What it does | Sub-skill |
+|---------|-------------|-----------|
+| `/shiplog plan` | Capture a brainstorm as a GitHub planning issue with envelope + task contracts | `commands/shiplog/plan.md` |
+| `/shiplog start` | Create a branch from an issue, swap lifecycle labels, post session-start comment | `commands/shiplog/start.md` |
+| `/shiplog hunt` | Triage open issues and PRs; rank by readiness; detect gate-satisfying reviews | `commands/shiplog/hunt.md` |
+| `/shiplog commit` | Stage and commit with ID-first format; post commit-note comment for significant commits | `commands/shiplog/commit.md` |
+| `/shiplog pr` | Push branch, create PR with journey timeline body, transition issue label | `commands/shiplog/pr.md` |
+| `/shiplog review` | Perform cross-model review; post signed comment; update PR body review snapshot | `commands/shiplog/review.md` |
+| `/shiplog lookup` | Search issues, PRs, and git log by `#ID` or keyword; return compact table first | `commands/shiplog/lookup.md` |
+| `/shiplog resume` | Re-orient to current branch; detect issue number; post session-resume comment | `commands/shiplog/resume.md` |
+
+**`/shiplog models`:** Re-runs the model-routing setup prompt. See `references/model-routing.md`.
 
 ---
 
