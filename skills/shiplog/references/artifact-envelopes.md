@@ -72,6 +72,25 @@ Use triage fields on issue-body `state` envelopes so agents can rank work withou
 | `in-progress` | Work has started |
 | `done` | All tasks are complete |
 
+### Triage field derivation
+
+Three of the four triage fields can be computed mechanically from the issue body. Agents and tooling SHOULD derive these values rather than hand-maintaining them:
+
+```
+task_count     = count(lines matching "- [ ]") + count(lines matching "- [x]")
+tasks_complete = count(lines matching "- [x]")
+max_tier       = highest [tier-N] value among lines that start with "- [ ]"
+                 (omit when all tasks are checked, i.e. task_count == tasks_complete)
+```
+
+Apply the derivation to the task-list section of the issue body only (between `## Tasks` and the next `##` heading, or the end of the body). Do not count checkbox lines in other sections.
+
+**`readiness` stays hand-written.** It encodes intent (`ready` / `in-progress` / `blocked` / `needs-design` / `done`) that body content cannot express — for example, a fully-scoped issue with no branches yet should be `ready`, not `in-progress`. The derivation rule does not apply to `readiness`.
+
+For agents that update triage fields: after any body edit that adds, removes, or checks tasks, recompute `task_count`, `tasks_complete`, and `max_tier` from the body and write them back into the envelope. Do not recompute `readiness` unless the workflow event explicitly changes it (see the Triage Field Maintenance table in SKILL.md).
+
+---
+
 ### PR review snapshot fields
 
 Use review snapshot fields on PR-body `history` envelopes so agents can determine current review state without replaying the full PR comment thread.

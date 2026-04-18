@@ -146,14 +146,16 @@ Issue envelope triage fields (`readiness`, `task_count`, `tasks_complete`, `max_
 
 | Event | Envelope update | Label update |
 |-------|----------------|--------------|
-| Issue created (Phase 1) | Set all four triage fields at creation | Apply `shiplog/ready` if tasks are scoped and no blockers |
+| Issue created (Phase 1) | Set all four triage fields at creation (`task_count`, `tasks_complete`, `max_tier` from derivation rule; `readiness` by intent) | Apply `shiplog/ready` if tasks are scoped and no blockers |
 | Branch created (Phase 2) | Set `readiness: in-progress` | Replace lifecycle label with `shiplog/in-progress` |
-| Task checked off (Phase 4) | Increment `tasks_complete`, recompute `max_tier` from remaining tasks | - |
-| All tasks complete | Set `readiness: done`, clear `max_tier` | - |
+| Task checked off (Phase 4) | Recompute `tasks_complete` and `max_tier` from body (derivation rule) | - |
+| All tasks complete | Set `readiness: done`; `max_tier` will be empty per derivation rule | - |
 | Blocker found (Phase 3) | Set `readiness: blocked` | Add `shiplog/blocker` |
 | Blocker cleared | Restore previous `readiness` (`in-progress` or `ready`) | Remove `shiplog/blocker` |
 | PR created (Phase 5) | Set `readiness: done` if all tasks shipped | Replace lifecycle label with `shiplog/needs-review` |
 | PR merged and issue closed | - | Remove all lifecycle labels |
+
+**Derived fields:** `task_count`, `tasks_complete`, and `max_tier` are computed from the issue body task list (counted `- [ ]` / `- [x]` lines and highest `[tier-N]` among unchecked tasks). See the derivation rule in `references/artifact-envelopes.md` §1 "Triage field derivation". Only `readiness` is hand-written.
 
 Edit the issue body in place when these fields change. Triage metadata is derived state, so refreshing it does not require `Updated-by:` provenance.
 
