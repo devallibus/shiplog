@@ -179,7 +179,7 @@ Cross-model gate is satisfied (`Last-code-by: claude/sonnet-4.6` ≠ `Reviewed-b
 - Resuming work on an existing issue or PR
 - Applying review feedback, fixing review findings, or addressing request-changes dispositions
 - User references an issue or PR by number
-- Issue or PR body footer contains "Managed by **shiplog**"
+- Issue or PR body footer contains `Managed by **shiplog**` (recognition trigger — do not add this footer proactively)
 
 **Do NOT auto-activate for:**
 - Generic coding requests that do not need traceability
