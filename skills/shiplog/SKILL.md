@@ -343,15 +343,40 @@ See `references/orchestrator-protocol.md` for the capability mapping, fan-out te
 
 ## Integration Map
 
-This skill ORCHESTRATES. For activities that directly produce shiplog artifacts (commits, PRs), convention-enforced workflows are internalized in `references/`. For other activities, shiplog delegates to external skills.
+This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their phase's policy, runnable queries, and acceptance checklist in a single file — no cross-file navigation required during execution. References in `references/` are deep-dive anchors for cross-cutting policy only.
+
+### Sub-skill map
+
+| Phase | Sub-skill | Owns |
+|-------|-----------|------|
+| Plan Capture | `commands/shiplog/plan.md` | Brainstorm-to-issue policy, gh issue create template, envelope requirements |
+| Branch Setup | `commands/shiplog/start.md` | Branch naming, label swap, session-start comment template |
+| Triage / Hunt | `commands/shiplog/hunt.md` | PR+issue triage, signed-review detection (comment-based), reviewability classification |
+| Commit Context | `commands/shiplog/commit.md` | Commit format, Authored-by sig, commit-note template |
+| PR Timeline | `commands/shiplog/pr.md` | PR body structure, sig blocks, review gate pointer |
+| Review | `commands/shiplog/review.md` | Review sign-off template, cross-model check, PR snapshot update |
+| Lookup | `commands/shiplog/lookup.md` | ID-first retrieval queries, multi-surface search |
+| Session Resume | `commands/shiplog/resume.md` | Branch detection, session-resume comment template |
+
+### Cross-cutting reference anchors
+
+| Policy | Reference | What stays there |
+|--------|-----------|-----------------|
+| Cross-model gate rule | `references/closure-and-review.md` §3 | What constitutes different model; provenance fallback chain; where reviews live |
+| Merge conditions | `references/closure-and-review.md` §5 | Gate satisfaction conditions; risk-based requirements |
+| Closure evidence | `references/closure-and-review.md` §1–2 | Evidence requirements; closure comment format |
+| Envelope schema | `references/artifact-envelopes.md` §1 | Triage field derivation rule; field definitions |
+| Signing spec | `SKILL.md §8` | Authored-by / Updated-by / Reviewed-by / Last-code-by rules |
+
+### External skill delegation
 
 | Activity | Primary | External (optional) | Shiplog Adds |
 |----------|---------|---------------------|--------------|
-| Committing | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, context comments |
-| Creating PRs | `references/pr-workflow.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate |
-| Finishing branches | `references/pr-workflow.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
+| Committing | `commands/shiplog/commit.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, Authored-by sig |
+| Creating PRs | `commands/shiplog/pr.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate pointer |
+| Finishing branches | `commands/shiplog/pr.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
 | Brainstorming | `references/brainstorm-workflow.md` | `superpowers:brainstorming`, `ork:brainstorming` | Design-to-issue capture with task contracts |
-| Planning | `superpowers:writing-plans` | — | Issue task list mirroring |
+| Planning | `commands/shiplog/plan.md` | `superpowers:writing-plans` | Issue task list, envelope, sig |
 | Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
 | Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
 | Stacked PRs | `ork:stacked-prs` | — | Discovery-driven stacking protocol |
@@ -360,12 +385,10 @@ This skill ORCHESTRATES. For activities that directly produce shiplog artifacts 
 | Storing decisions | `ork:remember` | — | Structured `#ID: decision` entries |
 | Model routing | Built-in | — | Phase entry check (Step 0), routing prompts, handoffs |
 | Fan-out dispatch | `references/orchestrator-protocol.md` | runtime sub-agent/session tools | Dispatch artifact, per-lane contracts, collection summary |
-| Review and verifier lanes | `references/orchestrator-protocol.md` + `references/closure-and-review.md` | runtime reviewer/verifier tools | Auto-dispatch ladder and contract-only fallback |
+| Review execution | `commands/shiplog/review.md` + `references/closure-and-review.md` §3 | runtime reviewer/verifier tools | Signed comment, cross-model gate check, PR snapshot update |
 | Worktree hygiene | `references/orchestrator-protocol.md` | shell commands or external cleanup helpers | Workspace tracking and post-merge cleanup protocol |
 
-**Internalized workflows:** Commit and PR workflows are internalized in `references/` to enforce shiplog conventions (ID-first naming, provenance signing, envelope metadata, review gates). External skills may be used alongside for their non-convention features (validation agents, security scanning), but shiplog's conventions take precedence. See `LICENSES/` for attribution of the original skill sources.
-
-**Graceful degradation:** Internalized workflow → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
+**Graceful degradation:** Co-located sub-skill → references deep-dive → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
 
 **Conflict avoidance:** This skill sets the WORKFLOW context. External skills provide IMPLEMENTATION helpers. Shiplog's internalized conventions always take precedence for artifact format, signing, labels, and review gates.
 
@@ -391,15 +414,31 @@ This skill ORCHESTRATES. For activities that directly produce shiplog artifacts 
 
 All recommended skills are optional. The current optional integrations are listed below. Without them, shiplog falls back to direct `gh`/`git` commands.
 
-### Internalized Workflows
+### Co-located Sub-skills
 
-These workflows are built into shiplog's `references/` and enforce conventions directly. No external plugin required.
+Each phase has a single file in `commands/shiplog/` that owns policy + runnable queries + acceptance checklist. No reference navigation required during execution.
 
-| Workflow | Reference | Replaces |
-|----------|-----------|----------|
-| Commit conventions | `references/commit-workflow.md` | `ork:commit`, `commit-commands:commit` |
-| PR creation conventions | `references/pr-workflow.md` | `ork:create-pr`, `superpowers:finishing-a-development-branch` |
-| Brainstorm capture | `references/brainstorm-workflow.md` | `superpowers:brainstorming` (output capture) |
+| Phase | Sub-skill file |
+|-------|---------------|
+| Plan Capture | `commands/shiplog/plan.md` |
+| Branch Setup | `commands/shiplog/start.md` |
+| Triage / Hunt | `commands/shiplog/hunt.md` |
+| Commit Context | `commands/shiplog/commit.md` |
+| PR Timeline | `commands/shiplog/pr.md` |
+| Review | `commands/shiplog/review.md` |
+| Lookup | `commands/shiplog/lookup.md` |
+| Session Resume | `commands/shiplog/resume.md` |
+
+### Internalized Reference Workflows
+
+These workflows provide cross-cutting conventions and deep-dive policy. Referenced from sub-skills, not executed directly.
+
+| Workflow | Reference | Role |
+|----------|-----------|------|
+| Brainstorm capture | `references/brainstorm-workflow.md` | Output capture and issue creation conventions |
+| Cross-model gate | `references/closure-and-review.md` §3–5 | Gate policy anchor; merge conditions |
+| Envelope schema | `references/artifact-envelopes.md` | Triage field definitions and derivation rule |
+| Orchestration | `references/orchestrator-protocol.md` | Fan-out dispatch, reviewer lanes, worktree cleanup |
 
 ### Optional External Skills
 
