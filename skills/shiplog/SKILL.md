@@ -15,6 +15,155 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 
 ---
 
+## Golden-Path Walkthrough
+
+A complete issue-to-merge example using a concrete fake issue `#999`. Follow this sequence and every artifact produced will pass the acceptance checklists in `commands/shiplog/*.md`.
+
+### Step 1 — Plan Capture (`/shiplog plan`)
+
+A brainstorm produces: "Add rate-limit headers to the API so clients can back off intelligently." Load `commands/shiplog/plan.md` and create the issue:
+
+```bash
+gh issue create \
+  --title "[shiplog/plan] Add rate-limit headers to API" \
+  --label "shiplog/plan" \
+  --body-file .tmp-plan.md
+```
+
+Issue body (excerpt):
+```
+<!-- shiplog:
+kind: state
+status: open
+phase: 1
+readiness: ready
+task_count: 2
+tasks_complete: 0
+max_tier: tier-2
+updated_at: 2026-04-18T10:00:00Z
+-->
+## Tasks
+- [ ] **T1: Add X-RateLimit-* headers to response middleware** `[tier-2]`
+  - **What:** Inject X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset on every API response.
+  - **Verification:** curl the endpoint; confirm all three headers are present.
+- [ ] **T2: Document header semantics in API reference** `[tier-2]`
+  - **What:** Add a "Rate Limiting" section to docs/api-reference.md.
+  - **Verification:** Section exists and matches header values in integration test.
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Apply lifecycle label: `gh issue edit 999 --add-label "shiplog/ready"`
+
+### Step 2 — Branch Setup (`/shiplog start`)
+
+Load `commands/shiplog/start.md`. Create the branch from master tip:
+
+```bash
+git fetch origin master
+git checkout -b issue/999-rate-limit-headers origin/master
+```
+
+Swap label and update envelope:
+```bash
+gh issue edit 999 --remove-label "shiplog/ready" --add-label "shiplog/in-progress"
+# Edit issue body: readiness: ready → readiness: in-progress
+```
+
+Post session-start comment:
+```
+[shiplog/session-start] #999: Starting work
+
+**Branch:** `issue/999-rate-limit-headers`
+**Starting tasks:** T1, T2
+**Plan:** Add headers in middleware (T1) then document (T2).
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+### Step 3 — Commit Context (`/shiplog commit`)
+
+After implementing T1, load `commands/shiplog/commit.md` and commit:
+
+```bash
+git add src/middleware/rate_limit.ts
+git commit -F .tmp-commit-msg.md
+# Commit message: feat(#999/T1): add X-RateLimit-* headers to response middleware
+#
+# Injects the three standard headers into every API response via middleware.
+#
+# Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Post commit-note on the issue:
+```
+[shiplog/commit-note] #999: a1b2c3d feat(#999/T1): add X-RateLimit-* headers
+
+**What:** Middleware now injects X-RateLimit-Limit, -Remaining, and -Reset.
+**Why:** Clients need these to implement back-off without polling.
+**Verification:** curl localhost:3000/api/health — all three headers present.
+
+Authored-by: claude/sonnet-4.6 (claude-code)
+```
+
+Repeat for T2 commit (`docs(#999/T2): document rate-limit headers in API reference`).
+
+### Step 4 — PR Timeline (`/shiplog pr`)
+
+Load `commands/shiplog/pr.md`. Push and create the PR:
+
+```bash
+git push -u origin issue/999-rate-limit-headers
+gh pr create \
+  --title "feat(#999): add rate-limit headers to API" \
+  --label "shiplog/history" \
+  --label "shiplog/issue-driven" \
+  --body-file .tmp-pr-body.md
+```
+
+PR body includes: envelope (`kind: history`), summary, `Closes #999`, Journey Timeline with both commits, Verification checklist, Reviews placeholder, and sig block:
+```
+Authored-by: claude/sonnet-4.6 (claude-code)
+Last-code-by: claude/sonnet-4.6 (claude-code)
+*Captain's log — PR timeline by **shiplog***
+```
+
+Transition issue label:
+```bash
+gh issue edit 999 --remove-label "shiplog/in-progress" --add-label "shiplog/needs-review"
+```
+
+### Step 5 — Cross-Model Review (`/shiplog review`)
+
+A different model (e.g., `openai/gpt-5.4 (codex)`) loads `commands/shiplog/review.md`, reads the diff, and posts the signed review comment on the PR:
+
+```
+[shiplog/review-handoff] #999: Review of PR #<PR>
+
+Middleware approach is correct. Headers match RFC 6585 semantics.
+
+Reviewed-by: openai/gpt-5.4 (codex, effort: high)
+Disposition: approve
+Scope: full diff
+Follow-ups: none
+```
+
+The reviewer then updates the PR body review snapshot in place:
+```
+Current state: approved
+Last reviewed by: openai/gpt-5.4 (codex, effort: high)
+Last reviewed at: 2026-04-18T15:00:00Z
+Reviewed commit: a1b2c3d
+Source artifact: <URL to review comment>
+Needs re-review since: —
+```
+
+### Step 6 — Merge
+
+Cross-model gate is satisfied (`Last-code-by: claude/sonnet-4.6` ≠ `Reviewed-by: openai/gpt-5.4`). Merge the PR. Remove all lifecycle labels from issue #999. GitHub closes #999 automatically via `Closes #999`.
+
+---
+
 ## When This Skill Activates
 
 **User-invocable:** `/shiplog`, `/shiplog models`, `/shiplog <phase>`
@@ -30,6 +179,7 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 - Resuming work on an existing issue or PR
 - Applying review feedback, fixing review findings, or addressing request-changes dispositions
 - User references an issue or PR by number
+- Issue or PR body footer contains `Managed by **shiplog**` (recognition trigger — do not add this footer proactively)
 
 **Do NOT auto-activate for:**
 - Generic coding requests that do not need traceability
@@ -38,23 +188,45 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 
 ---
 
-## Decision Tree
+## Verb Grid
 
-Match the user's intent and load the corresponding sub-skill:
+Each `/shiplog <phase>` slash command maps to one sub-skill file. Load the file for that phase — it owns policy, templates, and acceptance checklist.
 
-```
-User request arrives
-  +--> [If .shiplog/routing.md missing: run setup from references/model-routing.md]
-  +--> ["/shiplog models": re-run setup prompt, update config]
-  |
-  +-- "Let's brainstorm/plan/design X" -> shiplog:brainstorm
-  +-- "Work on issue #N"               -> shiplog:branch
-  +-- "I found a sub-problem"          -> shiplog:discovery
-  +-- "Let's commit"                   -> shiplog:commit
-  +-- "Ready for PR"                   -> shiplog:pr
-  +-- "Where did we decide X?"         -> shiplog:lookup
-  +-- Currently mid-work on a branch    -> shiplog:timeline
-```
+| Command | What it does | Sub-skill |
+|---------|-------------|-----------|
+| `/shiplog plan` | Capture a brainstorm as a GitHub planning issue with envelope + task contracts | `commands/shiplog/plan.md` |
+| `/shiplog start` | Create a branch from an issue, swap lifecycle labels, post session-start comment | `commands/shiplog/start.md` |
+| `/shiplog hunt` | Triage open issues and PRs; rank by readiness; detect gate-satisfying reviews | `commands/shiplog/hunt.md` |
+| `/shiplog commit` | Stage and commit with ID-first format; post commit-note comment for significant commits | `commands/shiplog/commit.md` |
+| `/shiplog pr` | Push branch, create PR with journey timeline body, transition issue label | `commands/shiplog/pr.md` |
+| `/shiplog review` | Perform cross-model review; post signed comment; update PR body review snapshot | `commands/shiplog/review.md` |
+| `/shiplog lookup` | Search issues, PRs, and git log by `#ID` or keyword; return compact table first | `commands/shiplog/lookup.md` |
+| `/shiplog resume` | Re-orient to current branch; detect issue number; post session-resume comment | `commands/shiplog/resume.md` |
+
+**`/shiplog models`:** Re-runs the model-routing setup prompt. See `references/model-routing.md`.
+
+---
+
+## Canonical Kind → Tag → Label Map
+
+`kind:` in envelope YAML is the source of truth. Title tags (`[shiplog/<tag>]`) and GitHub labels (`shiplog/<label>`) are derived views on `kind:`. When a new artifact kind is defined, it is added here once and all three surfaces are updated together.
+
+| `kind:` (envelope) | Title tag `[shiplog/<tag>]` | GitHub label `shiplog/<label>` | Description |
+|--------------------|-----------------------------|-------------------------------|-------------|
+| `state` | `plan`, `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `approach-change` | `plan` (planning issues) | Current status snapshot of an issue or PR |
+| `handoff` | `session-start`, `review-handoff` | — | Context transfer between tiers, tools, or sessions |
+| `verification` | `commit-note`, `review-handoff`, `verification` | `verification` | Evidence of testing, review, or quality check |
+| `commit-note` | `commit-note` | — | Reasoning behind a specific commit |
+| `review-handoff` | `review-handoff` | — | Review request or review completion artifact |
+| `amendment` | `amendment` | — | Correction or clarification for an existing signed artifact |
+| `blocker` | `blocker` | `blocker` | Something preventing progress |
+| `history` | `history`, `session-end` | `history` | Retrospective summary for knowledge retrieval |
+
+**Lifecycle labels** (`shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`) are not tied to an artifact `kind:`. They track issue/PR workflow state and are mutually exclusive. Apply them per the Triage Field Maintenance table below.
+
+**Aspect labels** (`shiplog/discovery`, `shiplog/stacked`, `shiplog/issue-driven`) classify the relationship between artifacts, not their content kind. They may coexist with lifecycle labels.
+
+For the full label set, color codes, and bootstrap CLI snippets, see `references/labels.md` (which cross-references this table as its canonical kind source).
 
 ---
 
@@ -82,65 +254,20 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 
 **Retrieval:** `gh issue list --search "#42"` | `git log --grep="#42"` | `git log --grep="#42/T1"` | `gh pr list --search "#42"`
 
----
+### Envelope Schema and Triage Fields
 
-## Canonical Kind → Tag → Label Map
+Issue and PR envelopes use `<!-- shiplog: ... -->` HTML comment blocks. The full field schema and triage field derivation rule live in `references/artifact-envelopes.md` §1. Summary of triage fields:
 
-`kind:` in envelope YAML is the source of truth. Title tags (`[shiplog/<tag>]`) and GitHub labels (`shiplog/<label>`) are derived views on `kind:`. When a new artifact kind is defined, it is added here once and all three surfaces are updated together.
+| Field | Derived from | Hand-written? |
+|-------|-------------|---------------|
+| `task_count` | Count of `- [ ]` + `- [x]` lines | No — derived |
+| `tasks_complete` | Count of `- [x]` lines | No — derived |
+| `max_tier` | Highest `[tier-N]` among unchecked tasks | No — derived |
+| `readiness` | Workflow intent | Yes |
 
-| `kind:` (envelope) | Title tag `[shiplog/<tag>]` | GitHub label `shiplog/<label>` | Description |
-|--------------------|-----------------------------|-------------------------------|-------------|
-| `state` | `plan`, `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `approach-change` | `plan` (planning issues) | Current status snapshot of an issue or PR |
-| `handoff` | `session-start`, `review-handoff` | — | Context transfer between tiers, tools, or sessions |
-| `verification` | `commit-note`, `review-handoff`, `verification` | `verification` | Evidence of testing, review, or quality check |
-| `commit-note` | `commit-note` | — | Reasoning behind a specific commit |
-| `review-handoff` | `review-handoff` | — | Review request or review completion artifact |
-| `amendment` | `amendment` | — | Correction or clarification for an existing signed artifact |
-| `blocker` | `blocker` | `blocker` | Something preventing progress |
-| `history` | `history`, `session-end` | `history` | Retrospective summary for knowledge retrieval |
+**Triage field maintenance:** keep envelope triage fields current on each lifecycle event. See the Triage Field Maintenance table below. Derivation rule is in `references/artifact-envelopes.md` §1.
 
-**Lifecycle labels** (`shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`) are not tied to an artifact `kind:`. They track issue/PR workflow state and are mutually exclusive. Apply them per the Triage Field Maintenance table below.
-
-**Aspect labels** (`shiplog/discovery`, `shiplog/stacked`, `shiplog/issue-driven`) classify the relationship between artifacts, not their content kind. They may coexist with lifecycle labels.
-
-For the full label set, color codes, and bootstrap CLI snippets, see `references/labels.md` (which cross-references this table as its canonical kind source).
-
----
-
-## User-Facing Language
-
-The phase numbers are internal workflow labels. Do not surface them to the user.
-
-Preferred labels: `Plan Capture`, `Branch Setup`, `Discovery Handling`, `Commit Context`, `PR Timeline`, `History Lookup`, `Timeline Updates`.
-
-**Brand formatting:** Always bold the word **shiplog** in user-facing text (messages, comments, PR bodies, issue bodies). Write it lowercase and bold: **shiplog**. This does not apply to code identifiers, branch names, CLI output, or other machine-readable contexts where markdown is not rendered.
-
----
-
-## Shell Portability
-
-Keep the workflow cross-platform. See `references/shell-portability.md` for full guidance and Bash/PowerShell patterns.
-
-Key rules:
-- Prefer `gh ... --body-file <temp-file>` for multiline content.
-- Break chained shell commands into separate steps when the shell operator differs.
-- Keep Bash examples as the primary path; add PowerShell notes where syntax diverges.
-
----
-
-## GitHub Labels
-
-**shiplog** manages a compact repo-level label vocabulary so issues and PRs stay filterable even when a reader never opens the body. See `references/labels.md` for the canonical label set, descriptions, and CLI snippets.
-
-Label rules:
-- On the first write operation in a repo, bootstrap or refresh labels with `gh label create --force ...`.
-- Apply labels at creation time with `gh issue create --label` or `gh pr create --label`.
-- `shiplog/blocker` is stateful. Add it when work becomes blocked and remove it when the blocker is cleared.
-- `shiplog/ready`, `shiplog/in-progress`, and `shiplog/needs-review` are mutually exclusive lifecycle labels.
-
----
-
-## Triage Field Maintenance
+### Triage Field Maintenance
 
 Issue envelope triage fields (`readiness`, `task_count`, `tasks_complete`, `max_tier`) and lifecycle labels must be kept current so triage scans produce accurate results.
 
@@ -158,36 +285,6 @@ Issue envelope triage fields (`readiness`, `task_count`, `tasks_complete`, `max_
 **Derived fields:** `task_count`, `tasks_complete`, and `max_tier` are computed from the issue body task list (counted `- [ ]` / `- [x]` lines and highest `[tier-N]` among unchecked tasks). See the derivation rule in `references/artifact-envelopes.md` §1 "Triage field derivation". Only `readiness` is hand-written.
 
 Edit the issue body in place when these fields change. Triage metadata is derived state, so refreshing it does not require `Updated-by:` provenance.
-
----
-
-## Mandatory Issue Capture
-
-Implementation trouble that materially affects the work must be durably recorded before the agent proceeds to the next material step or ends the turn.
-
-### What counts as a relevant implementation issue
-
-- Failed attempts
-- Hidden dependencies
-- Risky workarounds
-- Scope surprises
-- Verification gaps
-- Environment or tooling friction
-
-### What does not require capture
-
-- Normal iteration where the final approach is obvious from the diff
-- Minor typos or lint fixes resolved in the same commit
-- Expected complexity that matches the task description
-
-### Capture rule
-
-| Situation | Artifact | Where |
-|-----------|----------|-------|
-| Issue is local and resolved inline | Timeline comment (`[shiplog/implementation-issue]`) | Issue |
-| Issue warrants follow-up, scope split, or long-term retrieval | New linked issue | GitHub issue with cross-reference on parent |
-
-The timeline comment is the minimum: one paragraph explaining what happened, why it matters, and how it was resolved or deferred.
 
 ---
 
@@ -326,71 +423,45 @@ Model identity detection is also used by model-tier routing to verify the curren
 
 ---
 
-## Runtime-Aware Orchestration
+## GitHub Labels
 
-Shiplog records orchestration honestly instead of assuming one agent backend fits every runtime.
+**shiplog** manages a compact repo-level label vocabulary so issues and PRs stay filterable even when a reader never opens the body. See `references/labels.md` for the canonical label set, descriptions, and CLI snippets.
 
-- **Local parallel tool fan-out:** one orchestrator runs multiple independent helper calls in parallel. Good for sidecar reads; not a separate reviewer identity.
-- **Bounded sub-agent:** the orchestrator spawns a child lane with a scoped contract and collects a return artifact.
-- **External session delegation:** a separate tmux session, terminal agent, or other durable worker runs the lane outside the current orchestrator.
-- **Contract-only fallback:** shiplog emits the handoff or review contract when the current runtime cannot execute the lane itself.
-
-Isolation backend is tracked separately from the orchestration primitive. A git worktree, forked workspace, or tmux session may all isolate delegated work, but only the primary feature branch/worktree is shiplog's canonical branch record.
-
-See `references/orchestrator-protocol.md` for the capability mapping, fan-out templates, and cleanup protocol.
+Label rules:
+- On the first write operation in a repo, bootstrap or refresh labels with `gh label create --force ...`.
+- Apply labels at creation time with `gh issue create --label` or `gh pr create --label`.
+- `shiplog/blocker` is stateful. Add it when work becomes blocked and remove it when the blocker is cleared.
+- `shiplog/ready`, `shiplog/in-progress`, and `shiplog/needs-review` are mutually exclusive lifecycle labels.
 
 ---
 
-## Integration Map
+## Mandatory Issue Capture
 
-This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their phase's policy, runnable queries, and acceptance checklist in a single file — no cross-file navigation required during execution. References in `references/` are deep-dive anchors for cross-cutting policy only.
+Implementation trouble that materially affects the work must be durably recorded before the agent proceeds to the next material step or ends the turn.
 
-### Sub-skill map
+### What counts as a relevant implementation issue
 
-| Phase | Sub-skill | Owns |
-|-------|-----------|------|
-| Plan Capture | `commands/shiplog/plan.md` | Brainstorm-to-issue policy, gh issue create template, envelope requirements |
-| Branch Setup | `commands/shiplog/start.md` | Branch naming, label swap, session-start comment template |
-| Triage / Hunt | `commands/shiplog/hunt.md` | PR+issue triage, signed-review detection (comment-based), reviewability classification |
-| Commit Context | `commands/shiplog/commit.md` | Commit format, Authored-by sig, commit-note template |
-| PR Timeline | `commands/shiplog/pr.md` | PR body structure, sig blocks, review gate pointer |
-| Review | `commands/shiplog/review.md` | Review sign-off template, cross-model check, PR snapshot update |
-| Lookup | `commands/shiplog/lookup.md` | ID-first retrieval queries, multi-surface search |
-| Session Resume | `commands/shiplog/resume.md` | Branch detection, session-resume comment template |
+- Failed attempts
+- Hidden dependencies
+- Risky workarounds
+- Scope surprises
+- Verification gaps
+- Environment or tooling friction
 
-### Cross-cutting reference anchors
+### What does not require capture
 
-| Policy | Reference | What stays there |
-|--------|-----------|-----------------|
-| Cross-model gate rule | `references/closure-and-review.md` §3 | What constitutes different model; provenance fallback chain; where reviews live |
-| Merge conditions | `references/closure-and-review.md` §5 | Gate satisfaction conditions; risk-based requirements |
-| Closure evidence | `references/closure-and-review.md` §1–2 | Evidence requirements; closure comment format |
-| Envelope schema | `references/artifact-envelopes.md` §1 | Triage field derivation rule; field definitions |
-| Signing spec | `SKILL.md §8` | Authored-by / Updated-by / Reviewed-by / Last-code-by rules |
+- Normal iteration where the final approach is obvious from the diff
+- Minor typos or lint fixes resolved in the same commit
+- Expected complexity that matches the task description
 
-### External skill delegation
+### Capture rule
 
-| Activity | Primary | External (optional) | Shiplog Adds |
-|----------|---------|---------------------|--------------|
-| Committing | `commands/shiplog/commit.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, Authored-by sig |
-| Creating PRs | `commands/shiplog/pr.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate pointer |
-| Finishing branches | `commands/shiplog/pr.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
-| Brainstorming | `references/brainstorm-workflow.md` | `superpowers:brainstorming`, `ork:brainstorming` | Design-to-issue capture with task contracts |
-| Planning | `commands/shiplog/plan.md` | `superpowers:writing-plans` | Issue task list, envelope, sig |
-| Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
-| Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
-| Stacked PRs | `ork:stacked-prs` | — | Discovery-driven stacking protocol |
-| Issue tracking | `ork:issue-progress-tracking` | — | Auto-checkbox updates from commits |
-| Fixing issues | `ork:fix-issue` | — | Timeline documentation of RCA |
-| Storing decisions | `ork:remember` | — | Structured `#ID: decision` entries |
-| Model routing | Built-in | — | Phase entry check (Step 0), routing prompts, handoffs |
-| Fan-out dispatch | `references/orchestrator-protocol.md` | runtime sub-agent/session tools | Dispatch artifact, per-lane contracts, collection summary |
-| Review execution | `commands/shiplog/review.md` + `references/closure-and-review.md` §3 | runtime reviewer/verifier tools | Signed comment, cross-model gate check, PR snapshot update |
-| Worktree hygiene | `references/orchestrator-protocol.md` | shell commands or external cleanup helpers | Workspace tracking and post-merge cleanup protocol |
+| Situation | Artifact | Where |
+|-----------|----------|-------|
+| Issue is local and resolved inline | Timeline comment (`[shiplog/implementation-issue]`) | Issue |
+| Issue warrants follow-up, scope split, or long-term retrieval | New linked issue | GitHub issue with cross-reference on parent |
 
-**Graceful degradation:** Co-located sub-skill → references deep-dive → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
-
-**Conflict avoidance:** This skill sets the WORKFLOW context. External skills provide IMPLEMENTATION helpers. Shiplog's internalized conventions always take precedence for artifact format, signing, labels, and review gates.
+The timeline comment is the minimum: one paragraph explaining what happened, why it matters, and how it was resolved or deferred.
 
 ---
 
@@ -414,33 +485,88 @@ This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their pha
 
 All recommended skills are optional. The current optional integrations are listed below. Without them, shiplog falls back to direct `gh`/`git` commands.
 
-### Co-located Sub-skills
+### User-Facing Language
 
-Each phase has a single file in `commands/shiplog/` that owns policy + runnable queries + acceptance checklist. No reference navigation required during execution.
+The phase numbers are internal workflow labels. Do not surface them to the user.
 
-| Phase | Sub-skill file |
-|-------|---------------|
-| Plan Capture | `commands/shiplog/plan.md` |
-| Branch Setup | `commands/shiplog/start.md` |
-| Triage / Hunt | `commands/shiplog/hunt.md` |
-| Commit Context | `commands/shiplog/commit.md` |
-| PR Timeline | `commands/shiplog/pr.md` |
-| Review | `commands/shiplog/review.md` |
-| Lookup | `commands/shiplog/lookup.md` |
-| Session Resume | `commands/shiplog/resume.md` |
+Preferred labels: `Plan Capture`, `Branch Setup`, `Discovery Handling`, `Commit Context`, `PR Timeline`, `History Lookup`, `Timeline Updates`.
 
-### Internalized Reference Workflows
+**Brand formatting:** Always bold the word **shiplog** in user-facing text (messages, comments, PR bodies, issue bodies). Write it lowercase and bold: **shiplog**. This does not apply to code identifiers, branch names, CLI output, or other machine-readable contexts where markdown is not rendered.
 
-These workflows provide cross-cutting conventions and deep-dive policy. Referenced from sub-skills, not executed directly.
+### Shell Portability
 
-| Workflow | Reference | Role |
-|----------|-----------|------|
-| Brainstorm capture | `references/brainstorm-workflow.md` | Output capture and issue creation conventions |
-| Cross-model gate | `references/closure-and-review.md` §3–5 | Gate policy anchor; merge conditions |
-| Envelope schema | `references/artifact-envelopes.md` | Triage field definitions and derivation rule |
-| Orchestration | `references/orchestrator-protocol.md` | Fan-out dispatch, reviewer lanes, worktree cleanup |
+Keep the workflow cross-platform. See `references/shell-portability.md` for full guidance and Bash/PowerShell patterns.
 
-### Optional External Skills
+Key rules:
+- Prefer `gh ... --body-file <temp-file>` for multiline content.
+- Break chained shell commands into separate steps when the shell operator differs.
+- Keep Bash examples as the primary path; add PowerShell notes where syntax diverges.
+
+### Integration Map
+
+This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their phase's policy, runnable queries, and acceptance checklist in a single file — no cross-file navigation required during execution. References in `references/` are deep-dive anchors for cross-cutting policy only.
+
+#### Sub-skill map
+
+| Phase | Sub-skill | Owns |
+|-------|-----------|------|
+| Plan Capture | `commands/shiplog/plan.md` | Brainstorm-to-issue policy, gh issue create template, envelope requirements |
+| Branch Setup | `commands/shiplog/start.md` | Branch naming, label swap, session-start comment template |
+| Triage / Hunt | `commands/shiplog/hunt.md` | PR+issue triage, signed-review detection (comment-based), reviewability classification |
+| Commit Context | `commands/shiplog/commit.md` | Commit format, Authored-by sig, commit-note template |
+| PR Timeline | `commands/shiplog/pr.md` | PR body structure, sig blocks, review gate pointer |
+| Review | `commands/shiplog/review.md` | Review sign-off template, cross-model check, PR snapshot update |
+| Lookup | `commands/shiplog/lookup.md` | ID-first retrieval queries, multi-surface search |
+| Session Resume | `commands/shiplog/resume.md` | Branch detection, session-resume comment template |
+
+#### Cross-cutting reference anchors
+
+| Policy | Reference | What stays there |
+|--------|-----------|-----------------|
+| Cross-model gate rule | `references/closure-and-review.md` §3 | What constitutes different model; provenance fallback chain; where reviews live |
+| Merge conditions | `references/closure-and-review.md` §5 | Gate satisfaction conditions; risk-based requirements |
+| Closure evidence | `references/closure-and-review.md` §1–2 | Evidence requirements; closure comment format |
+| Envelope schema | `references/artifact-envelopes.md` §1 | Triage field derivation rule; field definitions |
+| Signing spec | `SKILL.md §8` | Authored-by / Updated-by / Reviewed-by / Last-code-by rules |
+
+#### External skill delegation
+
+| Activity | Primary | External (optional) | Shiplog Adds |
+|----------|---------|---------------------|--------------|
+| Committing | `commands/shiplog/commit.md` | `ork:commit`, `commit-commands:commit` | ID-first format, task refs, Authored-by sig |
+| Creating PRs | `commands/shiplog/pr.md` | `ork:create-pr` (validation agents) | Timeline body, envelopes, labels, review gate pointer |
+| Finishing branches | `commands/shiplog/pr.md` | `superpowers:finishing-a-development-branch` | Review gate enforcement |
+| Brainstorming | `references/brainstorm-workflow.md` | `superpowers:brainstorming`, `ork:brainstorming` | Design-to-issue capture with task contracts |
+| Planning | `commands/shiplog/plan.md` | `superpowers:writing-plans` | Issue task list, envelope, sig |
+| Plan execution | `superpowers:executing-plans` | — | Timeline comments at checkpoints |
+| Worktree creation | `superpowers:using-git-worktrees` | — | Branch-issue linking |
+| Stacked PRs | `ork:stacked-prs` | — | Discovery-driven stacking protocol |
+| Issue tracking | `ork:issue-progress-tracking` | — | Auto-checkbox updates from commits |
+| Fixing issues | `ork:fix-issue` | — | Timeline documentation of RCA |
+| Storing decisions | `ork:remember` | — | Structured `#ID: decision` entries |
+| Model routing | Built-in | — | Phase entry check (Step 0), routing prompts, handoffs |
+| Fan-out dispatch | `references/orchestrator-protocol.md` | runtime sub-agent/session tools | Dispatch artifact, per-lane contracts, collection summary |
+| Review execution | `commands/shiplog/review.md` + `references/closure-and-review.md` §3 | runtime reviewer/verifier tools | Signed comment, cross-model gate check, PR snapshot update |
+| Worktree hygiene | `references/orchestrator-protocol.md` | shell commands or external cleanup helpers | Workspace tracking and post-merge cleanup protocol |
+
+**Graceful degradation:** Co-located sub-skill → references deep-dive → external skill → direct `gh`/`git` commands. Minimum viable installation: `gh` CLI + `git` + this skill.
+
+**Conflict avoidance:** This skill sets the WORKFLOW context. External skills provide IMPLEMENTATION helpers. Shiplog's internalized conventions always take precedence for artifact format, signing, labels, and review gates.
+
+#### Runtime-Aware Orchestration
+
+Shiplog records orchestration honestly instead of assuming one agent backend fits every runtime.
+
+- **Local parallel tool fan-out:** one orchestrator runs multiple independent helper calls in parallel. Good for sidecar reads; not a separate reviewer identity.
+- **Bounded sub-agent:** the orchestrator spawns a child lane with a scoped contract and collects a return artifact.
+- **External session delegation:** a separate tmux session, terminal agent, or other durable worker runs the lane outside the current orchestrator.
+- **Contract-only fallback:** shiplog emits the handoff or review contract when the current runtime cannot execute the lane itself.
+
+Isolation backend is tracked separately from the orchestration primitive. A git worktree, forked workspace, or tmux session may all isolate delegated work, but only the primary feature branch/worktree is shiplog's canonical branch record.
+
+See `references/orchestrator-protocol.md` for the capability mapping, fan-out templates, and cleanup protocol.
+
+#### Optional External Skills
 
 These skills enhance shiplog but are not required. Shiplog's conventions take precedence when both are active.
 
@@ -456,3 +582,24 @@ These skills enhance shiplog but are not required. Shiplog's conventions take pr
 | `superpowers:using-git-worktrees` | Superpowers | Isolated workspace creation |
 | `superpowers:writing-plans` | Superpowers | Structured plan documents |
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
+
+---
+
+## References
+
+One line per deep-dive file. Open only when the co-located sub-skill or inline section is insufficient.
+
+| File | Open when |
+|------|-----------|
+| `references/artifact-envelopes.md` | Writing or parsing `<!-- shiplog: ... -->` blocks; need triage field derivation rule or full field schema |
+| `references/closure-and-review.md` | Deciding whether a PR is mergeable; need cross-model gate rule, merge conditions, or closure evidence requirements |
+| `references/labels.md` | Bootstrapping a new repo or repairing labels; need color codes or full label bootstrap CLI |
+| `references/signing.md` | The inline Agent Identity Signing section is insufficient; need edge-case signing rules or full model detection details |
+| `references/model-routing.md` | Running `/shiplog models` or checking agent tier assignments |
+| `references/brainstorm-workflow.md` | Processing brainstorm output before filing an issue; need capture and design-to-issue conventions |
+| `references/orchestrator-protocol.md` | Coordinating multi-lane work; need fan-out dispatch templates, reviewer lane contracts, or worktree cleanup |
+| `references/shell-portability.md` | Shell syntax for a command is unclear; need Bash/PowerShell cross-platform patterns |
+| `references/commit-workflow.md` | The co-located `commands/shiplog/commit.md` is insufficient for cross-cutting commit policy |
+| `references/pr-workflow.md` | The co-located `commands/shiplog/pr.md` is insufficient for cross-cutting PR policy |
+| `references/verification-profiles.md` | A task requires a named verification profile |
+| `references/phase-templates.md` | A template is not covered by any co-located sub-skill file |
