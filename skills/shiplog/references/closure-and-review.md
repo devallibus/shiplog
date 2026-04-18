@@ -211,7 +211,7 @@ Scope: <what was reviewed>
 Follow-ups: #<issue-number> | none
 ```
 
-See `references/signing.md` for the full signing protocol.
+See SKILL.md §8 (Agent Identity Signing) for the full signing protocol.
 
 ### PR-body review snapshot
 
@@ -269,7 +269,7 @@ The PR body review snapshot is the latest-wins summary. Read it first for curren
 
 Use the first available signal - each level is less authoritative than the one above:
 
-1. **`Last-code-by:`** in the PR body - authoritative. This field tracks who most recently pushed code to the branch. See `references/signing.md` code provenance.
+1. **`Last-code-by:`** in the PR body - authoritative. This field tracks who most recently pushed code to the branch. See SKILL.md §8 (Agent Identity Signing) for code provenance rules.
 2. **`Updated-by:`** in the PR body - approximate. May reflect artifact text edits rather than code changes, but is the best proxy when `Last-code-by:` is absent.
 3. **`Authored-by:`** in the PR body - original author. May be stale if another model pushed code later.
 4. **Git commit author** on the PR branch - last resort. Requires an additional API call and uses git metadata rather than signed artifacts, but provides ground truth when no signed field exists.

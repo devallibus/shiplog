@@ -6,11 +6,11 @@ description: "Phase 7: Add timeline comments for session starts, milestones, dis
 # Timeline Updates (Phase 7)
 
 <!-- routing: tier-3, agent -->
-<!-- cross-cutting: references/model-routing.md (Step 0), references/signing.md, references/labels.md, references/orchestrator-protocol.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/labels.md, references/orchestrator-protocol.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`.
 
-1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign per `references/signing.md`.
+1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
 
 2. **Use the standard format** below. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `approach-change`, `blocker`, `session-end`.
 
