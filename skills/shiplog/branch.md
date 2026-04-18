@@ -33,7 +33,7 @@ description: "Phase 2: Create a branch from an issue, set up worktree, and post 
    If a delegated lane later uses a forked workspace, tmux session, or other runtime-specific isolation backend, keep this feature branch/worktree as the canonical shiplog record for the work.
    **Fallback (in-place checkout):** Only when the user explicitly requests no worktree.
 
-3. **Post timeline entry.** Full Mode: comment on the issue using the session-start template below. Quiet Mode: create `--log` branch + PR using the quiet-mode template below. Record the workspace path when known. Sign per `references/signing.md`.
+3. **Post timeline entry.** Comment on the issue using the session-start template below. Record the workspace path when known. Sign per `references/signing.md`.
 
 4. **Load plan** if it exists. Delegate to `superpowers:executing-plans` or `ork:implement`.
    For delegated or tier-3 work, the plan should define a contract: allowed files, forbidden changes, stop conditions, verification, return artifact, and decision budget.
@@ -66,68 +66,6 @@ updated_at: <ISO_TIMESTAMP>
 Authored-by: <family>/<version> (<tool>)
 *Captain's log — session start*
 ```
-
----
-
-## Quiet Mode: `--log` Branch + PR
-
-If the `--log` PR doesn't exist yet:
-```bash
-git checkout -b <branch>--log
-git commit --allow-empty -m "shiplog: initialize knowledge log"
-git push -u origin <branch>--log
-gh pr create --base <branch> \
-  --label "shiplog/worklog" \
-  --label "shiplog/quiet-mode" \
-  --label "shiplog/issue-driven" \
-  --title "[shiplog/worklog] <description>" \
-  --body-file <temp-file>
-git checkout <branch>
-```
-
-PR body:
-```markdown
-<!-- shiplog:
-kind: state
-issue: <ISSUE_NUMBER>
-branch: <branch>--log
-status: open
-updated_at: <ISO_TIMESTAMP>
--->
-
-## Knowledge Log
-
-Tracking decisions and discoveries for this work.
-```
-
-If you deferred a brainstorm from plan capture, use that saved content as the initial PR body.
-
-Then post a session-start comment on the `--log` PR:
-```bash
-gh pr comment <LOG_PR_NUMBER> --body-file <temp-file>
-```
-
-Comment body:
-```markdown
-<!-- shiplog:
-kind: handoff
-issue: <ISSUE_NUMBER>
-phase: 2
-updated_at: <ISO_TIMESTAMP>
--->
-
-## [shiplog/session-start] <Brief description of the work>
-
-**Branch:** `<branch>--log`
-**Workspace:** `[absolute-or-relative-worktree-path if known]`
-**Approach:** [1-2 sentences about the plan for this session]
-
----
-Authored-by: <family>/<version> (<tool>)
-*Captain's log — session start*
-```
-
-Use the portable temp-file pattern from `references/shell-portability.md`.
 
 ---
 
@@ -243,7 +181,5 @@ git branch -d <branch-name>
 ## Edge Cases
 
 **Session resume:** Detect the issue from the current branch name or worktree. If the branch has an existing worktree, `cd` into it. Find linked PRs, read comments, add "Session resumed" timeline comment via `shiplog:timeline`.
-
-**Quiet mode — feature branch rebased:** Rebase `--log` branch onto updated feature branch. Use `--force-with-lease`.
 
 **Post-merge cleanup:** If the branch is merged and no open PR still depends on it, run the cleanup protocol above or dispatch a dedicated cleanup lane per `references/orchestrator-protocol.md`.

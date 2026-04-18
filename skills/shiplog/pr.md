@@ -14,9 +14,7 @@ description: "Phase 5: Create PR with timeline body, handle review gate, and lin
 
 2. **Create PR (Full Mode).** Use the PR timeline template below. Create the PR with `shiplog/history` and `shiplog/issue-driven` already applied. Sign per `references/signing.md`.
 
-3. **Quiet Mode.** Create a clean feature PR (no shiplog content). Add a final summary comment to the `--log` PR using the quiet-mode template below. Sign per `references/signing.md`.
-
-4. **Review gate.** Every PR requires cross-model review before merge. Use the execution ladder in `references/closure-and-review.md`: bounded reviewer lane if available, then external session delegation, then a contract-only review handoff. Local parallel tool fan-out does not count as an independent reviewer identity.
+3. **Review gate.** Every PR requires cross-model review before merge. Use the execution ladder in `references/closure-and-review.md`: bounded reviewer lane if available, then external session delegation, then a contract-only review handoff. Local parallel tool fan-out does not count as an independent reviewer identity.
 
 5. **Link and store.** PR body includes `Closes #<issue>` when the PR fully resolves the issue. For partial delivery, use `Addresses #<issue> (completes T1, T2, ...)` - see the partial-delivery template below and `references/closure-and-review.md` Section 1. Store key learning in knowledge graph.
 
@@ -116,38 +114,6 @@ The PR body is large enough that `--body-file` should be the preferred portable 
 After every signed review comment and every post-review code push, refresh this review snapshot in place per `references/closure-and-review.md` and `references/signing.md`.
 
 If review or cleanup work is dispatched in parallel, post the fan-out dispatch and collection artifacts from `references/orchestrator-protocol.md` instead of leaving that orchestration implicit in chat-only context.
-
----
-
-## Quiet Mode: Final Summary Comment
-
-Add to the `--log` PR:
-
-```markdown
-<!-- shiplog:
-kind: review-handoff
-issue: <ISSUE_NUMBER>
-pr: <FEATURE_PR_NUMBER>
-phase: 5
-updated_at: <ISO_TIMESTAMP>
--->
-
-## [shiplog/review-handoff] Final Summary
-
-**Feature PR:** #<FEATURE_PR_NUMBER>
-**Status:** Ready for review
-
-### Journey Recap
-[1-paragraph summary of the complete journey]
-
-### Key Decisions
-[Numbered list of most important decisions]
-
-### Lessons Learned
-[What we'd do differently next time]
-
-Authored-by: <family>/<version> (<tool>)
-```
 
 ---
 
