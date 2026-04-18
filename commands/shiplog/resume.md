@@ -3,62 +3,71 @@ allowed-tools: Bash(gh:*), Bash(git:*), Read
 description: Resume a shiplog work session on the current branch
 ---
 
-## Context
+Re-orient to the current branch and issue. Load the task list, identify where work stopped, post a session-resume comment, and recommend the next action.
 
-- Current branch: !`git branch --show-current`
-- Existing worktrees: !`git worktree list`
-- Recent commits on this branch: !`git log --oneline -10`
-- Uncommitted changes: !`git status --short`
+## Policy
 
-## Your Task
+**Branch detection:** parse the issue number from the current branch name using the `issue/<id>-<slug>` convention. If the current branch does not match, check `git worktree list` for a shiplog branch and offer to switch.
 
-You are resuming a shiplog work session (Phase 2 continuation + Phase 7 timeline update).
+**Session-resume comment:** every resumed session must post a `[shiplog/session-resume]` comment on the issue. This is distinct from `[shiplog/session-start]` — it marks a continuation, not a first start. The comment must include the last commit, uncommitted changes summary, remaining tasks, and where work was left off.
 
-### Step 1: Detect the Issue
+**Triage field sync:** if the issue body `tasks_complete` is out of date relative to the checked checkboxes in the task list, update it in place (no `Updated-by:` needed for triage fields).
 
-Parse the issue number from the current branch name (`issue/<number>-<slug>`).
+**Open blockers:** if any previous `[shiplog/blocker]` comments exist without a corresponding resolution, surface them in the report before recommending the next task.
 
-If the branch doesn't match the shiplog convention, check if there's a worktree with a shiplog branch and offer to switch to it.
+## Query / Template
 
-### Step 2: Load Issue Context
+### Detect issue from branch
 
-```
-gh issue view <number> --json title,body,labels,comments
+```bash
+git branch --show-current
+# Parse: issue/<N>-<slug>  →  N is the issue number
 ```
 
-Read the issue body for:
-- Task list and completion status
-- Recent timeline comments (session starts, milestones, blockers)
-- Any open blockers
+### Load issue context
 
-Also check for linked PRs:
-```
-gh pr list --state open --head "issue/<number>-*" --json number,title,url
+```bash
+gh issue view <N> --json title,body,labels,comments
 ```
 
-### Step 3: Post Session-Resume Comment
+Scan comments for: `[shiplog/session-start]`, `[shiplog/session-resume]`, `[shiplog/blocker]`, `[shiplog/commit-note]`.
 
-Post a timeline comment on the issue:
+### Check for linked PRs
 
+```bash
+gh pr list --state open --head "issue/<N>-*" --json number,title,url
 ```
-[shiplog/session-resume] #<number>: Resuming work
+
+### Session-resume comment template
+
+```markdown
+[shiplog/session-resume] #<N>: Resuming work
 
 **Branch:** `<branch-name>`
 **Last commit:** `<hash> <subject>`
-**Uncommitted changes:** <yes/no + summary>
+**Uncommitted changes:** <yes/no — summary if yes>
 **Tasks remaining:** <list of unchecked tasks>
-**Picking up from:** <brief summary of where we left off>
+**Picking up from:** <1-2 sentences on where work stopped>
 
-Authored-by: <model-family>/<model-version> (<tool>)
+Authored-by: <family>/<version> (<tool>)
 ```
 
-### Step 4: Report
+Post with:
+```bash
+gh issue comment <N> --body-file <temp-file>
+```
 
-Show the user:
-- Issue title and number
-- Tasks completed vs remaining
-- Any blockers from previous sessions
-- Recommended next task to work on
-- Any open PRs for this issue
+### Retrieve prior session commits
 
-Keep it brief -- the user wants to get back to work quickly.
+```bash
+git log --oneline --grep="#<N>"
+```
+
+## Acceptance Checklist
+
+- [ ] Issue number parsed from current branch name
+- [ ] Issue body and comments loaded; task completion status current
+- [ ] Open blockers from prior sessions surfaced before recommending next task
+- [ ] Session-resume comment posted with last-commit, uncommitted-changes status, remaining tasks, and `Authored-by:` sig
+- [ ] If tasks_complete is stale, issue body updated in place
+- [ ] Next recommended task is the first unchecked task that matches agent tier

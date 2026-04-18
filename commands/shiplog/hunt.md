@@ -3,106 +3,95 @@ allowed-tools: Bash(gh:*), Bash(git:*), Read
 description: Scan open issues and PRs, rank by readiness, recommend what to work on next
 ---
 
-## Context
+Triage the repository. Identify what is ready to work on, what needs review, and what you can gate-satisfy given your identity. Signed **shiplog** reviews live in PR/issue **comments**, not in formal GitHub review events — see `skills/shiplog/references/closure-and-review.md` §3 for the authoritative rule.
 
-- Repo: !`gh repo view --json nameWithOwner --jq '.nameWithOwner'`
-- Current branch: !`git branch --show-current`
-- Open issues with labels: !`gh issue list --state open --json number,title,labels --limit 30`
-- Open PRs with review status: !`gh pr list --state open --json number,title,reviewDecision,reviews,isDraft,body,url --limit 20`
+## Policy
 
-## Your Task
+A **signed shiplog review** is a PR or issue comment whose body contains both:
+- `Reviewed-by: <family>/<version> (<tool>)` — provenance line
+- `Disposition: approve | approve-with-follow-ups | request-changes` — outcome line
 
-You are the shiplog hunt command. Present a triage report of all open issues and PRs, filtered by what **you** can actually do.
+Formal GitHub `reviews` / `reviewDecision` fields are **advisory only**. GitHub blocks AI agents from self-`APPROVE`, and most AI-operated reviews are posted as comments, not formal review events. Do **not** rely on `reviewDecision` or `reviews` alone to determine whether a PR has been reviewed.
 
-### Step 0: Detect Agent Identity
+The cross-model gate rule: a review is gate-satisfying only when the reviewer's `<family>/<version>` differs from the `Last-code-by:` (or fallback chain) on the PR branch. See `skills/shiplog/references/closure-and-review.md` §3 ("What constitutes 'different model'") for the full definition.
 
-Identify yourself using the signing convention from `references/signing.md`:
+## Query / Template
 
+### Step 0 — Detect agent identity
+
+Identify yourself from the system prompt:
 ```
 <family>/<version> (<tool>)
 ```
+Examples: `claude/opus-4.6 (claude-code)`, `openai/gpt-5.4 (codex)`.
 
-For example: `claude/opus-4.6 (claude-code)`, `openai/gpt-5.4 (codex)`.
+Derive your tier:
 
-Then derive your tier from `references/model-routing.md`:
-
-| Model Profile | Tier |
+| Model profile | Tier |
 |---------------|------|
 | Opus, GPT-5, o3 | tier-1 (reasoning) |
 | Sonnet, GPT-4.1 | tier-2 (capable) |
 | Haiku, GPT-4.1-mini | tier-3 (fast) |
 
-If your model is not listed, default to tier-2.
+If unlisted, default to tier-2. Record both for later steps.
 
-Record both for use in later steps:
-- **Identity:** e.g., `claude/opus-4.6`
-- **Tier:** e.g., `tier-1`
+### Step 1 — Fetch open issues
 
-### Step 1: Categorize Issues
+```bash
+gh issue list --state open --json number,title,labels --limit 30
+```
 
-Group open issues by their lifecycle label:
+### Step 2 — Fetch open PRs with comments
 
-| Priority | Label | Meaning |
-|----------|-------|---------|
-| 1 (act now) | `shiplog/needs-review` | PR exists, needs cross-model review before merge |
-| 2 (act now) | `shiplog/ready` | Planned and ready to implement |
-| 3 (in flight) | `shiplog/in-progress` | Already being worked on |
-| 4 (needs planning) | `shiplog/plan` (no lifecycle label) | Needs further breakdown or review |
-| 5 (parked) | No shiplog labels | Uncategorized or external |
+Fetch the PR list including body, reviews, and commits:
+```bash
+gh pr list --state open --json number,title,isDraft,reviewDecision,reviews,body,url,headRefName --limit 20
+```
 
-### Step 2: Categorize PRs
+Then for **each open PR**, fetch comments to detect signed reviews:
+```bash
+gh pr view <N> --json comments,commits
+```
 
-Group open PRs by **shiplog** review status.
+Signed-review detection — scan each comment body for both patterns:
+```
+Reviewed-by:
+Disposition: approve
+```
+or
+```
+Disposition: approve-with-follow-ups
+```
 
-For each open PR, inspect the PR body review snapshot first by looking for:
-- `## Review Status`
-- `review_status:`
-- `Last reviewed by:`
-- `Last reviewed at:`
-- `Reviewed commit:`
-- `Source artifact:`
-- `Needs re-review since:`
+A comment containing both a `Reviewed-by:` line and a `Disposition: approve` or `Disposition: approve-with-follow-ups` line is a **valid signed approval**. A comment with `Disposition: request-changes` is a blocking review.
 
-If the snapshot is missing, stale, or contradicted by newer code, inspect signed review artifacts in the PR comments by searching for:
-- `Reviewed-by:`
-- `Disposition: approve`
-- `Disposition: request-changes`
+Use the PR body `review_status` snapshot first (fields: `Current state:`, `Last reviewed by:`, `Reviewed commit:`). If the snapshot is missing, stale, or contradicted by newer commits, fall back to scanning comments directly.
 
-Use `gh pr view <N> --json body,comments,reviewDecision,reviews,commits` when the list output is not enough.
+### Step 3 — Determine last code author per PR
 
-Treat the PR body snapshot as the current summary, signed **shiplog** review comments as the evidence trail, and formal GitHub `reviews` / `reviewDecision` fields as advisory only.
+For each PR, walk this fallback chain and stop at the first available signal:
 
-| Priority | Status | Action Needed |
-|----------|--------|---------------|
-| 1 | `awaiting-review` or no review snapshot, not draft | Needs first review |
-| 2 | `needs-rereview` | New code landed after review; needs a fresh review |
-| 3 | `changes-requested` | Needs fixes, then re-review |
-| 4 | `approved` | Ready to merge if other gates are satisfied |
-| 5 | Draft | Still in progress |
+1. `Last-code-by:` in the PR body (authoritative)
+2. `Updated-by:` in the PR body (approximate)
+3. `Authored-by:` in the PR body (may be stale)
+4. Latest commit author on the PR branch
 
-### Step 2a: Check PR Code Authorship Against Agent Identity
+Extract `<family>/<version>` and compare against your identity from Step 0.
 
-For each PR from Step 2, determine who **last changed the code** using this fallback chain:
+### Step 4 — Classify PRs
 
-1. **`Last-code-by:`** in the PR body (authoritative)
-2. **`Updated-by:`** in the PR body (approximate - may reflect text edits, not code)
-3. **`Authored-by:`** in the PR body (original author - may be stale)
-4. **Latest commit author on the PR branch** (last resort - inspect the PR branch's newest commit)
-5. If none of these signals are available, the code author is **unknown**
+Apply signed-comment review results and last-code-author identity together:
 
-Extract the `<family>/<version>` from the first available signal and compare against your identity from Step 0.
+| Review status (from comments) | Last code author | Classification |
+|-------------------------------|-----------------|----------------|
+| Signed approval exists | Different model | `approved + cross-model` — ready to merge |
+| Signed approval exists | Same model | `approved + same-model` — cannot gate-satisfy |
+| No signed approval, not draft | Different model | `awaiting-review + cross-model` — you can provide first review |
+| `needs-rereview` snapshot | Different model | `needs-rereview + cross-model` — prior review stale |
+| `changes-requested` comment | Any | `changes-requested` — author must address first |
+| Draft | Any | `draft` — still in progress |
 
-Classify each PR:
-
-| Classification | Condition | What you can do |
-|----------------|-----------|-----------------|
-| **cross-model** | Last code author is a different model family or version | Gate-satisfying review |
-| **same-model** | Last code author matches your identity | Cannot gate-satisfy review (audit trail only) |
-| **unknown** | No signed provenance field or commit-author signal is available | Cannot assume cross-model - treat as blocked |
-
-### Step 3: Present the Hunt Report
-
-Display a compact table with your identity header and reviewability annotations:
+### Step 5 — Triage report
 
 ```
 HUNT REPORT - <repo> (<date>)
@@ -110,7 +99,7 @@ Agent: <identity>, <tier>
 ================================
 
 PRs NEEDING ACTION:
-#NNN  <title>               <status>    <reviewability>
+#NNN  <title>               <review-status>    <reviewability>
 
 ISSUES NEEDING REVIEW:
 #NNN  <title>               <labels>
@@ -126,59 +115,53 @@ ISSUES NEEDING PLANNING:
 ```
 
 Where `<reviewability>` is one of:
-- `approved + cross-model (last code: <identity>)` - reviewed and mergeable from a shiplog perspective
-- `changes-requested + cross-model (last code: <identity>)` - fixes are needed before another review
-- `needs-rereview + cross-model (last code: <identity>)` - prior review is stale; you can perform the next gate-satisfying review
-- `awaiting-review + cross-model (last code: <identity>)` - you can perform the first gate-satisfying review
-- `same-model (last code: <identity>)` - review blocked, same model
-- `unknown author` - no provenance or commit fallback available, treat as blocked
+- `approved + cross-model (last code: <identity>)` — reviewed, mergeable
+- `awaiting-review + cross-model (last code: <identity>)` — you can provide gate-satisfying review
+- `needs-rereview + cross-model (last code: <identity>)` — prior review stale, you can re-review
+- `changes-requested + cross-model (last code: <identity>)` — needs fixes first
+- `same-model (last code: <identity>)` — cannot gate-satisfy; different reviewer needed
+- `unknown author` — no provenance signal; treat as blocked
 
-If the PR body snapshot disagrees with signed **shiplog** review comments, prefer the newer signed comment artifact, note the mismatch briefly, and treat the snapshot as stale until it is refreshed.
-If formal GitHub review badges disagree with the snapshot or signed comments, prefer shiplog artifacts and note the mismatch briefly.
+Issue priority order:
+1. `shiplog/needs-review` — PR exists, awaiting cross-model sign-off
+2. `shiplog/ready` — planned, ready to implement
+3. `shiplog/in-progress` — already in flight
+4. `shiplog/plan` (no lifecycle) — needs breakdown
+5. No shiplog labels — uncategorized
 
-### Step 4: Recommend
+### Step 6 — Recommendations
 
-End with 1-3 concrete recommendations **filtered by what you can actually do**.
+End with 1–3 concrete actions **filtered to what you can actually do**.
 
-**Rule: never recommend an action the agent cannot perform.**
+Identity constraints:
 
-#### Identity constraints
+| Action | Cross-model PR | Same-model PR |
+|--------|---------------|---------------|
+| Gate-satisfying review | Yes | No |
+| Merge after approval | Yes | No |
+| Self-review (audit trail) | — | Only on explicit user confirmation |
 
-| Action | Cross-model PR | Same-model PR | Unknown PR |
-|--------|---------------|---------------|------------|
-| Gate-satisfying review | Yes | No | No |
-| Merge after signed approve | Yes | No | No |
-| Self-review (audit trail) | - | Only if user confirms | - |
-| Fix requested changes | Yes (if you authored the code) | Yes | - |
+Tier constraints:
 
-#### Tier constraints
+| Tier | Can work on | Should flag |
+|------|-------------|-------------|
+| tier-1 | Any | tier-3 tasks as "could delegate down" |
+| tier-2 | tier-2, tier-3 | tier-1 tasks as "needs reasoning model" |
+| tier-3 | tier-3 only | tier-1/2 as "above my tier" |
 
-| Agent Tier | Can work on | Should flag |
-|------------|-------------|-------------|
-| tier-1 (reasoning) | Any tier work | tier-3 tasks as "could delegate down" |
-| tier-2 (capable) | tier-2 and tier-3 work | tier-1 tasks as "needs reasoning model" |
-| tier-3 (fast) | tier-3 work only | tier-1/tier-2 as "above my tier" |
+**Recommendation templates:**
 
-Read tier tags from issue task lists (e.g., `[tier-1]`, `[tier-2]`, `[tier-3]`). If no tier tag, treat as tier-2.
+> Review PR #N — signed comment inspection shows awaiting review; you can provide the first gate-satisfying review.
 
-#### Recommendation templates
+> PR #N already has a signed `Disposition: approve` comment from a different model. Top merge candidate if branch is mergeable.
 
-**When cross-model PRs need first review:**
-> Review PR #N - the PR body snapshot says awaiting review, and you can gate-satisfy the first review.
+> No open PR allows a gate-satisfying review (all same-model or unknown). Recommend implementing ready issues instead.
 
-**When a PR needs re-review after new code:**
-> Review PR #N - the PR body snapshot says needs re-review, so the earlier review is stale and you can provide the next gate-satisfying review.
+## Acceptance Checklist
 
-**When a PR already has signed approval:**
-> PR #N already has an approved review snapshot. If the branch is mergeable and `Needs re-review since` is still `no`, it is the top merge candidate.
-
-**When all PRs are same-model or unknown:**
-> No open PR currently allows you to add a new gate-satisfying review. Same-model PRs need a different reviewer; unknown-author PRs need provenance clarified first; legacy PRs without snapshots may need comment fallback before triage. You can still implement ready issues.
-
-**When issues are above your tier:**
-> Issue #N has tier-1 tasks - needs a reasoning model (e.g., Opus). Consider implementing tier-2/tier-3 issues instead.
-
-**When issues could be delegated down:**
-> Issue #N has only tier-3 tasks - could delegate to a faster model for efficiency.
-
-Keep the report concise. The user wants to know what to do next, not read every issue body.
+- [ ] For every open PR, `gh pr view <N> --json comments` was fetched and scanned for `Reviewed-by:` + `Disposition:` lines before classifying review status
+- [ ] No PR with a valid signed `Disposition: approve` comment appears in the "needs review" bucket
+- [ ] No PR with `Disposition: request-changes` is classified as approved
+- [ ] Each PR's last-code author was resolved via the fallback chain (not assumed from `Authored-by:` alone)
+- [ ] Cross-model gate check used the resolved last-code-author identity, not `reviewDecision`
+- [ ] Recommendations are filtered to actions the current agent can actually perform given identity and tier

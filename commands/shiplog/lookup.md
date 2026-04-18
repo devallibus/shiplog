@@ -1,53 +1,70 @@
 ---
 allowed-tools: Bash(gh:*), Bash(git:*), Read
 description: Search the knowledge graph — issues, PRs, commits, and memory
-argument-hint: <search query>
+argument-hint: <search query or issue number>
 ---
 
-## Context
+Find anything in the repository knowledge graph. Every **shiplog** artifact is indexed by `#<ID>` — use the issue number as the primary key for exact retrieval.
 
-- Repo: !`gh repo view --json nameWithOwner --jq '.nameWithOwner'`
-- Current branch: !`git branch --show-current`
+## Policy
 
-## Your Task
+**ID-first retrieval:** when you know the issue or PR number, use `#<N>` directly in search queries. This is the fastest, most precise path.
 
-You are executing shiplog Phase 6: Knowledge Retrieval.
+**Multi-surface search:** a complete lookup checks GitHub issues, GitHub PRs, and git commit history. Memory (if `ork:memory` is available) is searched last.
 
-**Search query:** $ARGUMENTS
+**Envelope-first reading:** when a result is found, read the `<!-- shiplog: ... -->` envelope comment first before loading the full body. The envelope fields (`readiness`, `tasks_complete`, `max_tier`) give you triage state in one scan.
 
-### Step 1: Search GitHub Issues and PRs
+**Deep dive on request only:** present the initial compact table to the user. Offer to read full bodies only if they ask for more detail or if a decision needs to be re-examined.
 
-```
-gh issue list --state all --search "$ARGUMENTS" --json number,title,state,labels --limit 10
-gh pr list --state all --search "$ARGUMENTS" --json number,title,state --limit 10
-```
+## Query / Template
 
-### Step 2: Search Git History
+### By issue number (ID-first, fastest)
 
-```
-git log --all --oneline --grep="$ARGUMENTS" --limit 20
-```
-
-### Step 3: Search Knowledge Graph (if available)
-
-If `ork:memory` is available, search it:
-```
-/ork:memory search "$ARGUMENTS"
+```bash
+gh issue list --state all --search "#<N>" --json number,title,state,labels --limit 5
+gh pr list --state all --search "#<N>" --json number,title,state --limit 5
+git log --all --oneline --grep="#<N>"
+git log --all --oneline --grep="#<N>/T1"
 ```
 
-### Step 4: Compile Results
+### By keyword / topic
 
-Present a summary organized by source:
+```bash
+gh issue list --state all --search "<query>" --json number,title,state,labels --limit 10
+gh pr list --state all --search "<query>" --json number,title,state --limit 10
+git log --all --oneline --grep="<query>" --limit 20
+```
+
+### By shiplog tag
+
+```bash
+gh issue list --state all --search "[shiplog/plan]" --json number,title,state --limit 10
+gh issue list --state all --search "shiplog/ready" --state open --json number,title,labels --limit 20
+```
+
+### Read envelope without full body
+
+```bash
+gh issue view <N> --json body --jq '.body | split("\n") | .[0:15] | join("\n")'
+```
+
+### If `ork:memory` is available
 
 ```
-LOOKUP: "$ARGUMENTS"
+/ork:memory search "<query>"
+```
+
+### Lookup report format
+
+```
+LOOKUP: "<query>"
 ======================
 
 ISSUES:
-#NNN  <title>                    <state>  <labels>
+#NNN  <title>    <state>  <labels>
 
 PULL REQUESTS:
-#NNN  <title>                    <state>
+#NNN  <title>    <state>
 
 COMMITS:
 <hash>  <subject>
@@ -56,8 +73,10 @@ MEMORY:
 <key decisions or patterns found>
 ```
 
-### Step 5: Deep Dive (if needed)
+## Acceptance Checklist
 
-If results are found, offer to read the most relevant issue or PR body for full context. Prefer reading envelope metadata first (look for `<!-- shiplog:` HTML comments) before loading full bodies.
-
-Keep the initial report concise. Let the user ask for details on specific items.
+- [ ] Both `gh issue list` and `gh pr list` searched (not just one surface)
+- [ ] `git log --grep` run against commit history
+- [ ] Results presented as compact table first; full bodies only on follow-up
+- [ ] When a specific issue is found, envelope fields (`readiness`, `tasks_complete`) noted in report
+- [ ] If `ork:memory` is available, it was queried

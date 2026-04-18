@@ -159,88 +159,20 @@ For AI-operated shiplog reviews, these outcomes are recorded as signed comment a
 
 ### Sign-off format
 
-Every review comment must include a structured sign-off block:
+Every review comment must include all four fields:
 
 ```
-Reviewed-by: <family>/<version> (<tool>)
-Disposition: approve | approve-with-follow-ups | request-changes
-Scope: <what was reviewed — e.g., "full diff", "SKILL.md + artifact-envelopes.md">
-Follow-ups: #<issue-number> | none
-```
-
-When using `approve-with-follow-ups`, the `Follow-ups:` field must reference a valid open issue containing the non-blocking findings. Create the tracking issue **before** posting the review sign-off.
-
-**Example (clean approve):**
-```
-Reviewed-by: claude/sonnet-4 (claude-code)
-Disposition: approve
-Scope: full diff — references/artifact-envelopes.md structure, SKILL.md pointer
-Follow-ups: none
-```
-
-**Example (approve with follow-ups):**
-```
-Reviewed-by: claude/opus-4.6 (claude-code)
-Disposition: approve-with-follow-ups
-Scope: full diff — 19 files, sub-skill decomposition
-Follow-ups: #119
-Findings:
-- F1: brainstorm.md envelope missing triage fields [follow-up]
-- F2: unverified-claim guardrail truncated [follow-up]
-```
-
-The `[follow-up]` tag distinguishes non-blocking items from blocking ones. All `[follow-up]`-tagged findings must appear in the referenced tracking issue.
-
-This remains the canonical review sign-off block. Authorship and edit provenance are tracked separately via `Authored-by:` and `Updated-by:` artifacts; the review disposition still lives here.
-
-### Review sign-off comment template
-
-When posting a review as a GitHub comment, wrap the sign-off in an envelope:
-
-```markdown
-<!-- shiplog:
-kind: verification
-issue: <ISSUE_NUMBER>
-pr: <PR_NUMBER>
-updated_at: <ISO_TIMESTAMP>
--->
-
 Reviewed-by: <family>/<version> (<tool>)
 Disposition: approve | approve-with-follow-ups | request-changes
 Scope: <what was reviewed>
 Follow-ups: #<issue-number> | none
 ```
 
-See SKILL.md §8 (Agent Identity Signing) for the full signing protocol.
+When using `approve-with-follow-ups`, the `Follow-ups:` field must reference a valid open issue. Create the tracking issue **before** posting the review sign-off.
 
-### PR-body review snapshot
+The `Disposition:` line is the authoritative outcome; formal GitHub review states are advisory only.
 
-Each shiplog PR body should also carry a latest-wins review snapshot on the PR's main `history` artifact. The signed review comment is the evidence trail. The PR body snapshot is the current summary used for low-token retrieval and triage.
-
-Minimum snapshot fields:
-
-- `Current state:` `awaiting review` | `changes requested` | `approved` | `needs re-review`
-- `Last reviewed by:`
-- `Last reviewed at:`
-- `Reviewed commit:`
-- `Source artifact:`
-- `Needs re-review since:`
-
-Mirror these values in the PR body's envelope fields when practical:
-
-- `review_status`
-- `last_reviewed_by`
-- `last_reviewed_at`
-- `reviewed_commit`
-- `review_source`
-- `needs_rereview_since`
-
-### Snapshot update rules
-
-1. **On PR creation:** initialize the snapshot as `awaiting review`.
-2. **After posting a signed review comment:** update the PR body snapshot in place to match that signed review artifact.
-3. **After code lands on the PR branch following a signed review:** mark the snapshot `needs re-review`, keep the last reviewed identity and source, and record the commit that made the prior review stale.
-4. **For legacy PRs without the snapshot:** fall back to signed review comments and backfill the snapshot on the next material PR-body edit when convenient.
+For the full review runbook — comment template, PR body snapshot fields, self-review audit artifact, review contract template — see `commands/shiplog/review.md`.
 
 ### What constitutes "different model"
 
@@ -280,115 +212,17 @@ If none of these signals are available, treat code authorship as unknown and do 
 
 ---
 
-## 4. Review Execution Ladder
+## 4. Review Execution
 
-Ordered from most to least desirable:
+### GitHub API constraint (cross-cutting policy)
 
-### GitHub API constraint
+All AI agents authenticate as the repository owner's GitHub account. GitHub blocks self-`APPROVE`, making formal same-account review events unreliable. Shiplog does not depend on `reviewDecision`, review badges, or formal review states as merge-authoritative signals.
 
-All AI agents authenticate as the repository owner's GitHub account. Formal same-account review events are not a reliable mechanism in this workflow: GitHub blocks self-`APPROVE`, and shiplog should not depend on formal `REQUEST_CHANGES` or other review states as merge-authoritative signals either.
+**Canonical approach:** post signed review comments. The cross-model provenance in the `Reviewed-by:` line is the authoritative review signal. Merge authorization follows the shiplog sign-off (§5), not GitHub review state.
 
-**Workaround:**
-- Use signed review comments as the canonical review artifact.
-- Post a comment review artifact for every outcome, including approve, request-changes, and non-blocking feedback.
-- Include the full signed disposition block (`Reviewed-by:`, `Disposition: approve | approve-with-follow-ups | request-changes`, `Scope:`, `Follow-ups:`) in the comment body.
-- The cross-model provenance in the `Reviewed-by:` line is the authoritative review signal for shiplog, not the GitHub review badge.
-- Merge authorization follows the shiplog sign-off (see Section 5), not GitHub `reviewDecision`, review badges, or formal review states.
+**Self-review is an audit artifact, not a gate-satisfying event.** There are no exceptions to the independent review requirement.
 
-### Best: Dispatch a bounded reviewer lane
-
-If the current tool supports bounded sub-agents or an equivalent external-session lane:
-
-1. Prepare a review contract (see below).
-2. Dispatch the reviewer using the strongest available primitive from `references/orchestrator-protocol.md`.
-3. Keep the reviewer read-only with respect to the review target unless the workflow explicitly allows reviewer-authored fixes.
-4. The reviewer produces a signed review artifact.
-5. The author addresses findings or proceeds to merge on approval.
-
-**Dispatch order:**
-
-1. **Bounded sub-agent** — best when the runtime can spawn a child reviewer with a scoped contract.
-2. **External session delegation** — use a tmux-backed session, separate terminal agent, or other durable session when that is the available isolation boundary.
-
-In both cases, post durable dispatch and collection artifacts when the review lane is material to the PR timeline. See `references/orchestrator-protocol.md`.
-
-### Fallback: Generate a review contract
-
-If no reviewer lane can be executed from the current runtime, generate a self-contained review contract for the user to hand to another model/tool:
-
-```markdown
-## Review Contract
-
-**PR:** #<N> — <title>
-**Author:** <model name> (<tool>)
-**Branch:** <branch> → <base>
-**Diff command:** `gh pr diff <N>`
-
-### What to review
-- [Specific files or sections to focus on]
-- [Key decisions to validate]
-
-### Review checklist
-- [ ] Changes match the issue requirements
-- [ ] No unintended side effects or regressions
-- [ ] Cross-references between files are consistent
-- [ ] Templates and examples are correct
-- [ ] Relevant implementation issues are durably captured
-
-### Output required
-Sign-off comment with:
-- Reviewed-by line
-- Disposition (approve / approve-with-follow-ups / request-changes)
-- Scope of review
-- Follow-ups: #<issue-number> or none
-- Any findings (tag non-blocking items with `[follow-up]`)
-```
-
-### Not a valid substitute: local parallel tool fan-out
-
-Running multiple local helper calls in parallel can speed up evidence gathering, but it does **not** create an independent reviewer identity. Use local fan-out for sidecar reads or diff inspection helpers only. The signed review artifact must still come from a distinct reviewer lane or a separate model/tool.
-
-### When independent review is unavailable: audit trail only
-
-When cross-model review is genuinely unavailable (single-tool environment, urgency), the author records a self-review audit artifact. **This does not satisfy the gate and the PR remains unmerged.**
-
-1. The author signs a self-review clearly marked as non-satisfying.
-2. The sign-off explicitly states that independent review is still required.
-3. The PR stays open — merge is blocked until an independent reviewer approves.
-
-```
-Reviewed-by: claude/opus-4.6 (claude-code)
-Disposition: self-review (does NOT satisfy gate — independent review required)
-Scope: full diff
-Note: Self-review recorded as audit trail. This PR must not merge until an independent cross-model review is completed.
-```
-
-**Self-review is an audit artifact, not a gate-satisfying event.** It exists so the review intent is visible in the timeline, but it confers no merge authorization. There are no exceptions to the independent review requirement.
-
-**Contract requirement:** A self-review artifact MUST include or be immediately followed by a review contract (see "Fallback: Generate a review contract" above). The self-review records intent; the contract enables resolution. Posting a self-review without a contract leaves the PR in a dead-end state where the gate is unsatisfied and no reviewer has the information needed to act.
-
-### Review completion: default publication
-
-A PR review is not complete until the signed review artifact is posted on the PR as a GitHub comment. Local analysis that exists only in the agent's chat session does not satisfy the review protocol — the canonical artifact must be durable and visible on the PR timeline.
-
-**Default behavior:** After completing the review analysis and summarizing findings to the user, post the signed review artifact on the PR. Then link the posted comment in the user-facing response.
-
-**Snapshot follow-through:** After posting the signed review comment, refresh the PR body review snapshot in place so future retrieval flows can read current review state from the PR body first.
-
-**Explicit exceptions (require user opt-in):**
-- The user explicitly requested a dry run or local-only review.
-- The user explicitly asked not to post to GitHub.
-
-Unless one of these exceptions applies, publication is the assumed completion step. The agent should not wait for a follow-up prompt to post.
-
-**When GitHub posting is blocked:** If the agent cannot reach GitHub (network failure, API error, permission issue):
-
-1. Report the blocker to the user immediately.
-2. Provide the exact signed review artifact text in the chat response so the user can post it manually or the agent can retry later.
-3. Do not mark the review as complete — note that publication is pending.
-4. On next opportunity, retry posting the artifact or confirm the user has posted it.
-
-The signed artifact text is the deliverable. GitHub publication is the delivery mechanism. When the mechanism fails, preserve the deliverable intact and make the failure visible.
+For the full review execution runbook — bounded reviewer lane dispatch, review contract template, self-review artifact format, default-publication rule, and snapshot follow-through — see `commands/shiplog/review.md`.
 
 ---
 
