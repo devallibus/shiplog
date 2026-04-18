@@ -3,62 +3,84 @@ allowed-tools: Bash(git:*), Bash(gh:*), Read
 description: Commit staged changes with shiplog ID-first convention and optional context comment
 ---
 
-## Context
+Stage and commit work with the shiplog ID-first format. For significant commits, post a `[shiplog/commit-note]` comment on the issue so the reasoning is durable on the timeline.
 
-- Current branch: !`git branch --show-current`
-- Git status: !`git status`
-- Staged and unstaged changes: !`git diff HEAD`
-- Recent commits: !`git log --oneline -10`
+## Policy
 
-## Your Task
-
-You are executing shiplog Phase 4: Commit-with-Context.
-
-### Step 1: Extract the Issue Number
-
-Parse the issue number from the current branch name. Branch format: `issue/<number>-<slug>`.
-
-If the branch doesn't follow shiplog convention, ask the user for the issue number.
-
-### Step 2: Stage and Commit
-
-Based on the changes, create a commit with the shiplog ID-first format:
-
+**Commit message format:**
 ```
-<type>(#<issue-number>): <description>
+<type>(#<issue-id>): <description>
 ```
 
-If the commit addresses a specific task from the issue, include the task ID:
+When the commit addresses a specific task:
 ```
-<type>(#<issue-number>/<Tn>): <description>
-```
-
-**Commit types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`.
-
-Stage relevant files (prefer specific files over `git add -A`). Create the commit. Do not use `--no-verify`.
-
-End the commit message with:
+<type>(#<issue-id>/<Tn>): <description>
 ```
 
-Co-Authored-By: <model family/version> (<tool>) <noreply@anthropic.com>
+**Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `style`, `perf`.
+
+**Provenance signature in commit body:** every commit message body must include:
+```
+Authored-by: <family>/<version> (<tool>)
 ```
 
-### Step 3: Context Comment (for significant commits)
+This is required for forensic retrieval — `git log --grep="Authored-by:"` surfaces all AI-authored commits.
 
-For significant changes (new functionality, unexpected discoveries, approach changes, tricky fixes), post a context comment on the issue:
+**When to post a `[shiplog/commit-note]` comment:** post for any commit that involves new functionality, an unexpected discovery, an approach change, a tricky fix, or a decision the next reader would need context for. Skip for trivial commits (typos, formatting, small lint fixes).
+
+**Staging:** prefer specific files (`git add <file>`) over `git add -A` or `git add .`. Never use `--no-verify` unless the user explicitly requests it.
+
+## Query / Template
+
+### Commit message template
+
+Write to a temp file and use `git commit -F`:
 
 ```
-[shiplog/commit-note] #<issue-number>: <commit-hash-short> <commit-subject>
+<type>(#<issue-id>/<Tn>): <description>
+
+<optional body: 1-2 sentences of context if the subject line isn't enough>
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+Commands:
+```bash
+git add <specific-files>
+git commit -F <temp-file>
+```
+
+### Commit-note comment template
+
+Post on the tracking issue when the commit is significant:
+
+```markdown
+[shiplog/commit-note] #<issue-id>: <commit-hash-short> <commit-subject>
 
 **What:** <1-2 sentences on what this commit does>
 **Why:** <reasoning behind the approach>
 **Verification:** <what was tested or checked>
 
-Authored-by: <model-family>/<model-version> (<tool>)
+Authored-by: <family>/<version> (<tool>)
 ```
 
-Skip the context comment for trivial commits (typos, formatting, small fixes).
+Post with:
+```bash
+gh issue comment <N> --body-file <temp-file>
+```
 
-### Step 4: Report
+### Retrieve commits by issue
 
-Show the user the commit hash, message, and files changed.
+```bash
+git log --grep="#<issue-id>" --oneline
+git log --grep="#<issue-id>/T1" --oneline
+```
+
+## Acceptance Checklist
+
+- [ ] Commit message subject follows `<type>(#<id>): <msg>` or `<type>(#<id>/<Tn>): <msg>`
+- [ ] Commit message body contains `Authored-by: <family>/<version> (<tool>)`
+- [ ] Specific files staged, not `git add .` or `git add -A`
+- [ ] `--no-verify` not used (unless user explicitly requested)
+- [ ] For significant commits: `[shiplog/commit-note]` comment posted on the issue with `Authored-by:` sig
+- [ ] Commit hash shown to user after committing
