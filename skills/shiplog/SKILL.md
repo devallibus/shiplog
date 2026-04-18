@@ -15,17 +15,6 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 
 ---
 
-## Mode Selection
-
-On first activation per project, ask the user which mode to use:
-
-- **Full Mode** (default): Knowledge goes directly into issues and PRs. For personal projects, OSS, and teams that embrace documentation.
-- **Quiet Mode**: Knowledge lives in a stacked knowledge branch (`<branch>--log`) with its own PR targeting the feature branch. For work environments where issues and PRs must stay clean.
-
-Remember the choice via `ork:remember` or note it in project instructions.
-
----
-
 ## When This Skill Activates
 
 **User-invocable:** `/shiplog`, `/shiplog models`, `/shiplog <phase>`
@@ -88,15 +77,6 @@ All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 | Stacked branch | `issue/<new-id>-<slug>` | `issue/43-fix-race-condition` |
 | Stacked PR title | `<type>(#<new-id>): ... [stack: #<parent>]` | `fix(#43): race cond [stack: #42]` |
 | Memory entry | `#<id>: <decision>` | `#42: chose JWT over sessions` |
-
-**Quiet Mode overrides:**
-
-| Artifact | Convention | Example |
-|----------|-----------|---------|
-| Feature branch | per team convention | `feature/auth-middleware` |
-| Knowledge branch | `<branch>--log` | `feature/auth-middleware--log` |
-| Knowledge PR title | `[shiplog/worklog] <desc>` | `[shiplog/worklog] auth middleware decisions` |
-| Knowledge PR base | the feature branch | base: `feature/auth-middleware` |
 
 **Task IDs:** Tasks carry local IDs (`T1`, `T2`, ...) scoped to the issue. Commits use `#<id>/<Tn>`.
 
@@ -179,7 +159,7 @@ Implementation trouble that materially affects the work must be durably recorded
 
 | Situation | Artifact | Where |
 |-----------|----------|-------|
-| Issue is local and resolved inline | Timeline comment (`[shiplog/implementation-issue]`) | Issue (Full Mode) or `--log` PR (Quiet Mode) |
+| Issue is local and resolved inline | Timeline comment (`[shiplog/implementation-issue]`) | Issue |
 | Issue warrants follow-up, scope split, or long-term retrieval | New linked issue | GitHub issue with cross-reference on parent |
 
 The timeline comment is the minimum: one paragraph explaining what happened, why it matters, and how it was resolved or deferred.
@@ -249,8 +229,6 @@ This skill ORCHESTRATES. For activities that directly produce shiplog artifacts 
 - **Mid-work activation:** Check branch name for `issue/N-*`. If found, add catch-up timeline comment via `shiplog:timeline`. If not, offer retroactive issue creation.
 - **Small tasks (< 30 min):** Lightweight protocol - issue optional, branch still created, PR sections can be brief.
 - **Hotfix / emergency:** Fix first. Create issue and PR after, backfilling the timeline.
-- **Quiet mode — feature PR merges:** Close the `--log` PR. Knowledge is preserved in closed PR history.
-- **Quiet mode — feature branch rebased:** Rebase `--log` branch onto updated feature branch. Use `--force-with-lease`.
 - **Post-merge cleanup:** Remove a worktree only when its branch is merged, no open PR still depends on it, and it is not the active workspace. See `references/orchestrator-protocol.md`.
 
 ---
