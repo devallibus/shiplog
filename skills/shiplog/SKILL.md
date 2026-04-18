@@ -191,13 +191,136 @@ The timeline comment is the minimum: one paragraph explaining what happened, why
 
 ## Agent Identity Signing
 
-Every shiplog artifact must carry a provenance signature: `<role>: <family>/<version> (<tool>[, <qualifier>])`
+Every shiplog artifact (comments, PR bodies, review sign-offs) must carry a provenance signature in the canonical format:
 
-Roles: `Authored-by`, `Updated-by`, `Reviewed-by`, `Last-code-by`. See `references/signing.md` for full rules, edit provenance, code provenance, and model detection.
+```
+<role>: <family>/<version> (<tool>[, <qualifier>])
+```
 
-**Searching:** `Last-code-by:` → most recent code author on a PR branch. See `references/signing.md` for all searchable provenance fields.
+### Signature field reference
 
-For orchestration flows, qualifiers may also record lane role, for example `orchestrator` or `sub-agent: reviewer`.
+| Field | Values | Examples |
+|-------|--------|---------|
+| `role` | `Authored-by`, `Updated-by`, `Reviewed-by`, or `Last-code-by` | — |
+| `family` | Provider name, lowercase | `claude`, `openai`, `google` |
+| `version` | Model identifier | `opus-4.6`, `sonnet-4.6`, `gpt-5.4` |
+| `tool` | Runtime environment, lowercase | `claude-code`, `codex`, `cursor` |
+| `qualifier` | Optional metadata string; may be compound when needed | `effort: high`, `orchestrator`, `sub-agent: reviewer`, `effort: high; orchestrator` |
+
+**Searching:** `Authored-by:` → original authorship. `Updated-by:` → later material editors. `Reviewed-by:` → review artifacts. `Last-code-by:` → most recent code author on a PR branch. `claude/` → all Claude artifacts. `(codex` → all Codex artifacts.
+
+### Model detection per tool
+
+| Tool | Source | Example signature |
+|------|--------|-------------------|
+| Claude Code | System prompt model name | `claude/opus-4.6 (claude-code)` |
+| Codex | `~/.codex/config.toml` `model` + `model_reasoning_effort` | `openai/gpt-5.4 (codex, effort: high)` |
+| Cursor | System prompt model identifier | `claude/opus-4.6 (cursor)` |
+| Other | Best available model identifier | `<family>/<version> (<tool>)` |
+
+### Orchestration role qualifiers
+
+When an artifact is emitted as part of a multi-lane flow, qualifiers carry orchestration role information:
+
+- `orchestrator` — the current actor dispatched or collected delegated lanes
+- `sub-agent: reviewer` — delegated reviewer lane
+- `sub-agent: verifier` — delegated closure verifier lane
+- `sub-agent: implementation` — delegated implementation lane
+
+Examples:
+- `Authored-by: openai/gpt-5.4 (codex, effort: high; orchestrator)`
+- `Reviewed-by: claude/opus-4.6 (claude-code, sub-agent: reviewer)`
+- `Authored-by: openai/gpt-5.4 (codex, sub-agent: verifier)`
+
+### Correction rule
+
+If a shiplog artifact carries an incorrect or incomplete signature, correct it in place when the platform allows editing. Otherwise post an immediate follow-up correction.
+
+### Edit provenance rules
+
+- `Authored-by:` records the original author of an artifact body.
+- `Updated-by:` records a later model or human who materially edits that same artifact body. Preserve the original `Authored-by:` line and append a new `Updated-by:` line for each material edit, newest last.
+- `Reviewed-by:` is review-only. Do not use it for authorship or edit attribution.
+- Updating a PR body's review snapshot after publishing a signed review comment or after pushing code that makes a prior review stale counts as a material edit.
+- A **material edit** changes meaning, facts, scope, requirements, acceptance criteria, verification results, review disposition, or a handoff contract. Typos, formatting cleanups, and link-only fixes are cosmetic and do not need `Updated-by:`.
+
+### Code provenance: `Last-code-by:`
+
+`Last-code-by:` tracks which model most recently pushed code to a PR branch. It is distinct from artifact provenance fields.
+
+| Field | Tracks | Updated when |
+|-------|--------|-------------|
+| `Authored-by:` | Original artifact text author | Artifact is created |
+| `Updated-by:` | Later artifact text editor | Artifact body is materially edited |
+| `Reviewed-by:` | Review author | Review sign-off is posted |
+| `Last-code-by:` | Most recent code author | Code is pushed to the PR branch |
+
+**When to set `Last-code-by:`:**
+- On PR creation: set in the PR body sign-off block (the creating model is the initial code author).
+- After pushing code to an existing PR branch: update via `gh pr edit`.
+- After review-driven code changes: the reviewer who pushes fixes becomes `Last-code-by:`.
+
+**When NOT to update `Last-code-by:`:** reviewing without pushing code; editing the PR body text without commits; rebasing or force-pushing without new code changes.
+
+**Why this field exists:** The multi-model review gate must know who last changed the code to determine whether a review is cross-model (gate-satisfying) or same-model (non-gate-satisfying). Without `Last-code-by:`, consumers fall back to git commit forensics.
+
+**Fallback chain for review gating:**
+1. `Last-code-by:` in the PR body (authoritative)
+2. `Updated-by:` in the PR body (approximate)
+3. `Authored-by:` in the PR body (original author — may be stale)
+4. Git commit author on the PR branch (last resort)
+
+### Edit-in-place vs amendment
+
+- **Edit in place** when the artifact is meant to stay the single canonical current body: issue bodies, PR bodies, and latest-wins status/history artifacts. Refresh envelope `updated_at` and add `updated_by` plus `edit_kind` fields when an envelope exists.
+- **Post an amendment artifact** when the original text matters for auditability: handoffs, verification comments, commit-note comments, review sign-offs, and other major signed timeline entries.
+
+Use `supersedes` when the new artifact replaces the old one as canonical. Use `amends` when the new artifact corrects or clarifies but both should remain visible.
+
+**In-place edit footer — append after original `Authored-by:`:**
+
+```markdown
+Updated-by: <family>/<version> (<tool>)
+Edit-kind: correction | amendment | rewrite
+Edit-note: [1 sentence describing what changed and why]
+```
+
+**Amendment artifact template:**
+
+```markdown
+<!-- shiplog:
+kind: amendment
+issue: <ISSUE_NUMBER>
+pr: <PR_NUMBER>
+updated_at: <ISO_TIMESTAMP>
+amends: <artifact-reference>
+-->
+
+## [shiplog/amendment] #<ISSUE_NUMBER>: <brief description>
+
+**Target:** [URL to the artifact being corrected or clarified]
+**Edit kind:** correction | amendment | rewrite
+**Why new artifact:** [why this should not be a silent in-place edit]
+**What changed:**
+- [change 1]
+- [change 2]
+
+**Current canonical artifact:** [URL to the current body, or `this comment`]
+
+Authored-by: <family>/<version> (<tool>)
+```
+
+If the amendment fully replaces the old artifact, swap `amends:` for `supersedes:` and update the old artifact with `superseded_by:` when practical.
+
+### PR body review snapshot maintenance
+
+When a PR body carries the current review snapshot:
+- Post the signed `Reviewed-by:` comment first. That comment is the review evidence.
+- Then refresh the PR body snapshot in place so retrieval flows can read current review state without replaying the comment thread.
+- If new code lands after the latest signed review, update the snapshot to `needs-rereview` and record the commit that made the prior review stale.
+- Use the standard `Updated-by:` footer and envelope `updated_by` / `edit_kind` fields for these edits.
+
+Model identity detection is also used by model-tier routing to verify the current model matches the recommended tier. See `references/model-routing.md`.
 
 ---
 
