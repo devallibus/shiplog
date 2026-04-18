@@ -62,7 +62,7 @@ User request arrives
 
 All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 
-**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `implementation-issue`, `handoff`, `review-handoff`, `worklog`, `history`, and `amendment`. Format: `[shiplog/<kind>] <human title>`.
+**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `commit-note`, `discovery`, `blocker`, `implementation-issue`, `handoff`, `review-handoff`, `history`, and `amendment`. Format: `[shiplog/<kind>] <human title>`.
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|

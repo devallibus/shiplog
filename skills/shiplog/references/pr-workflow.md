@@ -140,7 +140,7 @@ For partial delivery PRs, use `status: in-progress` in the envelope instead of `
 
 ### Base branch
 
-Always use the repo's default branch (`$DEFAULT_BRANCH`), not a hardcoded value. Quiet Mode PRs use the feature branch as base for the `--log` PR.
+Always use the repo's default branch (`$DEFAULT_BRANCH`), not a hardcoded value.
 
 ## Step 5: Review gate
 
@@ -161,16 +161,6 @@ Do not merge without a review sign-off unless the user explicitly overrides.
 2. If partial delivery: post a `[shiplog/milestone]` comment on the issue listing what shipped.
 3. If any tasks are blocked on external dependencies: post a `[shiplog/blocker]` comment.
 4. Store key learnings in the knowledge graph (`ork:remember` if available).
-
----
-
-## Quiet Mode variant
-
-For Quiet Mode, the feature PR is clean (no shiplog content). The `--log` PR carries all the timeline documentation.
-
-1. Create the feature PR with the team's standard template.
-2. Add a final `[shiplog/review-handoff]` comment to the `--log` PR (see `../pr.md`).
-3. Keep the `--log` PR labels current: `shiplog/worklog`, `shiplog/quiet-mode`, `shiplog/issue-driven`.
 
 ---
 

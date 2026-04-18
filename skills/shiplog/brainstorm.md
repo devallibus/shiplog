@@ -19,11 +19,9 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
    - **External claims** about third-party tools, URLs, APIs, platform capabilities must be verified against primary sources before they are stated as facts.
    - If an external claim cannot be verified yet, keep it explicitly marked as `[unverified]` and treat it as a hypothesis, not settled input.
 
-3. **Quiet Mode: defer capture.** Do not create the `--log` PR yet — the feature branch does not exist until branch setup. Save the brainstorm content locally and use it as the opening entry when the `--log` PR is created.
+3. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
 
-4. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
-
-5. **Transition.** Proceed to `shiplog:branch` if the user wants to start work.
+4. **Transition.** Proceed to `shiplog:branch` if the user wants to start work.
 
 ---
 

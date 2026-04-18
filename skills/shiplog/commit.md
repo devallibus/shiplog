@@ -12,7 +12,7 @@ description: "Phase 4: Commit with conventional format and post context comments
 
 1. **Create the commit.** Follow `references/commit-workflow.md`. External commit skills may still be used for convenience, but the conventions in the internal workflow take precedence. Format: `<type>(#<issue-id>): <description>`. When a commit addresses a specific task, include the task ID: `<type>(#<issue-id>/<Tn>): <description>`.
 
-2. **Add context comment** for significant commits. Document the reasoning and verification on the issue (Full Mode) or `--log` PR (Quiet Mode). Sign per `references/signing.md`.
+2. **Add context comment** for significant commits. Document the reasoning and verification on the issue. Sign per `references/signing.md`.
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. Not after trivial commits.
 
@@ -29,7 +29,6 @@ COMMIT_SHA=$(git log -1 --format='%h')
 COMMIT_MSG=$(git log -1 --format='%s')
 
 gh issue comment <ISSUE_NUMBER> --body-file <temp-file>
-gh pr comment <LOG_PR_NUMBER> --body-file <temp-file>
 ```
 
 Comment body:

@@ -22,7 +22,7 @@ Delegate automatic checkbox updates to `ork:issue-progress-tracking` if availabl
 
 ## Timeline Comment Format
 
-Target: issue (Full Mode) or `--log` PR (Quiet Mode).
+Target: issue.
 
 ```markdown
 <!-- shiplog:
