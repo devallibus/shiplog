@@ -213,14 +213,14 @@ Each `/shiplog <phase>` slash command maps to one sub-skill file. Load the file 
 
 | `kind:` (envelope) | Title tag `[shiplog/<tag>]` | GitHub label `shiplog/<label>` | Description |
 |--------------------|-----------------------------|-------------------------------|-------------|
-| `state` | `plan`, `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `approach-change` | `plan` (planning issues) | Current status snapshot of an issue or PR |
+| `state` | `plan`, `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue` | `plan` (planning issues) | Current status snapshot of an issue or PR |
 | `handoff` | `session-start`, `review-handoff` | — | Context transfer between tiers, tools, or sessions |
 | `verification` | `commit-note`, `review-handoff`, `verification` | `verification` | Evidence of testing, review, or quality check |
 | `commit-note` | `commit-note` | — | Reasoning behind a specific commit |
 | `review-handoff` | `review-handoff` | — | Review request or review completion artifact |
 | `amendment` | `amendment` | — | Correction or clarification for an existing signed artifact |
 | `blocker` | `blocker` | `blocker` | Something preventing progress |
-| `history` | `history`, `session-end` | `history` | Retrospective summary for knowledge retrieval |
+| `history` | `history` | `history` | Retrospective summary for knowledge retrieval |
 
 **Lifecycle labels** (`shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`) are not tied to an artifact `kind:`. They track issue/PR workflow state and are mutually exclusive. Apply them per the Triage Field Maintenance table below.
 
@@ -234,7 +234,7 @@ For the full label set, color codes, and bootstrap CLI snippets, see `references
 
 All artifacts use `#ID` as the primary key for fast, token-efficient retrieval.
 
-**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `session-resume`, `commit-note`, `discovery`, `blocker`, `implementation-issue`, `handoff`, `review-handoff`, `history`, `amendment`, `milestone`, `approach-change`, `session-end`, and `verification`. Format: `[shiplog/<tag>] <human title>`. See the Canonical Kind → Tag → Label Map section for the authoritative mapping.
+**Semantic tag vocabulary** for user-facing headings: `plan`, `session-start`, `session-resume`, `commit-note`, `discovery`, `blocker`, `implementation-issue`, `handoff`, `review-handoff`, `history`, `amendment`, `milestone`, and `verification`. Format: `[shiplog/<tag>] <human title>`. See the Canonical Kind → Tag → Label Map section for the authoritative mapping.
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|

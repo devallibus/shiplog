@@ -12,7 +12,7 @@ description: "Phase 7: Add timeline comments for session starts, milestones, dis
 
 1. **Add timeline comments** when: starting a new session, changing approach, finding something unexpected, completing a milestone, or getting blocked. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
 
-2. **Use the standard format** below. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `approach-change`, `blocker`, `session-end`.
+2. **Use the standard format** below. Comment types: `session-start`, `session-resume`, `milestone`, `discovery`, `implementation-issue`, `blocker`.
 
 3. **Keep state labels honest.** Add `shiplog/blocker` when work cannot proceed. Remove it when the blocker clears.
 
@@ -61,9 +61,7 @@ Authored-by: <family>/<version> (<tool>)
 | `milestone` | `state` |
 | `discovery` | `state` |
 | `implementation-issue` | `state` |
-| `approach-change` | `state` |
 | `blocker` | `blocker` |
-| `session-end` | `history` |
 
 Use `kind: blocker` only when the discovery actually prevents progress. Informational discoveries stay `state` artifacts, while blocking discoveries should use the explicit `blocker` tag or the blocker-specific template.
 
