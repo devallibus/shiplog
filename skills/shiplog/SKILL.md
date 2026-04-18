@@ -587,15 +587,19 @@ These skills enhance shiplog but are not required. Shiplog's conventions take pr
 
 ## References
 
-- `references/artifact-envelopes.md` — Envelope field schema, triage field derivation rule, and kind taxonomy; open when writing or parsing `<!-- shiplog: ... -->` blocks.
-- `references/closure-and-review.md` — Cross-model gate rule, merge conditions, and closure evidence requirements; open when deciding whether a PR is mergeable.
-- `references/brainstorm-workflow.md` — Design-to-issue capture conventions; open when processing brainstorm output before filing an issue.
-- `references/model-routing.md` — Model tier definitions and routing setup; open when running `/shiplog models` or checking agent tier.
-- `references/orchestrator-protocol.md` — Fan-out dispatch templates, reviewer lane contracts, and worktree cleanup protocol; open when coordinating multi-lane work.
-- `references/labels.md` — Full label set, color codes, and bootstrap CLI snippets; open when bootstrapping a new repo or repairing labels.
-- `references/shell-portability.md` — Bash/PowerShell cross-platform patterns; open when shell syntax for a command is unclear.
-- `references/signing.md` — Full provenance signing rules and model detection details; open when the inline §8 summary is insufficient.
-- `references/commit-workflow.md` — Commit workflow conventions for cross-cutting commit policy; open when the co-located `commands/shiplog/commit.md` is insufficient.
-- `references/pr-workflow.md` — PR workflow conventions for cross-cutting PR policy; open when the co-located `commands/shiplog/pr.md` is insufficient.
-- `references/verification-profiles.md` — Verification profile definitions; open when a task requires a named verification profile.
-- `references/phase-templates.md` — Phase-level templates for less common artifacts; open when a template is not covered by a co-located sub-skill.
+One line per deep-dive file. Open only when the co-located sub-skill or inline section is insufficient.
+
+| File | Open when |
+|------|-----------|
+| `references/artifact-envelopes.md` | Writing or parsing `<!-- shiplog: ... -->` blocks; need triage field derivation rule or full field schema |
+| `references/closure-and-review.md` | Deciding whether a PR is mergeable; need cross-model gate rule, merge conditions, or closure evidence requirements |
+| `references/labels.md` | Bootstrapping a new repo or repairing labels; need color codes or full label bootstrap CLI |
+| `references/signing.md` | The inline Agent Identity Signing section is insufficient; need edge-case signing rules or full model detection details |
+| `references/model-routing.md` | Running `/shiplog models` or checking agent tier assignments |
+| `references/brainstorm-workflow.md` | Processing brainstorm output before filing an issue; need capture and design-to-issue conventions |
+| `references/orchestrator-protocol.md` | Coordinating multi-lane work; need fan-out dispatch templates, reviewer lane contracts, or worktree cleanup |
+| `references/shell-portability.md` | Shell syntax for a command is unclear; need Bash/PowerShell cross-platform patterns |
+| `references/commit-workflow.md` | The co-located `commands/shiplog/commit.md` is insufficient for cross-cutting commit policy |
+| `references/pr-workflow.md` | The co-located `commands/shiplog/pr.md` is insufficient for cross-cutting PR policy |
+| `references/verification-profiles.md` | A task requires a named verification profile |
+| `references/phase-templates.md` | A template is not covered by any co-located sub-skill file |
