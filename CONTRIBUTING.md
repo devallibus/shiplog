@@ -31,12 +31,12 @@ In `0.x` there is no MAJOR — every breaking change is a MINOR per semver §4. 
 
 ### Releases
 
-Each version bump on `master` triggers a Git tag and a GitHub Release automatically (see `.github/workflows/release.yml`). The release notes are auto-generated from PRs merged since the previous tag.
+Each version bump on the default branch triggers a Git tag and a GitHub Release automatically (see `.github/workflows/release.yml`). The release notes are auto-generated from PRs merged since the previous tag.
 
 If the release workflow is missing or fails, cut the release manually:
 
 ```bash
-gh release create vX.Y.Z --notes-file <release-notes-file> --target master
+gh release create vX.Y.Z --notes-file <release-notes-file> --target <default-branch>
 ```
 
 ## Workflow
@@ -45,7 +45,7 @@ gh release create vX.Y.Z --notes-file <release-notes-file> --target master
 
 Key contributor expectations:
 
-- Branch from `master` as `issue/<id>-<slug>`.
+- Branch from your `<default-branch>` as `issue/<id>-<slug>`.
 - Commit subjects use `<type>(#<id>): <msg>` or `<type>(#<id>/<Tn>): <msg>` for task-scoped commits.
 - PR body follows the template in [`skills/shiplog/pr.md`](skills/shiplog/pr.md): envelope, summary, journey timeline, changes, verification, knowledge for future reference.
 - Sign every shiplog artifact (PR body, signed comments, review comments) with `<role>: <family>/<version> (<tool>)`.
