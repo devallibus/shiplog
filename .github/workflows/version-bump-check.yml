@@ -10,7 +10,10 @@ name: Version bump check
 
 on:
   pull_request:
-    branches: [master]
+    # List both master and main so a future default-branch rename does
+    # not silently no-op the check. GitHub Actions does not template
+    # `branches:`, so a literal list is the simplest correct shape.
+    branches: [master, main]
 
 jobs:
   check:

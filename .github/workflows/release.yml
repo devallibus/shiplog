@@ -12,7 +12,11 @@ name: Release on version change
 
 on:
   push:
-    branches: [master]
+    # List both master and main so a future default-branch rename does
+    # not silently stop publishing releases. GitHub Actions does not
+    # template `branches:`, so a literal list is the simplest correct
+    # shape.
+    branches: [master, main]
     paths: ['.claude-plugin/plugin.json']
 
 permissions:
