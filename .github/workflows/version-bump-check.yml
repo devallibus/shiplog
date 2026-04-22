@@ -1,0 +1,80 @@
+# Enforces the versioning policy from CONTRIBUTING.md:
+# any PR that touches commands/, skills/, or .claude-plugin/ must bump
+# .claude-plugin/plugin.json `version`. The version field is the cache key
+# downstream installs (Claude Code plugin manager, npx skills add) use to
+# decide whether to refresh — without a bump, fixes never reach consumers.
+#
+# Implementation: pure shell + jq, no third-party action. Runs on PRs only.
+
+name: Version bump check
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify plugin.json version bump on gated paths
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Path list mirrors CONTRIBUTING.md "Versioning" section.
+          # Update both together if the trigger paths change.
+          gated_prefixes=(commands/ skills/ .claude-plugin/)
+
+          changed=$(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+
+          gated_hit=""
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            for p in "${gated_prefixes[@]}"; do
+              case "$f" in
+                "$p"*) gated_hit="$f"; break ;;
+              esac
+            done
+            [ -n "$gated_hit" ] && break
+          done <<<"$changed"
+
+          if [ -z "$gated_hit" ]; then
+            echo "No gated paths changed; version bump not required."
+            exit 0
+          fi
+
+          echo "Gated path changed (e.g. $gated_hit). Checking plugin.json version..."
+
+          base_version=$(git show "$BASE_SHA:.claude-plugin/plugin.json" | jq -r .version)
+          head_version=$(git show "$HEAD_SHA:.claude-plugin/plugin.json" | jq -r .version)
+
+          echo "  base version: $base_version"
+          echo "  head version: $head_version"
+
+          if [ "$base_version" = "$head_version" ]; then
+            echo
+            echo "::error file=.claude-plugin/plugin.json::PR touches gated paths but plugin.json version is unchanged ($base_version)."
+            cat <<'MSG'
+
+          This PR changes paths under commands/, skills/, or .claude-plugin/
+          but does not bump .claude-plugin/plugin.json `version`.
+
+          Without a version bump, downstream installs (Claude Code plugin
+          cache, npx skills add) will not refresh and your change will be
+          invisible to consumers.
+
+          See CONTRIBUTING.md "Versioning" section for the bump rule and
+          the semver guidance for choosing MINOR vs PATCH while in 0.x.
+          MSG
+            exit 1
+          fi
+
+          echo "Version bumped from $base_version to $head_version."
