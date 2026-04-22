@@ -317,6 +317,10 @@ Both optional. **shiplog** works without any configuration.
 | `superpowers:writing-plans` | Superpowers | Structured plan documents |
 | `superpowers:executing-plans` | Superpowers | Plan execution with checkpoints |
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for project conventions, including the `plugin.json` versioning rule that gates content PRs.
+
 ## License
 
 MIT
