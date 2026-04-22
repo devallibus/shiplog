@@ -43,15 +43,12 @@ gh issue list --state open --json number,title,labels --limit 30
 
 ### Step 2 — Fetch open PRs with comments
 
-Fetch the PR list including body, reviews, and commits:
+Fetch the PR list including body, reviews, commits, and comments in a single call so signed-review evidence is present from the first turn:
 ```bash
-gh pr list --state open --json number,title,isDraft,reviewDecision,reviews,body,url,headRefName --limit 20
+gh pr list --state open --json number,title,isDraft,reviewDecision,reviews,body,url,headRefName,comments,commits --limit 20
 ```
 
-Then for **each open PR**, fetch comments to detect signed reviews:
-```bash
-gh pr view <N> --json comments,commits
-```
+`comments` and `commits` are supported `gh pr list` JSON fields, so one call returns every open PR's top-level comment thread — where signed `Reviewed-by:` / `Disposition:` artifacts live. If the payload is truncated (very large repos, very long comment threads), fall back to a per-PR `gh pr view <N> --json comments,commits` call for the affected PRs only.
 
 Signed-review detection — scan each comment body for both patterns:
 ```
@@ -159,7 +156,7 @@ Tier constraints:
 
 ## Acceptance Checklist
 
-- [ ] For every open PR, `gh pr view <N> --json comments` was fetched and scanned for `Reviewed-by:` + `Disposition:` lines before classifying review status
+- [ ] For every open PR, the `comments` payload (from the `gh pr list` call in Step 2, or a per-PR `gh pr view <N> --json comments` fallback when truncated) was scanned for `Reviewed-by:` + `Disposition:` lines before classifying review status
 - [ ] No PR with a valid signed `Disposition: approve` comment appears in the "needs review" bucket
 - [ ] No PR with `Disposition: request-changes` is classified as approved
 - [ ] Each PR's last-code author was resolved via the fallback chain (not assumed from `Authored-by:` alone)
