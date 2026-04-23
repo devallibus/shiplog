@@ -110,7 +110,7 @@ Use review snapshot fields on PR-body `history` envelopes so agents can determin
 - **`updated_by`:** normalized like the signature body without the role prefix â€” e.g., `openai/gpt-5.4 (codex, effort: high)`.
 - **`edit_kind`:** use `correction` for factual or signature fixes, `amendment` for clarifications that preserve the original event, `rewrite` for substantial in-place rewrites, and `cosmetic` only when recording a non-semantic cleanup intentionally.
 - **Amendment/supersession references:** use the same `<artifact-location>#<kind>` format for `amends`, `supersedes`, and `superseded_by`.
-- **Supersession references:** `<artifact-location>#<kind>` - e.g., `issue/42#state` or `pr/55#verification`. See Section 3 for resolution.
+- **Supersession references:** `<artifact-location>#<kind>` - e.g., `issue/42#state` or `pr/55#verification`. See §3 for resolution.
 - **Triage integers:** use bare integers, not quoted strings.
 - **`readiness`:** use only `ready`, `blocked`, `needs-design`, `in-progress`, or `done`.
 - **`max_tier`:** use `tier-1`, `tier-2`, or `tier-3`; omit it when all tasks are complete.
