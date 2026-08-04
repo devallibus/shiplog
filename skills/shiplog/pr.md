@@ -6,19 +6,19 @@ description: "Phase 5: Create PR with timeline body, handle review gate, and lin
 # PR Timeline (Phase 5)
 
 <!-- routing: tier-1, plan -->
-<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/closure-and-review.md, references/labels.md, references/orchestrator-protocol.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md → "Agent Identity Signing", references/closure-and-review.md, references/labels.md, references/orchestrator-protocol.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`.
 
 1. **Pre-PR checks.** Follow `references/pr-workflow.md`. External PR skills may still be used for validation help, but shiplog's internal PR workflow is authoritative for title, body, labels, and review gate behavior.
 
-2. **Create PR (Full Mode).** Use the PR timeline template below. Create the PR with `shiplog/history` and `shiplog/issue-driven` already applied. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
+2. **Create PR (Full Mode).** Use the PR timeline template below. Create the PR with `shiplog/history` and `shiplog/issue-driven` already applied. Sign per the signing spec — see SKILL.md → "Agent Identity Signing".
 
 3. **Review gate.** Every PR requires cross-model review before merge. Use the execution ladder in `references/closure-and-review.md`: bounded reviewer lane if available, then external session delegation, then a contract-only review handoff. Local parallel tool fan-out does not count as an independent reviewer identity.
 
-5. **Link and store.** PR body includes `Closes #<issue>` when the PR fully resolves the issue. For partial delivery, use `Addresses #<issue> (completes T1, T2, ...)` - see the partial-delivery template below and `references/closure-and-review.md` Section 1. Store key learning in knowledge graph.
+4. **Link and store.** PR body includes `Closes #<issue>` when the PR fully resolves the issue. For partial delivery, use `Addresses #<issue> (completes T1, T2, ...)` - see the partial-delivery template below and `references/closure-and-review.md` Section 1. Store key learning in knowledge graph.
 
-6. **Closure verification (optional).** When evidence-to-issue mapping is non-obvious, optionally dispatch a verifier lane using the same orchestration ladder described in `references/closure-and-review.md` and `references/orchestrator-protocol.md`.
+5. **Closure verification (optional).** When evidence-to-issue mapping is non-obvious, optionally dispatch a verifier lane using the same orchestration ladder described in `references/closure-and-review.md` and `references/orchestrator-protocol.md`.
 
 ---
 
@@ -111,7 +111,7 @@ Last-code-by: <family>/<version> (<tool>)
 ```
 
 The PR body is large enough that `--body-file` should be the preferred portable path.
-After every signed review comment and every post-review code push, refresh this review snapshot in place per `references/closure-and-review.md` and the signing spec in SKILL.md §8 (Agent Identity Signing).
+After every signed review comment and every post-review code push, refresh this review snapshot in place per `references/closure-and-review.md` and the signing spec in SKILL.md → "Agent Identity Signing".
 
 If review or cleanup work is dispatched in parallel, post the fan-out dispatch and collection artifacts from `references/orchestrator-protocol.md` instead of leaving that orchestration implicit in chat-only context.
 

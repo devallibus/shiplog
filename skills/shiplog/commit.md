@@ -6,13 +6,13 @@ description: "Phase 4: Commit with conventional format and post context comments
 # Commit Context (Phase 4)
 
 <!-- routing: tier-3, agent -->
-<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/verification-profiles.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md → "Agent Identity Signing", references/verification-profiles.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`.
 
 1. **Create the commit.** Follow `references/commit-workflow.md`. External commit skills may still be used for convenience, but the conventions in the internal workflow take precedence. Format: `<type>(#<issue-id>): <description>`. When a commit addresses a specific task, include the task ID: `<type>(#<issue-id>/<Tn>): <description>`.
 
-2. **Add context comment** for significant commits. Document the reasoning and verification on the issue. Sign per the signing spec — see SKILL.md §8 (Agent Identity Signing).
+2. **Add context comment** for significant commits. Document the reasoning and verification on the issue. Sign per the signing spec — see SKILL.md → "Agent Identity Signing".
 
 **When to add context comments:** After significant functionality, unexpected discoveries, approach changes, or tricky bug fixes. Not after trivial commits.
 

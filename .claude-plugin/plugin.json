@@ -1,7 +1,7 @@
 {
   "name": "shiplog",
   "description": "Git-as-knowledge-graph workflow for traceability across issues, branches, commits, reviews, and PRs.",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "author": {
     "name": "devallibus"
   },

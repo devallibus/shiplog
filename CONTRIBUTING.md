@@ -47,7 +47,7 @@ Key contributor expectations:
 
 - Branch from your `<default-branch>` as `issue/<id>-<slug>`.
 - Commit subjects use `<type>(#<id>): <msg>` or `<type>(#<id>/<Tn>): <msg>` for task-scoped commits.
-- PR body follows the template in [`skills/shiplog/pr.md`](skills/shiplog/pr.md): envelope, summary, journey timeline, changes, verification, knowledge for future reference.
+- PR body follows the template in [`skills/shiplog/pr.md`](skills/shiplog/pr.md): envelope, summary, journey timeline, changes, verification, knowledge for future reference. (The runnable PR policy lives in `commands/shiplog/pr.md`; the template alone is here.)
 - Sign every shiplog artifact (PR body, signed comments, review comments) with `<role>: <family>/<version> (<tool>)`.
 - Cross-model review is required before merge. See [`skills/shiplog/references/closure-and-review.md`](skills/shiplog/references/closure-and-review.md) §3.
 

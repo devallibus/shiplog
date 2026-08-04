@@ -1,0 +1,34 @@
+# Rejects legacy cross-reference forms that the audit found drifting:
+# bare `shiplog:<skill>` references outside HTML envelopes. Shiplog's own
+# units are referenced by file path; the `plugin:skill` syntax is reserved
+# for external plugins (e.g. `ork:commit`, `superpowers:brainstorming`).
+#
+# Implementation: pure shell + grep, no third-party action. Runs on PRs only.
+
+name: Cross-reference check
+
+on:
+  pull_request:
+    # List both master and main so a future default-branch rename does
+    # not silently no-op the check. GitHub Actions does not template
+    # `branches:`, so a literal list is the simplest correct shape.
+    branches: [master, main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Reject legacy shiplog:skill refs outside envelopes
+        shell: bash
+        run: |
+          set -euo pipefail
+          # '<!-- shiplog:' opens an envelope; any bare shiplog:<skill> is legacy.
+          if grep -rnE '(^|[^!:-])shiplog:[a-z]+' skills commands --include='*.md' \
+             | grep -vE '<!-- shiplog:'; then
+            echo "::error::Legacy 'shiplog:<skill>' reference found. Use a file path instead."
+            exit 1
+          fi
+          echo "OK: no legacy shiplog:<skill> references."

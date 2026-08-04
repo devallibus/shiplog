@@ -21,7 +21,7 @@ Push the branch and create a PR whose body is a complete timeline of the work: i
 Authored-by: <family>/<version> (<tool>)
 Last-code-by: <family>/<version> (<tool>)
 ```
-`Last-code-by:` is updated whenever new code is pushed to the branch after PR creation. See SKILL.md §8 for code provenance rules.
+`Last-code-by:` is updated whenever new code is pushed to the branch after PR creation. See SKILL.md → "Agent Identity Signing" for code provenance rules.
 
 **Review gate:** do NOT merge until a cross-model `Reviewed-by:` + `Disposition: approve` (or `approve-with-follow-ups`) comment exists on the PR. Self-review does not satisfy the gate. See `commands/shiplog/review.md` for the full review sub-skill, and `references/closure-and-review.md` §3 for the cross-model gate policy.
 
