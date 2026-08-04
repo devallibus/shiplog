@@ -17,7 +17,7 @@ Use GitHub as a complete knowledge graph where every brainstorm, commit, review,
 
 ## Golden-Path Walkthrough
 
-A complete issue-to-merge example using a concrete fake issue `#999`. Follow this sequence and every artifact produced will pass the acceptance checklists in `commands/shiplog/*.md`.
+A complete issue-to-merge example using a concrete fake issue `#999`. Follow this sequence and every artifact produced will pass the acceptance checklists in `commands/shiplog/*.md`. The blocks here are illustrative; the canonical, copy-ready templates live in the phase sub-skills under `skills/shiplog/` (see the Phase Sub-skill Index) and in `references/`. If a template changes, verify this walkthrough example is updated to match.
 
 ### Step 1 — Plan Capture (`/shiplog plan`)
 
@@ -190,10 +190,17 @@ Cross-model gate is satisfied (`Last-code-by: claude/sonnet-4.6` ≠ `Reviewed-b
 
 ## Verb Grid
 
-Each `/shiplog <phase>` slash command maps to one sub-skill file. Load the file for that phase — it owns policy, templates, and acceptance checklist.
+Each `/shiplog <command>` slash command maps to one command file under `commands/shiplog/`. Load the command file — it owns the phase's runnable policy, templates, and acceptance checklist.
 
-| Command | What it does | Sub-skill |
-|---------|-------------|-----------|
+Two trees co-exist and complement each other:
+
+- `commands/shiplog/*.md` — the slash commands (`plan`, `start`, `hunt`, `commit`, `pr`, `review`, `lookup`, `resume`, `models`). Executable policy: runnable queries, allowed tools, acceptance checklists.
+- `skills/shiplog/*.md` — the phase sub-skills (`brainstorm`, `branch`, `discovery`, `commit`, `pr`, `lookup`, `timeline`). Template library + routing annotations; referenced by phase, not invoked as commands.
+
+The phase sub-skills are indexed below in "Phase Sub-skill Index". Open a phase sub-skill when you need its template or checklist; open the matching command file when you are about to execute that phase.
+
+| Command | What it does | Command file |
+|---------|-------------|--------------|
 | `/shiplog plan` | Capture a brainstorm as a GitHub planning issue with envelope + task contracts | `commands/shiplog/plan.md` |
 | `/shiplog start` | Create a branch from an issue, swap lifecycle labels, post session-start comment | `commands/shiplog/start.md` |
 | `/shiplog hunt` | Triage open issues and PRs; rank by readiness; detect gate-satisfying reviews | `commands/shiplog/hunt.md` |
@@ -204,6 +211,24 @@ Each `/shiplog <phase>` slash command maps to one sub-skill file. Load the file 
 | `/shiplog resume` | Re-orient to current branch; detect issue number; post session-resume comment | `commands/shiplog/resume.md` |
 
 **`/shiplog models`:** Re-runs the model-routing setup prompt. See `references/model-routing.md`.
+
+---
+
+## Phase Sub-skill Index
+
+The phase sub-skills under `skills/shiplog/` carry templates, routing annotations, and acceptance checklists per phase. They are keyed the same way the command files are keyed, but are loaded by phase (look up the template you need), not invoked as slash commands.
+
+| Phase | Sub-skill | Holds templates for |
+|-------|-----------|---------------------|
+| 1. Brainstorm   | `skills/shiplog/brainstorm.md` | Issue creation, task contracts, plan envelope |
+| 2. Branch Setup | `skills/shiplog/branch.md`     | Session-start comment, delegation handoffs |
+| 3. Discovery    | `skills/shiplog/discovery.md`  | Discovery issues, blocker cross-reference comments, stacked-PR flow |
+| 4. Commit       | `skills/shiplog/commit.md`     | Commit-context comments |
+| 5. PR           | `skills/shiplog/pr.md`         | PR timeline body (full + partial delivery) |
+| 6. Lookup       | `skills/shiplog/lookup.md`     | Retrieval results, triage-scan output formats |
+| 7. Timeline     | `skills/shiplog/timeline.md`   | Session-start/resume, milestone, blocker, closure artifacts |
+
+**Single source of truth:** `references/phase-templates.md` is a compatibility pointer that indexes the same files; keep this index and that pointer in sync. See `references/closure-and-review.md` for the review sign-off template (owned there, cross-referenced from `skills/shiplog/pr.md`).
 
 ---
 
@@ -468,7 +493,7 @@ The timeline comment is the minimum: one paragraph explaining what happened, why
 ## Edge Cases
 
 - **No issue exists:** Let the user work. At first commit or PR, offer to create a tracking issue.
-- **Mid-work activation:** Check branch name for `issue/N-*`. If found, add catch-up timeline comment via `shiplog:timeline`. If not, offer retroactive issue creation.
+- **Mid-work activation:** Check branch name for `issue/N-*`. If found, add catch-up timeline comment via `skills/shiplog/timeline.md`. If not, offer retroactive issue creation.
 - **Small tasks (< 30 min):** Lightweight protocol - issue optional, branch still created, PR sections can be brief.
 - **Hotfix / emergency:** Fix first. Create issue and PR after, backfilling the timeline.
 - **Post-merge cleanup:** Remove a worktree only when its branch is merged, no open PR still depends on it, and it is not the active workspace. See `references/orchestrator-protocol.md`.
@@ -504,12 +529,14 @@ Key rules:
 
 ### Integration Map
 
-This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their phase's policy, runnable queries, and acceptance checklist in a single file — no cross-file navigation required during execution. References in `references/` are deep-dive anchors for cross-cutting policy only.
+This skill ORCHESTRATES. Command files under `commands/shiplog/` each own their phase's policy, runnable queries, and acceptance checklist in a single file — no cross-file navigation required during execution. References in `references/` are deep-dive anchors for cross-cutting policy only.
 
-#### Sub-skill map
+Alongside the command files, `skills/shiplog/*.md` are the phase sub-skills carrying templates and routing annotations (open them by phase — see "Phase Sub-skill Index"). The command file is the executable entry point for a phase; the phase sub-skill is its template/checklist companion. Where both exist under the same name (`commit`, `pr`, `lookup`), they are distinct: `commands/` = runnable policy, `skills/` = template library.
 
-| Phase | Sub-skill | Owns |
-|-------|-----------|------|
+#### Command map
+
+| Phase | Command file | Owns |
+|-------|--------------|------|
 | Plan Capture | `commands/shiplog/plan.md` | Brainstorm-to-issue policy, gh issue create template, envelope requirements |
 | Branch Setup | `commands/shiplog/start.md` | Branch naming, label swap, session-start comment template |
 | Triage / Hunt | `commands/shiplog/hunt.md` | PR+issue triage, signed-review detection (comment-based), reviewability classification |
@@ -527,7 +554,8 @@ This skill ORCHESTRATES. Sub-skills under `commands/shiplog/` each own their pha
 | Merge conditions | `references/closure-and-review.md` §5 | Gate satisfaction conditions; risk-based requirements |
 | Closure evidence | `references/closure-and-review.md` §1–2 | Evidence requirements; closure comment format |
 | Envelope schema | `references/artifact-envelopes.md` §1 | Triage field derivation rule; field definitions |
-| Signing spec | `SKILL.md §8` | Authored-by / Updated-by / Reviewed-by / Last-code-by rules |
+| Signing spec | `SKILL.md → "Agent Identity Signing"` | Authored-by / Updated-by / Reviewed-by / Last-code-by rules |
+| Worktree cleanup | `references/orchestrator-protocol.md` | Canonical portable cleanup sequence (`skills/shiplog/branch.md` duplicates this block) |
 
 #### External skill delegation
 

@@ -6,13 +6,13 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
 # Plan Capture (Phase 1)
 
 <!-- routing: tier-1, plan -->
-<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md §8 (Agent Identity Signing), references/labels.md -->
+<!-- cross-cutting: references/model-routing.md (Step 0), SKILL.md → "Agent Identity Signing", references/labels.md -->
 
 0. **Routing check.** Run the phase entry check from `references/model-routing.md`. On first activation, if `.shiplog/routing.md` is missing, run the setup prompt first.
 
 1. **Run the brainstorm.** Follow `references/brainstorm-workflow.md` for the design exploration process. External skills (`superpowers:brainstorming`, `ork:brainstorming`) may be used for the exploration phase (steps 1-4) but output capture (steps 5-6) follows the internalized workflow.
 
-2. **Capture as GitHub Issue (Full Mode).** Before the first labeled create in a repo, bootstrap the Shiplog labels per `references/labels.md`. Create the issue with `shiplog/plan` already applied using the template below. Sign the issue body per the signing spec — see SKILL.md §8 (Agent Identity Signing).
+2. **Capture as GitHub Issue (Full Mode).** Before the first labeled create in a repo, bootstrap the Shiplog labels per `references/labels.md`. Create the issue with `shiplog/plan` already applied using the template below. Sign the issue body per the signing spec — see SKILL.md → "Agent Identity Signing".
 
    Before writing the final issue body, classify factual claims:
    - **Internal claims** about this repository's code, tests, configuration, or committed docs can be verified from the repo itself.
@@ -21,7 +21,7 @@ description: "Phase 1: Capture brainstorming output as a GitHub issue with struc
 
 3. **Store in knowledge graph.** If `ork:remember` is available, store the key decision.
 
-4. **Transition.** Proceed to `shiplog:branch` if the user wants to start work.
+4. **Transition.** Proceed to `skills/shiplog/branch.md` if the user wants to start work.
 
 ---
 

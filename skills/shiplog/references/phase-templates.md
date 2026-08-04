@@ -30,14 +30,7 @@ Authored-by: <family>/<version> (<tool>)
 Last-code-by: <family>/<version> (<tool>)
 ```
 
-For review sign-off comments:
-
-```
-Reviewed-by: <family>/<version> (<tool>)
-Disposition: approve | approve-with-follow-ups | request-changes
-Scope: <what was reviewed>
-Follow-ups: #<issue-number> | none
-```
+For review sign-off comments, use the four-field block defined in `closure-and-review.md` ("Sign-off format"), which owns it. This file intentionally does not duplicate it.
 
 For in-place edits to existing artifacts (append after the original `Authored-by:` line):
 
@@ -47,4 +40,4 @@ Edit-kind: correction | amendment | rewrite
 Edit-note: [1 sentence describing what changed and why]
 ```
 
-The full signing rules and amendment artifact template live in `../SKILL.md` §8 (Agent Identity Signing).
+The full signing rules and amendment artifact template live in `../SKILL.md` → "Agent Identity Signing".

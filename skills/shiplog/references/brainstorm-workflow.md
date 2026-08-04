@@ -68,7 +68,7 @@ Once the design is approved, create a **shiplog** issue using the template in `.
 2. **Context, Design Summary, Approach, Alternatives** — from the brainstorm
 3. **Sources and Verification Status** — for external claims
 4. **Task contracts** — structured `T1`, `T2`, ... with tier annotations, file lists, acceptance criteria, and decision budgets per `../brainstorm.md`
-5. **Provenance signature** — `Authored-by:` per the signing spec — see SKILL.md §8 (Agent Identity Signing)
+5. **Provenance signature** — `Authored-by:` per the signing spec — see SKILL.md → "Agent Identity Signing"
 6. **Label** — `shiplog/plan` applied at creation time
 
 Bootstrap **shiplog** labels first if this is the first labeled create in the repo (see `labels.md`). Use the portable `--body-file` pattern from `shell-portability.md` for the issue body.
@@ -77,7 +77,7 @@ Bootstrap **shiplog** labels first if this is the first labeled create in the re
 
 After issue creation:
 - Store key decisions in the knowledge graph if `ork:remember` is available.
-- Offer to proceed to Phase 2 (branch setup via `shiplog:branch`).
+- Offer to proceed to Phase 2 (branch setup via `skills/shiplog/branch.md`).
 - Do NOT invoke `superpowers:writing-plans` or any implementation skill.
 
 ## Visual Companion
