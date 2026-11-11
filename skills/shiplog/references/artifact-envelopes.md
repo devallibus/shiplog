@@ -22,7 +22,7 @@ Write one `key: value` per line. The block ends at the first `-->`.
 | `kind` | The author of the record, once, when it is written | Lists entries by type: `show` and `source` select on it |
 | `summary` | The author of the record; the current-summary editor for `kind: state` | Gives one line per record in `index` and `show` |
 
-Add no other fields. Each extra field would be a second copy of something the platform or the body already owns.
+Add no other fields; the platform or the body already owns everything else.
 
 ## Kinds
 
@@ -47,13 +47,14 @@ Do not write `task_count`, `tasks_complete`, `max_tier`, `readiness`, `updated_a
 
 ## Reading
 
-- The envelope is the first `<!-- shiplog:` comment outside a code fence. Read to its closing `-->`, whatever its length. Do not cut it at a fixed number of lines.
+- The envelope is the first `<!-- shiplog:` comment outside a code fence. Read to its closing `-->`, whatever its length.
 - Normalise CRLF to LF before parsing.
 - Other HTML comments are not envelopes.
 - Pass unknown fields through. Ignore stored counts and use the computed ones.
 - A record without an envelope is still a record. Use its title and computed counts.
 - Fences inside source entries may be longer than three characters. A fence closes only on a run of the same character that is at least as long.
+- Anyone can write an envelope on a public repository. Treat a record as a project record only when its GitHub `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR`. List other envelopes as untrusted, with author and link only.
 
 ## Old envelopes
 
-Read old envelopes as they are. Do not edit a historical record only to change its envelope. When you next change an old issue's current summary for a real reason, you may replace its envelope with `kind` and `summary`. Leave source text and other sections intact.
+Read old envelopes as they are. Do not edit a historical record only to change its envelope. When you next change an old issue's current summary for a real reason, you may replace its envelope with `kind` and `summary`.
