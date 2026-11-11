@@ -10,7 +10,7 @@ npx skills add devallibus/shiplog --skill shiplog
 
 The skill directory is self-contained: a skill-only install has every procedure it needs. Add `--agent claude-code`, `--agent codex`, or `--agent cursor` to target one agent; run `npx skills update` to refresh.
 
-As a Claude Code plugin, which also adds the slash commands `/shiplog:plan`, `start`, `commit`, `pr`, `lookup`, `hunt`, `resume`, `review`, and `models`:
+As a Claude Code plugin, which also adds the slash commands `/shiplog:plan`, `/shiplog:start`, `/shiplog:capture`, `/shiplog:commit`, `/shiplog:pr`, `/shiplog:lookup`, `/shiplog:hunt`, `/shiplog:resume`, `/shiplog:review`, and `/shiplog:models`:
 
 ```bash
 /plugin marketplace add devallibus/shiplog
@@ -60,13 +60,13 @@ Implement T2.
 **3. A small retrieval index.** New records start with the short `<!-- shiplog: -->` envelope shown above. The helper [`skills/shiplog/scripts/shiplog-read.sh`](skills/shiplog/scripts/shiplog-read.sh) returns those compact fields first, and full text only when the question needs it:
 
 ```bash
-shiplog-read.sh index           # envelopes of open issues and PRs
-shiplog-read.sh show 42         # current summary of #42
-shiplog-read.sh source 42       # verbatim source entries on #42
-shiplog-read.sh search "auth"   # search the original text
+shiplog-read.sh index           # one line per open issue and PR: kind, tasks, labels, title, summary
+shiplog-read.sh show 42         # #42's envelope, computed tasks, open tasks, one line per enveloped comment
+shiplog-read.sh source 42       # exact text of the `kind: source` comments on #42
+shiplog-read.sh search "auth"   # matching issues, PRs, and local commits, one line each
 ```
 
-Task counts are computed from the checkboxes; no copies of derived state are stored. Byte and API-call measurements for the helper are in [`tests/reader/MEASUREMENTS.md`](tests/reader/MEASUREMENTS.md).
+Add `-R OWNER/REPO` before the command to read another repository. Task counts are computed from the checkboxes; no copies of derived state are stored. Only records from accounts GitHub marks as OWNER, MEMBER, or COLLABORATOR count as project records; envelopes from anyone else are shown as untrusted, with author and link only. Byte and API-call measurements for the helper are in [`tests/reader/MEASUREMENTS.md`](tests/reader/MEASUREMENTS.md).
 
 ## A day with it
 
@@ -84,8 +84,8 @@ No mandatory session announcements, and no mandatory model signatures on routine
 | Option | What it does | Turn it on |
 |---|---|---|
 | Model-tier routing | Suggests a model tier at phase changes: `off`, `warn` (banner), or `confirm` (ask first). Advisory only. | `/shiplog:models` or `.shiplog/routing.md` |
-| Cross-model review | A GitHub Action checks that a review declared by a different model covers the PR's head commit. | [`.shiplog/review.md`](.shiplog/review.md) and [`review-gate.yml`](.github/workflows/review-gate.yml); see [review.md](skills/shiplog/review.md) |
-| Verification profiles | Project or issue test policies such as `red-green` or `behavior-spec`. | `.shiplog/verification.md`; see [profiles](skills/shiplog/references/verification-profiles.md) |
+| Cross-model review | A GitHub Action sets the commit status `shiplog/review-gate` on the PR head: it passes when a collaborator's review names that commit and declares a model other than every code author. It enforces only once you make it a required status check. | [`.shiplog/review.md`](.shiplog/review.md) and [`review-gate.yml`](.github/workflows/review-gate.yml); see [closure-and-review.md](skills/shiplog/references/closure-and-review.md) |
+| Verification profiles | Project or issue test policies such as `tests` or `behavior`. | `.shiplog/verification.md`; see [profiles](skills/shiplog/references/verification-profiles.md) |
 | Lifecycle labels | `shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`. | See [labels.md](skills/shiplog/references/labels.md) |
 | Quiet logging | Keeps the work log on a separate branch, off the PR. | Ask for it; see [quiet-logging.md](skills/shiplog/references/quiet-logging.md) |
 
@@ -102,14 +102,15 @@ Without the review option, **shiplog** follows the review your repository alread
 
 - [`gh`](https://cli.github.com/), authenticated with `gh auth login`
 - `git`, in a repository with a GitHub remote
-- POSIX shell tools for the helper (Git Bash works on Windows)
+- `bash` and POSIX tools (`awk`, `sed`) for the helper; Git Bash works on Windows
+- For the optional review gate only: Node.js on the Actions runner (GitHub-hosted runners have it)
 
 ## Upgrading from 0.5 and earlier
 
 - Old issues, PRs, and envelopes stay readable. Nothing is bulk-rewritten; only new entries use the new format.
 - Routing defaults to `off` when unset (it was `confirm`). An explicit setting in `.shiplog/routing.md` is kept.
 - Model signatures (`Authored-by:`) are optional; existing ones are left alone. See [signing.md](skills/shiplog/references/signing.md) if your project requires them.
-- Session-start and resume comments, PR journey timelines, and stored task counts are no longer written.
+- Session-start and resume comments, PR journey timelines, PR-body review snapshots, and stored task counts are no longer written.
 - Cross-model review is an opt-in, CI-checked option instead of an unenforced rule on every PR.
 - Quiet mode is now the optional quiet-logging extension.
 

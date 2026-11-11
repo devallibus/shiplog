@@ -16,7 +16,7 @@ bash tests/reader/run.sh        # skills/shiplog/scripts/shiplog-read.sh
 bash tests/review-gate/run.sh   # the cross-model review check
 ```
 
-All three run in CI through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They need only `bash`, `git`, `gh`, and POSIX tools; on Windows use Git Bash. Shell scripts must keep LF line endings (enforced by `.gitattributes`).
+All three run in CI through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They run offline and need `bash`, `git`, and POSIX tools; the review-gate suite also needs `node`. On Windows use Git Bash. Shell scripts must keep LF line endings (enforced by `.gitattributes`).
 
 ## Versioning
 
@@ -37,7 +37,7 @@ While on `0.x.y`:
 
 In `0.x` there is no MAJOR; breaking changes are MINOR (semver §4). After `1.0.0`, breaking changes become MAJOR.
 
-Add an entry to [CHANGELOG.md](CHANGELOG.md) for each MINOR bump.
+Add a `## X.Y.Z` section to [CHANGELOG.md](CHANGELOG.md) for each version bump; `tests/docs/run.sh` fails when the version in `plugin.json` has none.
 
 ### Releases
 
@@ -56,7 +56,7 @@ gh release create vX.Y.Z --notes-file <release-notes-file> --target <default-bra
 - Branch from the default branch as `issue/<id>-<slug>`.
 - Commit subjects use `<type>(#<id>): <msg>`, or `<type>(#<id>/<Tn>): <msg>` for a task.
 - The PR body describes the final change and its verification and links the discussion; see [`skills/shiplog/pr.md`](skills/shiplog/pr.md). Use `Closes #N` only for full delivery.
-- This repository opts into the cross-model review check through [`.shiplog/review.md`](.shiplog/review.md): a PR needs a review, declared as coming from a model other than the author's, that covers its head commit. See [`skills/shiplog/review.md`](skills/shiplog/review.md). The reviewer's identity is declared, not proven.
+- This repository opts into the cross-model review check through [`.shiplog/review.md`](.shiplog/review.md): a PR needs a review, declared as coming from a model other than the author's, that covers its head commit. See [`skills/shiplog/review.md`](skills/shiplog/review.md). Declare each commit's author with an `Authored-by:` or `Co-Authored-By:` trailer, or the check fails. The reviewer's identity is declared, not proven.
 
 ## Asking for help
 
