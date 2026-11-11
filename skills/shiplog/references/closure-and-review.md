@@ -8,15 +8,7 @@ When a PR delivers only part of the work, write `Addresses #N (completes T1, T2)
 
 ## Review evidence
 
-A review is one attributed native GitHub review or PR comment from an owner, member, or collaborator account; evidence from other accounts is ignored:
-
-```text
-Reviewed-by: <family>/<version> (<tool>[, qualifier])
-Disposition: approve | approve-with-follow-ups | request-changes
-Scope: <what was read>
-Reviewed commit: <SHA>
-Follow-ups: #<issue> | none
-```
+A review is one attributed native GitHub review or PR comment from an owner, member, or collaborator account; evidence from other accounts is ignored. A comment carries the evidence block defined in [review.md](../review.md#review); the gate reads its `Reviewed-by:`, `Disposition:`, and `Reviewed commit:` lines.
 
 `approve-with-follow-ups` needs the follow-up issue first. Other disposition text, such as `self-review`, is a note and not an approval. A native review uses its `commit_id` as the reviewed commit. Its state supplies the disposition when the body has no `Disposition:` line. Bot findings are not approvals.
 

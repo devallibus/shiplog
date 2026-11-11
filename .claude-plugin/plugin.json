@@ -1,6 +1,6 @@
 {
   "name": "shiplog",
-  "description": "Git-as-knowledge-graph workflow for traceability across issues, branches, commits, reviews, and PRs.",
+  "description": "Preserves project discussion, decisions, and work context in GitHub issues and PRs so tracked work can continue across sessions.",
   "version": "0.6.0",
   "author": {
     "name": "devallibus"

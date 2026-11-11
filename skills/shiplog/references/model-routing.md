@@ -12,7 +12,7 @@ Resolve the mode in this order: a `## Model Routing` section in the issue body, 
 routing: off
 ```
 
-- `off`: no routing prompts or banners. This applies when nothing is set.
+- `off`: no routing prompts or banners.
 - `warn`: when the suggested tier changes between steps, show one line and continue.
 - `confirm`: when the suggested tier changes, ask once whether to continue or switch first, and wait for the answer.
 
@@ -24,7 +24,7 @@ Do not create the file or ask for a setting on first use. Change the setting onl
 routing: warn
 ```
 
-No mode enters or leaves plan mode or changes any other execution mode. If the user continues without switching, proceed; never block or repeat the prompt.
+shiplog never switches plan mode or any other execution mode, in any routing mode. A `warn` or `confirm` banner may suggest planning first for open-ended design work; `off` shows nothing. If the user continues without switching, proceed; never block or repeat the prompt.
 
 ## Tiers
 

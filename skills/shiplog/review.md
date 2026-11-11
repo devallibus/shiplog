@@ -21,7 +21,7 @@ In `cross-model` mode, the `shiplog/review-gate` status reports the same check.
 ```markdown
 <Findings, or "No blocking findings." Tag non-blocking items [follow-up].>
 
-Reviewed-by: <family>/<version> (<tool>)
+Reviewed-by: <family>/<version> (<tool>[, <qualifier>])
 Disposition: approve | approve-with-follow-ups | request-changes
 Scope: <what you read, e.g. full diff>
 Reviewed commit: <full head SHA>

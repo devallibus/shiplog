@@ -12,6 +12,7 @@ Simplification of the skill ([#166](https://github.com/devallibus/shiplog/issues
 - Slash commands in `commands/shiplog/` are thin entry points to procedures in `skills/shiplog/`; a skill-only install is complete.
 - Cross-model review is an explicit option, checked by a GitHub Action against the PR head commit, instead of a rule stated for every PR. Reviewer identity is declared, not proven.
 - Quiet mode is an optional quiet-logging extension.
+- In `review: cross-model` mode, hunt does not recommend reviewing a PR whose declared code authors include the current agent's model; it marks the PR as needing another reviewer.
 
 ### Removed
 
@@ -33,7 +34,7 @@ Simplification of the skill ([#166](https://github.com/devallibus/shiplog/issues
 
 ### Security
 
-- The helper treats a record as a project record only when its GitHub `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR`. Envelopes from other accounts are listed as untrusted and their fields are not shown. Each record is framed by a line count, so text inside a body cannot forge another record or its envelope.
+- The helper treats a record as a project record only when its GitHub `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR`. Envelopes from other accounts are listed as untrusted and their fields are not shown. `show N` prints the computed task count for an untrusted record but not its open task titles. Each record is framed by a line count, so text inside a body cannot forge another record or its envelope.
 - The review gate ignores review evidence from accounts that are not owners, members, or collaborators.
 
 ### Migration
@@ -42,6 +43,10 @@ Simplification of the skill ([#166](https://github.com/devallibus/shiplog/issues
 - An explicit `routing:` value in `.shiplog/routing.md` is kept. Set `warn` or `confirm` to restore prompts.
 - Existing `Authored-by:` signatures are left in place. Projects that require signatures keep using `skills/shiplog/references/signing.md`.
 - Repositories that want enforced cross-model review add `.shiplog/review.md` and the review-gate workflow.
+
+### Acknowledgements
+
+- `HorchataHTML` (PR [#165](https://github.com/devallibus/shiplog/pull/165)): the legacy skill-reference pattern now used by the docs lint, and the observation that the review evidence block should be defined in one file.
 
 ## Earlier versions
 
