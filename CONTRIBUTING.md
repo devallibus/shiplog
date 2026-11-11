@@ -1,39 +1,49 @@
 # Contributing to shiplog
 
-Thanks for contributing. This file documents the project conventions a contributor or AI agent needs to know before opening a PR.
+Thanks for contributing. This file covers what a contributor or agent needs before opening a PR.
+
+## Repository layout: one tree, one definition per rule
+
+- Every procedure lives under [`skills/shiplog/`](skills/shiplog/SKILL.md). `SKILL.md` is the core; the files beside it and under `references/` hold the detail. A skill-only install must work from this directory alone.
+- `commands/shiplog/*.md` are thin plugin entry points. Each one points to a procedure in `skills/shiplog/`; none restates its rules.
+- Each rule is defined in exactly one file. Other files link to it instead of copying it. When you change a rule, change it where it is defined and fix links, not copies.
+
+## Tests
+
+```bash
+bash tests/docs/run.sh          # the skill and command docs
+bash tests/reader/run.sh        # skills/shiplog/scripts/shiplog-read.sh
+bash tests/review-gate/run.sh   # the cross-model review check
+```
+
+All three run in CI through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They need only `bash`, `git`, `gh`, and POSIX tools; on Windows use Git Bash. Shell scripts must keep LF line endings (enforced by `.gitattributes`).
 
 ## Versioning
 
-**shiplog** follows [semver](https://semver.org/). The version field that matters lives in `.claude-plugin/plugin.json`. It is the cache key used by Claude Code's plugin manager and by `npx skills add` to decide whether to refresh installed copies — so without a bump, downstream installs never see your change.
+**shiplog** follows [semver](https://semver.org/). The version lives in `.claude-plugin/plugin.json`. Claude Code's plugin manager and `npx skills` use it to decide whether to refresh installed copies, so without a bump downstream installs never see your change.
 
 ### Bump rule
 
-If your PR touches any path under:
-
-- `commands/`
-- `skills/`
-- `.claude-plugin/`
-
-then your PR **must** include a `version` bump in `.claude-plugin/plugin.json`. CI enforces this (see `.github/workflows/version-bump-check.yml`).
-
-PRs that only touch other paths (README, CONTRIBUTING, `.github/`, `LICENSE`, etc.) do not need a bump.
+If your PR touches any path under `commands/`, `skills/`, or `.claude-plugin/`, it **must** bump `version` in `.claude-plugin/plugin.json`. [`version-bump-check.yml`](.github/workflows/version-bump-check.yml) enforces this on every PR to the default branch by comparing the base and head versions. PRs that touch only other paths (README, CONTRIBUTING, CHANGELOG, `.github/`, `tests/`, `LICENSE`) do not need a bump.
 
 ### Choosing the bump
 
-While we are on `0.x.y`:
+While on `0.x.y`:
 
 | Change | Bump |
 |--------|------|
-| New slash command, new skill file, new envelope kind, new label, new disposition, removed or renamed slash command, removed skill | MINOR (`0.X.0`) |
-| Wording changes inside an existing skill or command, doc-only updates, internal cleanups that preserve the documented surface | PATCH (`0.x.Y`) |
+| New, removed, or renamed command or skill file; new envelope kind, label, or option; changed default behaviour | MINOR (`0.X.0`) |
+| Wording changes, doc-only updates, cleanups that keep the documented behaviour | PATCH (`0.x.Y`) |
 
-In `0.x` there is no MAJOR — every breaking change is a MINOR per semver §4. Once we declare `1.0.0`, breaking changes become MAJOR and the rule above shifts accordingly.
+In `0.x` there is no MAJOR; breaking changes are MINOR (semver §4). After `1.0.0`, breaking changes become MAJOR.
+
+Add an entry to [CHANGELOG.md](CHANGELOG.md) for each MINOR bump.
 
 ### Releases
 
-Each version bump on the default branch triggers a Git tag and a GitHub Release automatically (see `.github/workflows/release.yml`). The release notes are auto-generated from PRs merged since the previous tag.
+When a push to the default branch changes the version in `plugin.json`, [`release.yml`](.github/workflows/release.yml) creates tag `vX.Y.Z` at that commit and a GitHub Release with notes generated from the PRs merged since the previous tag. It fails instead of overwriting if the tag already exists.
 
-If the release workflow is missing or fails, cut the release manually:
+If the workflow is missing or fails, cut the release manually:
 
 ```bash
 gh release create vX.Y.Z --notes-file <release-notes-file> --target <default-branch>
@@ -41,16 +51,13 @@ gh release create vX.Y.Z --notes-file <release-notes-file> --target <default-bra
 
 ## Workflow
 
-**shiplog** dogfoods its own workflow. See [`skills/shiplog/SKILL.md`](skills/shiplog/SKILL.md) for the full conventions: ID-first branches, signed artifacts, cross-model review, and evidence-linked closure.
+**shiplog** uses its own workflow; see [`skills/shiplog/SKILL.md`](skills/shiplog/SKILL.md).
 
-Key contributor expectations:
-
-- Branch from your `<default-branch>` as `issue/<id>-<slug>`.
-- Commit subjects use `<type>(#<id>): <msg>` or `<type>(#<id>/<Tn>): <msg>` for task-scoped commits.
-- PR body follows the template in [`skills/shiplog/pr.md`](skills/shiplog/pr.md): envelope, summary, journey timeline, changes, verification, knowledge for future reference.
-- Sign every shiplog artifact (PR body, signed comments, review comments) with `<role>: <family>/<version> (<tool>)`.
-- Cross-model review is required before merge. See [`skills/shiplog/references/closure-and-review.md`](skills/shiplog/references/closure-and-review.md) §3.
+- Branch from the default branch as `issue/<id>-<slug>`.
+- Commit subjects use `<type>(#<id>): <msg>`, or `<type>(#<id>/<Tn>): <msg>` for a task.
+- The PR body describes the final change and its verification and links the discussion; see [`skills/shiplog/pr.md`](skills/shiplog/pr.md). Use `Closes #N` only for full delivery.
+- This repository opts into the cross-model review check through [`.shiplog/review.md`](.shiplog/review.md): a PR needs a review, declared as coming from a model other than the author's, that covers its head commit. See [`skills/shiplog/review.md`](skills/shiplog/review.md). The reviewer's identity is declared, not proven.
 
 ## Asking for help
 
-Open an issue with the `shiplog/plan` label and describe what you are trying to do. The maintainer (or the next agent that runs `/shiplog:hunt`) will pick it up.
+Open an issue describing what you are trying to do.

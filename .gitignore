@@ -1,0 +1,18 @@
+# Agent session scratch files
+.tmp-*
+*.bak
+
+# Local agent and tool state (.shiplog/ and .claude-plugin/ are tracked)
+.claude/
+.cursor/
+.instance/
+.mcp_data/
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.vscode/
+.idea/
