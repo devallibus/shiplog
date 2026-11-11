@@ -231,7 +231,11 @@ check_word_budget() {
   return $rc
 }
 
-# Legacy strings are banned everywhere. Hard-coded model names are banned in
+# Legacy strings are banned everywhere. A legacy skill reference is
+# "shiplog:<lowercase-word>" (pattern from outside contributor PR #165). Not a
+# reference: the envelope opener "<!-- shiplog:", "shiplog:" followed by
+# whitespace or end of line, labels "shiplog/...", slash commands
+# "/shiplog:<name>", and URLs. Hard-coded model names are banned in
 # policy prose but allowed inside fenced example blocks, where provenance
 # examples such as "Authored-by: <family>/<version>" need a concrete value.
 BANNED_AWK='
@@ -239,7 +243,14 @@ BANNED_AWK='
 /^[ \t]*(```|~~~)/ { infence = !infence }
 {
   if (index($0, "SKILL.md \302\247")) print FILENAME ":" FNR ": legacy citation \"SKILL.md \302\247\""
-  if (index(l, "shiplog:timeline")) print FILENAME ":" FNR ": legacy skill name \"shiplog:timeline\""
+  ref = $0
+  gsub(/[A-Za-z][A-Za-z0-9+.-]*:\/\/[^ \t<>()`"]*/, "", ref)
+  gsub(/<!--[ \t]*shiplog:/, "", ref)
+  while (match(ref, /(^|[^\/])shiplog:[a-z][a-z0-9_-]*/)) {
+    hit = substr(ref, RSTART, RLENGTH); hit = substr(hit, index(hit, "shiplog:"))
+    print FILENAME ":" FNR ": legacy skill reference \"" hit "\""
+    ref = substr(ref, RSTART + RLENGTH)
+  }
   if (index(l, "phase entry check")) print FILENAME ":" FNR ": legacy \"Phase Entry Check\""
   if (!infence) {
     if (index(l, "opus-4")) print FILENAME ":" FNR ": model name \"opus-4\" outside a fenced example"
@@ -255,7 +266,8 @@ check_banned() { # <root>
   files=$(find "$root/skills" "$root/commands" -type f -name '*.md' 2>/dev/null | sort)
   [ -n "$files" ] || return 0
   # shellcheck disable=SC2086
-  awk "$BANNED_AWK" $files | sed "s|^$root/||" > "$TMP/banned"
+  awk "$BANNED_AWK" $files > "$TMP/banned.raw" || { echo "check_banned: awk failed"; return 1; }
+  sed "s|^$root/||" "$TMP/banned.raw" > "$TMP/banned"
   cat "$TMP/banned"
   [ ! -s "$TMP/banned" ]
 }
@@ -315,6 +327,12 @@ self_test() {
   expect "reports legacy section citation" $(printf '%s' "$out" | grep -q 'legacy citation'; echo $?)
   expect "reports model name in prose" $(printf '%s' "$out" | grep -q 'gpt-5'; echo $?)
   expect "allows model name in fenced example" $(! printf '%s' "$out" | grep -q 'opus-4'; echo $?)
+  expect "reports legacy skill reference" $(printf '%s' "$out" | grep -q 'legacy skill reference "shiplog:timeline"'; echo $?)
+  expect "reports exactly one legacy skill reference" $([ "$(printf '%s
+' "$out" | grep -c 'legacy skill reference')" -eq 1 ]; echo $?)
+  expect "allows envelope opener" $(! printf '%s' "$out" | grep -q 'shiplog:envword'; echo $?)
+  expect "allows slash command" $(! printf '%s' "$out" | grep -q 'shiplog:hunt'; echo $?)
+  expect "allows URL" $(! printf '%s' "$out" | grep -q 'shiplog:urlword'; echo $?)
 
   out=$(check_root_links "$broken"); rc=$?
   echo "--- check_root_links on fixtures/broken:"; printf '%s\n' "$out" | sed 's/^/  /'
@@ -341,6 +359,7 @@ self_test() {
   check_root_links "$clean" > /dev/null; expect "root link check passes on clean tree" $?
   check_changelog_version "$clean" > /dev/null; expect "changelog check passes on clean tree" $?
   check_readme_commands "$clean" > /dev/null; expect "command mention check passes on clean tree" $?
+  check_banned "$clean" > /dev/null; expect "banned check passes on clean tree (legacy-reference exceptions)" $?
 }
 
 if [ "${1:-}" = "--self-test" ]; then

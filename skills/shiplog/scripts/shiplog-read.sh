@@ -154,7 +154,8 @@ function finish(   i, n, s, want) {
       if (stored) print "  (stored task_count/tasks_complete ignored; see computed tasks above)"
     } else print "envelope: none"
     n = secseen ? sn : gn
-    if (n) {
+    if (n && !trusted) print "open tasks: not shown (untrusted author)"
+    else if (n) {
       print "open tasks:"
       for (i = 1; i <= n; i++) print "  - " (secseen ? sopen[i] : gopen[i])
     }

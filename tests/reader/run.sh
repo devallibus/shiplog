@@ -125,6 +125,9 @@ check "untrusted record: no kind or summary; malformed header ignored" \
   "$(row '9|issue|stranger|untrusted|-|1/2|-|Stranger issue|-')" "$(run index "$work/stream2")"
 check "untrusted record: envelope not shown" \
   "envelope: present but not shown (untrusted author)" "$(run show "$work/stream2" | grep '^envelope')"
+check "untrusted record: count shown, open task titles hidden" \
+  "tasks: 1/2 (computed from the Tasks section)|open tasks: not shown (untrusted author)" \
+  "$(run show "$work/stream2" | grep -E '^(tasks|open tasks)|^  - ' | flat)"
 
 printf '%s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]
