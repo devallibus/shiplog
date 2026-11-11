@@ -56,7 +56,7 @@ gh release create vX.Y.Z --notes-file <release-notes-file> --target <default-bra
 - Branch from the default branch as `issue/<id>-<slug>`.
 - Commit subjects use `<type>(#<id>): <msg>`, or `<type>(#<id>/<Tn>): <msg>` for a task.
 - The PR body describes the final change and its verification and links the discussion; see [`skills/shiplog/pr.md`](skills/shiplog/pr.md). Use `Closes #N` only for full delivery.
-- This repository opts into the cross-model review check through [`.shiplog/review.md`](.shiplog/review.md): a PR needs a review, declared as coming from a model other than the author's, that covers its head commit. See [`skills/shiplog/review.md`](skills/shiplog/review.md). Declare each commit's author with an `Authored-by:` or `Co-Authored-By:` trailer, or the check fails. The reviewer's identity is declared, not proven.
+- This repository opts into the cross-model review check through [`.shiplog/review.md`](.shiplog/review.md): a PR needs a review, declared as coming from a model other than the author's, that covers its head commit. See [`skills/shiplog/review.md`](skills/shiplog/review.md). Declare each commit's author with an `Authored-by:` or `Co-Authored-By:` trailer, or a model's approval cannot pass the check; a maintainer's human approval needs no trailers. The reviewer's identity is declared, not proven.
 
 ## Asking for help
 

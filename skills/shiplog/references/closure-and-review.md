@@ -20,20 +20,20 @@ A review is current only if its reviewed commit equals the PR head: the full SHA
 
 ## Modes
 
-`.shiplog/review.md` holds one line: `review: project` or `review: cross-model`. It defaults to `project` when absent.
+`.shiplog/review.md` holds one line: `review: project` (default when absent) or `review: cross-model`.
 
 - **project** (default): follow the repository's own requirements (branch protection, rulesets, required checks, native or Codex reviews). shiplog adds no gate.
 - **cross-model**: also require a current approval whose reviewer differs from every declared code author. A current `request-changes` blocks the PR until a newer qualifying approval appears.
 
-"Different" means a different `<family>/<version>` string after lowercasing. The same model in a new session is not different. A human reviewer always counts: a native approval from a person's account, or `Reviewed-by: human/<login>`. The code authors are the PR body's `Last-code-by:` plus every `Authored-by:` and `Co-Authored-By:` trailer on the PR's commits. Every author counts, so one small edit by another model cannot launder the main author's work. If no author is declared, the gate fails. An unsigned bot approval names no model, so it does not count.
+"Different" means a different `<family>/<version>` string after lowercasing. The same model in a new session is not different. A human reviewer always counts: a native approval from a person's account, or `Reviewed-by: human/<login>`. The code authors are the PR body's `Last-code-by:` plus every `Authored-by:` and `Co-Authored-By:` trailer on the PR's commits. Every author counts, so one small edit by another model cannot launder the main author's work. Without a declared author, a model's approval cannot be compared and fails; a human approval still counts. An unsigned bot approval names no model, so it does not count.
 
 **Limits:** Identity is declared, not proven. Agents may share one account, and admins can edit comments. The gate catches accidental self-approval, not a false `Reviewed-by:` line from a collaborator. The reliable part is freshness: a review cannot cover code it did not name.
 
 ## Enabling the Action
 
-From the shiplog repository (github.com/devallibus/shiplog), copy `.github/workflows/review-gate.yml` and `.github/scripts/review-gate.sh`, then add `.shiplog/review.md`. On PR, review, and comment events, the gate job runs the script from the default branch (never PR code) and sets the commit status `shiplog/review-gate` on the PR head. `project` mode reports success with a "no gate" note. The workflow's `test` job runs `tests/review-gate/run.sh` offline; copy that directory too or remove the job.
+From github.com/devallibus/shiplog, copy `.github/workflows/review-gate.yml` and `.github/scripts/review-gate.sh`, then add `.shiplog/review.md`. On PR, review, and comment events, the gate job runs the script from the default branch (never PR code) and sets the commit status `shiplog/review-gate` on the PR head. `project` mode reports success with a "no gate" note. The workflow's `test` job runs `tests/review-gate/run.sh` offline; copy that directory too or remove the job.
 
-To enforce the status, open branch protection or a ruleset for the default branch and add `shiplog/review-gate` as a required status check. Fork PRs get a read-only token on PR events, so the status for a fork PR is set by the next comment event.
+To enforce the status, open branch protection or a ruleset for the default branch and add `shiplog/review-gate` as a required status check. Fork PRs get a read-only token on PR events, so a fork PR's status is set by the next comment event.
 
 ## Historical records
 

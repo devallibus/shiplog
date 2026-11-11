@@ -177,6 +177,8 @@ const current = (e) => !!e.sha && head.startsWith(e.sha) && matching(e.sha) <= 1
 const isApproval = (e) => e.disp === "approve" || e.disp === "approve-with-follow-ups";
 const isHuman = (e) => !!e.reviewer && (e.reviewer === "human" || e.reviewer.startsWith("human/"));
 function problem(e) {
+  // Deliberate: a human differs from every model, so a human approval passes even when
+  // no code author is declared (for example an outside contributor PR with no trailers).
   if (isHuman(e)) return null;
   if (!e.reviewer) return "Current approval by " + e.login + " (" + e.where + ") has no Reviewed-by: line, so its model cannot be compared with the code author.";
   if (!authors.size) return "Code author unknown: add Last-code-by: to the PR body or Authored-by: trailers to the commits, so the current approval by " + e.reviewer + " can be compared.";
