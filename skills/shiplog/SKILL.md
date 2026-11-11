@@ -53,4 +53,4 @@ Routing is off when unset. Preserve explicit settings; load [references/model-ro
 
 Follow project review requirements using [references/closure-and-review.md](references/closure-and-review.md). Native GitHub reviews, configured Codex review, and attributed comments can provide evidence. Cross-model review is an explicit option. Model identity alone proves neither independence nor approval. Required checks and user authorization still govern merge.
 
-Load [verification profiles](references/verification-profiles.md) only when configured and [quiet logging](references/pr-workflow.md) only when requested. Do not rewrite historical records during adoption. Read older formats as needed. Optional features must not add setup steps to the default workflow.
+Load [verification profiles](references/verification-profiles.md) only when configured and [quiet logging](references/quiet-logging.md) only when requested. Do not rewrite historical records during adoption. Read older formats as needed. Optional features must not add setup steps to the default workflow.
