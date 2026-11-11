@@ -1,0 +1,67 @@
+# Runs every offline test suite under tests/*/run.sh, the docs lint
+# self-test, and shellcheck (severity error) on the repository's scripts.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    # List both master and main, as the other workflows do, so a future
+    # default-branch rename does not silently disable CI.
+    branches: [master, main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run test suites
+        shell: bash
+        run: |
+          set -u
+          status=0
+          found=0
+          for suite in tests/*/run.sh; do
+            [ -f "$suite" ] || continue
+            found=1
+            echo "::group::$suite"
+            if bash "$suite"; then
+              echo "PASS: $suite"
+            else
+              echo "::error::$suite failed"
+              status=1
+            fi
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error::no tests/*/run.sh found"
+            exit 1
+          fi
+          exit "$status"
+
+      - name: Docs lint self-test
+        shell: bash
+        run: bash tests/docs/run.sh --self-test
+
+      - name: shellcheck
+        shell: bash
+        run: |
+          set -u
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            echo "shellcheck is not installed on this runner; skipping"
+            exit 0
+          fi
+          mapfile -t scripts < <(find skills/shiplog/scripts .github/scripts tests \
+            -type f -name '*.sh' -not -path 'tests/*/fixtures/*' 2>/dev/null | sort)
+          if [ "${#scripts[@]}" -eq 0 ]; then
+            echo "no shell scripts found"
+            exit 0
+          fi
+          printf '%s\n' "${scripts[@]}"
+          shellcheck --severity=error "${scripts[@]}"

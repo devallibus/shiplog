@@ -1,0 +1,13 @@
+[
+  {
+    "id": 61,
+    "html_url": "https://github.com/o/r/pull/1#issuecomment-61",
+    "user": {
+      "login": "owner",
+      "type": "User"
+    },
+    "author_association": "OWNER",
+    "created_at": "2025-06-01T10:00:00Z",
+    "body": "## [shiplog/review-handoff] #5: Review of PR #6\n\nReviewed-by: openai/gpt-5.4 (codex)\nDisposition: approve\nScope: full diff\nFollow-ups: none"
+  }
+]

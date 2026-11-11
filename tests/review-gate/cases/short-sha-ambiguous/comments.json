@@ -1,0 +1,13 @@
+[
+  {
+    "id": 42,
+    "html_url": "https://github.com/o/r/pull/1#issuecomment-42",
+    "user": {
+      "login": "owner",
+      "type": "User"
+    },
+    "author_association": "OWNER",
+    "created_at": "2026-01-01T10:00:00Z",
+    "body": "Reviewed-by: openai/gpt-5.5 (codex)\nDisposition: approve\nScope: full diff\nReviewed commit: a1b2c3d"
+  }
+]
