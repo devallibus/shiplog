@@ -1,0 +1,8 @@
+[
+  {
+    "sha": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+    "commit": {
+      "message": "docs: templates\n\n- Commit rules:\n  Authored-by: sig required in commit body, when to post\nAuthored-by: sig block in the issue template\n\nAuthored-by: claude/opus-5.5 (claude-code)"
+    }
+  }
+]
