@@ -1,0 +1,102 @@
+# shiplog review gate. Policy: skills/shiplog/references/closure-and-review.md
+#
+# Reports the commit status "shiplog/review-gate" on the PR head commit.
+# `review: project` (or no .shiplog/review.md) reports success with a "no gate" note.
+# `review: cross-model` passes only when a signed approval names the head commit and
+# its declared reviewer differs from every declared code author.
+#
+# To enforce it, add "shiplog/review-gate" as a required status check in branch
+# protection or a ruleset. Without that, the status is informational.
+#
+# Security choices:
+# - No pull_request_target. The gate job checks out the default branch (`ref` below),
+#   so it never checks out or executes PR code, and the script and .shiplog/review.md
+#   it uses are the merged ones. (For pull_request events GitHub reads this YAML from
+#   the PR; fork PRs get a read-only token there, and same-repo authors already have
+#   write access. The status proves the check ran, not who reviewed.)
+# - Comment text is passed to the script only as API data (files), never interpolated
+#   into a shell command.
+# - Token scopes: contents/pull-requests read to fetch the PR, statuses write to report.
+#   An issue_comment run is attached to the default branch, not the PR, so its job
+#   result would not appear on the PR; the commit status on the head SHA does.
+#   The job itself always succeeds after reporting, so stale red job checks from older
+#   runs never contradict the current status.
+# - Fork PRs: pull_request and pull_request_review runs get a read-only token, so they
+#   cannot write the status; the next comment-triggered run (base-repo token) does.
+
+name: Review gate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  issue_comment:
+    types: [created, edited]
+
+permissions: {}
+
+jobs:
+  gate:
+    # issue_comment also fires for plain issues; only PR comments matter.
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: write
+    concurrency:
+      group: review-gate-${{ github.event.pull_request.number || github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - name: Check out the gate from the default branch (never PR code)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts
+            .shiplog
+
+      - name: Evaluate and report status on the PR head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ ! -f .github/scripts/review-gate.sh ]; then
+            echo "::notice::review-gate.sh is not on the default branch yet; nothing to report."
+            exit 0
+          fi
+          head=$(gh api "repos/$REPO/pulls/$PR" --jq .head.sha) || { echo "::error::Cannot read PR #$PR"; exit 1; }
+
+          if out=$(bash .github/scripts/review-gate.sh --repo "$REPO" --pr "$PR" --head "$head"); then rc=0; else rc=$?; fi
+          verdict=$(printf '%s\n' "$out" | sed -n 1p)
+          case "$rc" in 0) state=success ;; 1) state=failure ;; *) state=error ;; esac
+          echo "$verdict"
+          printf '### shiplog review gate: %s\n\n%s\n' "$state" "$verdict" >> "$GITHUB_STEP_SUMMARY"
+
+          # GitHub limits status descriptions to 140 characters; the run log has the full text.
+          if ! gh api -X POST "repos/$REPO/statuses/$head" \
+              -f state="$state" -f context="shiplog/review-gate" \
+              -f description="${verdict:0:140}" \
+              -f target_url="$GITHUB_SERVER_URL/$REPO/actions/runs/$GITHUB_RUN_ID" >/dev/null; then
+            echo "::warning::Could not set the commit status (read-only token, e.g. a fork PR). Verdict: $verdict"
+          fi
+          [ "$rc" -le 1 ] || exit 1
+
+  test:
+    # Runs the PR's own copy of the offline tests. Read-only token, no secrets.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Offline review-gate tests
+        shell: bash
+        run: bash tests/review-gate/run.sh
