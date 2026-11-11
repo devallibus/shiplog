@@ -128,14 +128,23 @@ for (const c of commitList) {
   }
 }
 
-// Evidence: signed issue comments and native reviews, in time order.
-const evidence = [];
+// Evidence: signed issue comments and native reviews, in time order. On a public
+// repository anyone can comment, so only accounts with write-level association count;
+// declared identity is an accepted limit among those accounts, not among strangers.
+const TRUSTED = ["OWNER", "MEMBER", "COLLABORATOR"];
+const evidence = [], ignored = [];
+function add(x, e) {
+  if (!e.disp && !e.reviewer) return;
+  if (TRUSTED.includes(String(x.author_association || "").toUpperCase())) evidence.push(e);
+  else ignored.push(e);
+}
 list(env.RG_COMMENTS).forEach((c) => {
   const by = field(c.body, "Reviewed-by");
   if (!by) return;
   const commitLine = field(c.body, "Reviewed commit");
-  evidence.push({
+  add(c, {
     where: c.html_url || "comment " + c.id, at: c.created_at || "",
+    login: (c.user && c.user.login) || "unknown",
     reviewer: identity(by), disp: disposition(field(c.body, "Disposition")),
     sha: sha(commitLine), shaRaw: commitLine,
   });
@@ -145,17 +154,19 @@ list(env.RG_REVIEWS).forEach((r) => {
   if (!["APPROVED", "CHANGES_REQUESTED", "COMMENTED"].includes(state)) return;
   const by = field(r.body, "Reviewed-by");
   const login = (r.user && r.user.login) || "unknown";
-  const bot = r.user && r.user.type === "Bot";
-  // An unsigned approval from a person account is a human review (GitHub already
-  // refuses approvals from the PR author account). An unsigned bot has no model id.
-  const reviewer = by ? identity(by) : bot ? null : "human/" + login.toLowerCase();
+  const person = !!r.user && r.user.type === "User";
+  // An unsigned approval from a trusted person account is a human review (GitHub
+  // already refuses approvals from the PR author account). An unsigned bot has no model id.
+  const reviewer = by ? identity(by) : person ? "human/" + login.toLowerCase() : null;
   const disp = state === "CHANGES_REQUESTED" ? "request-changes"
     : disposition(field(r.body, "Disposition")) || (state === "APPROVED" ? "approve" : null);
-  evidence.push({
+  if (!disp && !by) return;
+  add(r, {
     where: r.html_url || "review " + r.id, at: r.submitted_at || "",
     reviewer, login, disp, sha: sha(r.commit_id), shaRaw: r.commit_id,
   });
 });
+for (const e of ignored) console.error("ignored: evidence from non-collaborator " + e.login + " " + e.where);
 evidence.forEach((e, i) => { e.i = i; e.t = Date.parse(e.at) || 0; });
 evidence.sort((a, b) => a.t - b.t || a.i - b.i);
 const newest = (xs) => xs[xs.length - 1];
@@ -193,7 +204,9 @@ if (blocker && (!good || later(blocker, good))) {
   verdict = problem(newest(approvals));
 } else {
   const any = newest(evidence.filter(isApproval));
-  if (!any) verdict = "No signed approval found for head " + short(head) + ".";
+  const outsiders = [...new Set(ignored.filter(isApproval).map((e) => e.login))];
+  if (!any && outsiders.length) verdict = "Only non-collaborators approved (" + outsiders.join(", ") + "); review evidence counts only from OWNER, MEMBER or COLLABORATOR accounts.";
+  else if (!any) verdict = "No signed approval found for head " + short(head) + ".";
   else if (!any.sha) verdict = "Latest signed approval (" + any.where + ") has no Reviewed commit: line, so it cannot be matched to head " + short(head) + ".";
   else if (head.startsWith(any.sha)) verdict = "Latest approval names commit " + any.sha + ", which is ambiguous among this PR'"'"'s commits; use the full SHA.";
   else verdict = "Stale review: latest approval reviewed " + short(any.sha) + ", but head is " + short(head) + ".";

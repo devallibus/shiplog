@@ -6,6 +6,7 @@
       "login": "owner",
       "type": "User"
     },
+    "author_association": "COLLABORATOR",
     "state": "COMMENTED",
     "commit_id": "0123456789abcdef0123456789abcdef01234567",
     "submitted_at": "2026-01-01T10:00:00Z",
