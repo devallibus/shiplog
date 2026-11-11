@@ -7,8 +7,8 @@
 #
 # Usage:
 #   bash tests/docs/run.sh              lint the repository
-#   bash tests/docs/run.sh --self-test  prove the link and orphan checks fail
-#                                       on tests/docs/fixtures/broken
+#   bash tests/docs/run.sh --self-test  prove the checks fail
+#                                       on tests/docs/fixtures/broken and pass on fixtures/clean
 
 set -u
 
@@ -125,6 +125,50 @@ check_orphans() { # <root>; files not reachable from SKILL.md
     esac
     [ -n "${seen[$f]:-}" ] || { echo "$f: not reachable from $SKILL_DIR/SKILL.md"; rc=1; }
   done < <(find "$root/$SKILL_DIR" -type f | sort)
+  return $rc
+}
+
+check_root_links() { # <root>; relative links in the front-door files resolve in the repo
+  local root=$1 f ln path raw rc=0
+  for f in README.md CONTRIBUTING.md CHANGELOG.md; do
+    [ -f "$root/$f" ] || continue
+    while IFS="$(printf '\t')" read -r ln path raw; do
+      case $path in
+        ..|../*) echo "$f:$ln: link leaves the repository ($raw)"; rc=1 ;;
+        *) [ -e "$root/$path" ] || { echo "$f:$ln: missing link target ($raw)"; rc=1; } ;;
+      esac
+    done < <(links_in "$root" "$f")
+  done
+  return $rc
+}
+
+check_changelog_version() { # <root>; CHANGELOG.md has a heading for plugin.json's version
+  local root=$1 version
+  version=$(sed -n 's/^[[:space:]]*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+    "$root/.claude-plugin/plugin.json" 2>/dev/null | sed -n 1p)
+  [ -n "$version" ] || { echo ".claude-plugin/plugin.json: no version field"; return 1; }
+  [ -f "$root/CHANGELOG.md" ] || { echo "CHANGELOG.md: missing"; return 1; }
+  # Accept "## 0.6.0", "## [0.6.0]", "## v0.6.0", optionally followed by a date.
+  if ! tr -d '\r' < "$root/CHANGELOG.md" | awk -v v="$version" '
+      /^##[ \t]/ { h = $2; gsub(/[][]/, "", h); sub(/^v/, "", h); if (h == v) found = 1 }
+      END { exit found ? 0 : 1 }'; then
+    echo "CHANGELOG.md: no heading for version $version from .claude-plugin/plugin.json"; return 1
+  fi
+}
+
+check_readme_commands() { # <root>; README names every command, and only real ones
+  local root=$1 rc=0 name f
+  [ -f "$root/README.md" ] || { echo "README.md: missing"; return 1; }
+  for name in $(grep -oE '/shiplog:[a-z0-9][a-z0-9-]*' "$root/README.md" | sed 's|^/shiplog:||' | sort -u); do
+    [ -f "$root/commands/shiplog/$name.md" ] ||
+      { echo "README.md: /shiplog:$name has no commands/shiplog/$name.md"; rc=1; }
+  done
+  for f in "$root"/commands/shiplog/*.md; do
+    [ -f "$f" ] || continue
+    name=$(basename "$f" .md)
+    grep -qE "/shiplog:$name([^a-z0-9-]|\$)" "$root/README.md" ||
+      { echo "commands/shiplog/$name.md: /shiplog:$name is not mentioned in README.md"; rc=1; }
+  done
   return $rc
 }
 
@@ -272,8 +316,31 @@ self_test() {
   expect "reports model name in prose" $(printf '%s' "$out" | grep -q 'gpt-5'; echo $?)
   expect "allows model name in fenced example" $(! printf '%s' "$out" | grep -q 'opus-4'; echo $?)
 
+  out=$(check_root_links "$broken"); rc=$?
+  echo "--- check_root_links on fixtures/broken:"; printf '%s\n' "$out" | sed 's/^/  /'
+  expect "root link check fails on broken tree" $([ $rc -ne 0 ]; echo $?)
+  expect "reports missing README target" $(printf '%s' "$out" | grep -q 'README.md:.*missing-doc.md'; echo $?)
+  expect "reports link leaving the repository" $(printf '%s' "$out" | grep -q 'leaves the repository'; echo $?)
+  expect "accepts an existing directory and file" $(! printf '%s' "$out" | grep -qE 'outside.md|\(skills/'; echo $?)
+
+  out=$(check_changelog_version "$broken"); rc=$?
+  echo "--- check_changelog_version on fixtures/broken:"; printf '%s\n' "$out" | sed 's/^/  /'
+  expect "changelog check fails when the version has no heading" $([ $rc -ne 0 ]; echo $?)
+  expect "reports the missing version" $(printf '%s' "$out" | grep -q '9.9.9'; echo $?)
+
+  out=$(check_readme_commands "$broken"); rc=$?
+  echo "--- check_readme_commands on fixtures/broken:"; printf '%s\n' "$out" | sed 's/^/  /'
+  expect "command mention check fails on broken tree" $([ $rc -ne 0 ]; echo $?)
+  expect "reports README command without a file" $(printf '%s' "$out" | grep -q '/shiplog:ghost has no'; echo $?)
+  expect "reports command file missing from README" $(printf '%s' "$out" | grep -q 'unlisted.md'; echo $?)
+  expect "a longer name does not count as a mention" $(printf '%s' "$out" | grep -q 'go.md'; echo $?)
+  expect "mentioned command with a file passes" $(! printf '%s' "$out" | grep -qE '/shiplog/listed[.]md:|/shiplog:listed '; echo $?)
+
   check_links "$clean" > /dev/null; expect "link check passes on clean tree" $?
   check_orphans "$clean" > /dev/null; expect "orphan check passes on clean tree" $?
+  check_root_links "$clean" > /dev/null; expect "root link check passes on clean tree" $?
+  check_changelog_version "$clean" > /dev/null; expect "changelog check passes on clean tree" $?
+  check_readme_commands "$clean" > /dev/null; expect "command mention check passes on clean tree" $?
 }
 
 if [ "${1:-}" = "--self-test" ]; then
@@ -287,6 +354,9 @@ else
   run_check "no banned legacy strings or hard-coded model names" check_banned "$REPO"
   run_check "every file under $SKILL_DIR/ is reachable from SKILL.md" check_orphans "$REPO"
   run_check "shell scripts pass bash -n" check_shell_syntax
+  run_check "relative links in README, CONTRIBUTING and CHANGELOG resolve" check_root_links "$REPO"
+  run_check "CHANGELOG.md has a heading for the plugin.json version" check_changelog_version "$REPO"
+  run_check "README and commands/shiplog/ name the same commands" check_readme_commands "$REPO"
 fi
 
 LABEL="docs lint"
