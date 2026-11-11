@@ -1,83 +1,33 @@
-# GitHub Labels
+# Labels
 
-Use this file when Shiplog needs to bootstrap, apply, or repair repository labels.
+Labels are optional. Use them only when the project already uses shiplog labels or the user asks for them. Check existing labels before applying one, and touch only labels in the `shiplog/` namespace.
 
-**Kind source of truth:** The canonical mapping from envelope `kind:` to title tags and GitHub labels lives in `SKILL.md` — "Canonical Kind → Tag → Label Map" section. This file documents the label bootstrap commands, colors, and descriptions; it does not duplicate the kind map.
+When labels are in use, lifecycle labels own readiness. Do not keep a copy of readiness in an envelope, summary, or other field.
 
-## Canonical label set
+- `shiplog/plan`: the issue holds a captured plan or idea. Keep it while work proceeds.
+- `shiplog/ready`: scoped and ready to implement.
+- `shiplog/in-progress`: a branch exists and work has started.
+- `shiplog/needs-review`: a PR awaits review.
+- `shiplog/blocker`: progress is blocked. Remove it when the work is unblocked.
 
-| Label | Use when | Color | Description |
-|------|----------|-------|-------------|
-| `shiplog/plan` | The issue is the planning artifact created from a brainstorm | `0B7285` | Brainstorm captured as a planning issue |
-| `shiplog/discovery` | The issue was created from an in-flight discovery | `1D6F42` | Work discovered during another issue or PR |
-| `shiplog/blocker` | The tracked work is currently blocked | `C92A2A` | Progress is blocked and needs unblocking |
-| `shiplog/history` | The PR is the final timeline/history artifact for the work | `495057` | Final history-bearing Shiplog PR |
-| `shiplog/verification` | The issue or PR mainly audits evidence, review readiness, or closure status | `5F3DC4` | Verification, closure audit, or review evidence |
-| `shiplog/stacked` | The issue or PR is a stacked prerequisite or child of another work item | `E67700` | Stacked dependency or prerequisite |
-| `shiplog/issue-driven` | The PR is explicitly tied to a tracking issue | `1971C2` | PR is linked to a Shiplog issue |
-| `shiplog/ready` | The issue is fully scoped and ready to implement | `2DA44E` | Ready to implement |
-| `shiplog/in-progress` | Work has started and a branch exists | `FBCA04` | Implementation in progress |
-| `shiplog/needs-review` | A PR exists and awaits review | `D93F0B` | Awaiting review |
+`shiplog/ready`, `shiplog/in-progress`, and `shiplog/needs-review` are mutually exclusive. Adding one removes the other two. Remove all three when the issue closes.
 
-**Lifecycle label rules:** `shiplog/ready`, `shiplog/in-progress`, and `shiplog/needs-review` are mutually exclusive.
+Other `shiplog/*` labels from earlier versions, such as `shiplog/discovery`, `shiplog/history`, `shiplog/stacked`, `shiplog/issue-driven`, and `shiplog/verification`, remain readable. Leave them on old records; new records do not need them.
 
 ## Bootstrap
 
-Run this once before the first labeled `gh issue create` or `gh pr create` in a repository, then rerun it whenever the label descriptions need to be refreshed.
+Run once in a repository that opts in. `--force` updates labels that already exist.
 
 ```bash
-gh label create "shiplog/plan" --color 0B7285 --description "Brainstorm captured as a planning issue" --force
-gh label create "shiplog/discovery" --color 1D6F42 --description "Work discovered during another issue or PR" --force
-gh label create "shiplog/blocker" --color C92A2A --description "Progress is blocked and needs unblocking" --force
-gh label create "shiplog/history" --color 495057 --description "Final history-bearing Shiplog PR" --force
-gh label create "shiplog/verification" --color 5F3DC4 --description "Verification, closure audit, or review evidence" --force
-gh label create "shiplog/stacked" --color E67700 --description "Stacked dependency or prerequisite" --force
-gh label create "shiplog/issue-driven" --color 1971C2 --description "PR is linked to a Shiplog issue" --force
+gh label create "shiplog/plan" --color 0B7285 --description "Captured plan or idea" --force
 gh label create "shiplog/ready" --color 2DA44E --description "Ready to implement" --force
 gh label create "shiplog/in-progress" --color FBCA04 --description "Implementation in progress" --force
 gh label create "shiplog/needs-review" --color D93F0B --description "Awaiting review" --force
+gh label create "shiplog/blocker" --color C92A2A --description "Progress is blocked" --force
 ```
 
-## Auto-label mapping
-
-Use high-confidence mapping only.
-
-| Signal | Labels |
-|--------|--------|
-| Issue title starts with `[shiplog/plan]` | `shiplog/plan` |
-| Issue title starts with `[shiplog/discovery]` | `shiplog/discovery` |
-| Discovery issue explicitly blocks a parent or is created as a prerequisite | `shiplog/discovery`, `shiplog/stacked` |
-| Full-mode PR body follows the timeline template and includes `Closes #<N>` | `shiplog/history`, `shiplog/issue-driven` |
-| PR branch matches `issue/<N>-...` or the PR body includes `Closes #<N>` | `shiplog/issue-driven` |
-| Issue or PR exists mainly to audit closure, review, or verification evidence | `shiplog/verification` |
-| Timeline state says blocked and work cannot proceed | add `shiplog/blocker` |
-| Timeline state says unblocked, resumed, or prerequisite resolved | remove `shiplog/blocker` |
-| Issue envelope `readiness: ready` and no lifecycle label is present | add `shiplog/ready` |
-| Branch created for issue | replace lifecycle label with `shiplog/in-progress` |
-| PR created for issue | replace lifecycle label with `shiplog/needs-review` |
-| PR merged and issue closed | remove all lifecycle labels |
-
-## Backfill and repair
-
-Inspect labels before changing them:
+Change lifecycle state in one edit:
 
 ```bash
-gh issue view <ISSUE_NUMBER> --json labels
-gh pr view <PR_NUMBER> --json labels
-```
-
-Add or repair labels without touching user labels outside the `shiplog/` namespace:
-
-```bash
-gh issue edit <ISSUE_NUMBER> --add-label "shiplog/plan"
-gh issue edit <ISSUE_NUMBER> --add-label "shiplog/discovery" --add-label "shiplog/stacked"
-gh issue edit <ISSUE_NUMBER> --add-label "shiplog/blocker"
-gh issue edit <ISSUE_NUMBER> --remove-label "shiplog/blocker"
-gh pr edit <PR_NUMBER> --add-label "shiplog/history" --add-label "shiplog/issue-driven"
-gh pr edit <PR_NUMBER> --add-label "shiplog/verification"
-gh pr edit <PR_NUMBER> --remove-label "shiplog/blocker"
-gh issue edit <ISSUE_NUMBER> --remove-label "shiplog/in-progress" --remove-label "shiplog/needs-review" --add-label "shiplog/ready"
-gh issue edit <ISSUE_NUMBER> --remove-label "shiplog/ready" --remove-label "shiplog/needs-review" --add-label "shiplog/in-progress"
-gh issue edit <ISSUE_NUMBER> --remove-label "shiplog/ready" --remove-label "shiplog/in-progress" --add-label "shiplog/needs-review"
-gh issue edit <ISSUE_NUMBER> --remove-label "shiplog/ready" --remove-label "shiplog/in-progress" --remove-label "shiplog/needs-review"
+gh issue edit N --remove-label "shiplog/ready" --remove-label "shiplog/needs-review" --add-label "shiplog/in-progress"
 ```
