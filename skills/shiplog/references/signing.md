@@ -1,6 +1,6 @@
 # Signatures
 
-Model signatures are optional. Add them only when the project requires them. Review evidence always carries one; [closure-and-review.md](closure-and-review.md) owns that format. Speaker and source attribution on copied discussion is a separate rule in [records.md](records.md).
+Model signatures are optional. Add them only when the project requires them. `review: cross-model` does: its gate fails unless commits declare their authors with `Authored-by:` or `Co-Authored-By:` trailers. Review evidence always carries one; [closure-and-review.md](closure-and-review.md) owns that format. Speaker and source attribution on copied discussion is a separate rule in [records.md](records.md).
 
 Put each signature on its own line at the end of the artifact:
 

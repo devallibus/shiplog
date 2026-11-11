@@ -39,7 +39,7 @@ A review is current only if its reviewed commit equals the PR head: the full SHA
 
 ## Enabling the Action
 
-Copy `.github/workflows/review-gate.yml` and `.github/scripts/review-gate.sh`, then add `.shiplog/review.md`. On PR, review, and comment events, the gate job runs the script from the default branch (never PR code) and sets the commit status `shiplog/review-gate` on the PR head. `project` mode reports success with a "no gate" note. The workflow's `test` job runs `tests/review-gate/run.sh` offline; copy that directory too or remove the job.
+From the shiplog repository (github.com/devallibus/shiplog), copy `.github/workflows/review-gate.yml` and `.github/scripts/review-gate.sh`, then add `.shiplog/review.md`. On PR, review, and comment events, the gate job runs the script from the default branch (never PR code) and sets the commit status `shiplog/review-gate` on the PR head. `project` mode reports success with a "no gate" note. The workflow's `test` job runs `tests/review-gate/run.sh` offline; copy that directory too or remove the job.
 
 To enforce the status, open branch protection or a ruleset for the default branch and add `shiplog/review-gate` as a required status check. Fork PRs get a read-only token on PR events, so the status for a fork PR is set by the next comment event.
 

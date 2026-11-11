@@ -19,5 +19,5 @@ Paths are relative to this skill directory. Run inside the repository, or add `-
    4. Issues with other or no shiplog labels. They may need planning first.
 
    Lifecycle labels are optional; see [references/labels.md](references/labels.md). Without them, rank by open PRs, then partly done issues, then the rest.
-3. **Check the top candidates only.** Run `scripts/shiplog-read.sh show N` for the two or three best items. Confirm the next action, blockers, and open tasks there.
+3. **Check the top candidates only.** Run `scripts/shiplog-read.sh show N` for the two or three best items. Confirm the open tasks there, and read the next action and blockers in the issue body (`gh issue view N`).
 4. **Report.** List the ranked items as `#N title (tasks, labels)`. Then give one to three concrete recommendations, each with its reason and the next command to run.

@@ -38,7 +38,7 @@ Copy the relevant original reply here without changes.
 ```
 ````
 
-Save the body to a UTF-8 file and post with `gh issue comment N --body-file FILE`. Keep the returned URL. After an uncertain response, inspect the latest entries for that source range before retrying. Do not post the same range twice.
+Save the body to a UTF-8 file ([shell-portability.md](shell-portability.md) covers PowerShell) and post with `gh issue comment N --body-file FILE`. Keep the returned URL. After an uncertain response, inspect the latest entries for that source range before retrying. Do not post the same range twice.
 
 ## Corrections and decisions
 
