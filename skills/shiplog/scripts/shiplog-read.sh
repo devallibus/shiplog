@@ -214,6 +214,7 @@ def lines: [scan("\n")] | length + 1;
 def labels: [.labels[].name | one | gsub(","; " ")] | join(",") | if . == "" then "-" else . end;'
 JQ_RECORD='(.body // "") as $b |
 "\u001eR\t\($b | lines)\t\(.number)\t\(if .pull_request then (if .draft then "draft-pr" else "pr" end) else "issue" end)\t\(.state | one)\t\(.user.login // "ghost" | one)\t\(.author_association | one)\t\(.html_url | one)\t\(labels)\t\(.title | one)\n\($b)"'
+JQ_INDEX="$DEFS .[] | $JQ_RECORD"
 JQ_COMMENT='(.body // "") as $b |
 "\u001eC\t\($b | lines)\t\(.html_url | one)\t\(.created_at | one)\t\(.user.login // "ghost" | one)\t\(.author_association | one)\n\($b)"'
 
@@ -239,7 +240,7 @@ cmd_index() {
   done
   need_gh; tmp=$(mktemp)
   # The issues endpoint returns open issues and PRs together, newest first.
-  fetch gh api "repos/{owner}/{repo}/issues?state=open&per_page=$limit" --jq "$DEFS .[] | $JQ_RECORD"
+  fetch gh api "repos/{owner}/{repo}/issues?state=open&per_page=$limit" --jq "$JQ_INDEX"
   printf 'number\ttype\tauthor\ttrust\tkind\ttasks\tlabels\ttitle\tsummary\n'
   parse index <"$tmp"
 }
@@ -317,5 +318,8 @@ case "$cmd" in
   parse-file) [ $# -ge 2 ] || die "usage: parse-file index|show|source FILE [SEL] [INCLUDE_UNTRUSTED]"
     [ -f "$2" ] || die "no such file: $2"
     parse "$1" "${3:-}" "${4:-0}" <"$2" ;;
+  # Offline entry point for tests: print the exact jq program `index` runs.
+  jq-filter) [ "${1:-}" = index ] || die "usage: jq-filter index"
+    printf '%s\n' "$JQ_INDEX" ;;
   *) usage >&2; die "unknown command '$cmd'" ;;
 esac
