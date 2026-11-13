@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline tests for skills/shiplog/scripts/shiplog-read.sh (no network, no jq).
+# Offline tests for skills/shiplog/scripts/shiplog-read.sh (no network; the jq cases run only when jq is on PATH).
 # Usage: bash tests/reader/run.sh
 set -eu
 
@@ -128,6 +128,27 @@ check "untrusted record: envelope not shown" \
 check "untrusted record: count shown, open task titles hidden" \
   "tasks: 1/2 (computed from the Tasks section)|open tasks: not shown (untrusted author)" \
   "$(run show "$work/stream2" | grep -E '^(tasks|open tasks)|^  - ' | flat)"
+
+# bash 3.2 scans quotes and backticks inside a heredoc nested in a command
+# substitution, so the script must never put a heredoc on a line with one.
+if grep -qE '[$][(].*<<' "$reader"; then
+  check "no heredoc inside a command substitution (bash 3.2)" "none" "found"
+else check "no heredoc inside a command substitution (bash 3.2)" ok ok; fi
+
+# jq half: run the exact filter `index` uses over an Issues API fixture and
+# parse the emitted stream. Needs a real jq (CI has it); skipped otherwise.
+if command -v jq >/dev/null 2>&1; then
+  bash "$reader" jq-filter index >"$work/index.jq"
+  jq -r -f "$work/index.jq" "$fx/issues-api.json" | tr -d '\r' >"$work/api-stream"
+  check "jq: issue, pr, draft-pr and missing draft key map to the right type" \
+    "issue|pr|draft-pr|pr" \
+    "$(grep "^$rs" "$work/api-stream" | cut -f4 | flat)"
+  check "jq: stream parses end to end (null body, tab in title, labels, envelope)" \
+    "$(row '11|issue|alice|trusted|-|1/2|bug,shiplog/ready|Add widget|-')|$(row '12|pr|bob|trusted|decision|0/1|-|Ship the thing|Ship the thing')|$(row '13|draft-pr|carol|trusted|-|-|-|Draft patch|-')|$(row '14|pr|dave|untrusted|-|-|-|No draft key|-')" \
+    "$(run index "$work/api-stream" | flat)"
+else
+  printf 'SKIP jq cases (2): jq not on PATH\n'
+fi
 
 printf '%s passed, %s failed\n' "$pass" "$fail"
 [ "$fail" -eq 0 ]

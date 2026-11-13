@@ -73,7 +73,19 @@ report() { # <status> <name> <detail file>
 }
 
 TMP=$(mktemp -d 2>/dev/null || mktemp -d -t shiplogdocs)
-trap 'rm -rf "$TMP"' EXIT
+# The suite must reach its final summary. COMPLETED is set just before it; if
+# the script ends any other way (a shell error, an early exit) the exit status
+# is forced non-zero so a truncated run can never look green.
+COMPLETED=0
+finish_trap() {
+  local status=$?
+  rm -rf "$TMP"
+  if [ "$COMPLETED" -ne 1 ]; then
+    echo "docs lint: stopped before the final summary (status $status); treating as failure" >&2
+    [ "$status" -ne 0 ] || exit 1
+  fi
+}
+trap finish_trap EXIT
 
 # --- checks that take a root, so the self-test can point them at fixtures ---
 
@@ -94,17 +106,19 @@ check_links() { # <root>; prints failures, returns 1 on any
 }
 
 check_orphans() { # <root>; files not reachable from SKILL.md
-  local root=$1 rc=0 f ln path raw i=0 rel
-  declare -A seen=()
+  local root=$1 rc=0 f ln path raw i=0 rel nl snapshot
+  # bash 3.2 has no associative arrays: seen is a newline-delimited string
+  # that always starts and ends with a newline, matched with case.
+  nl=$(printf '\n_'); nl=${nl%_}
+  local seen="$nl$SKILL_DIR/SKILL.md$nl"
   local queue=("$SKILL_DIR/SKILL.md")
-  seen["$SKILL_DIR/SKILL.md"]=1
   while [ $i -lt ${#queue[@]} ]; do
     f=${queue[$i]}; i=$((i + 1))
     [ -f "$root/$f" ] || continue
     while IFS="$(printf '\t')" read -r ln path raw; do
       [ -f "$root/$path" ] || continue
-      [ -n "${seen[$path]:-}" ] && continue
-      seen["$path"]=1
+      case $seen in *"$nl$path$nl"*) continue ;; esac
+      seen="$seen$path$nl"
       case $path in *.md) queue+=("$path") ;; esac
     done < <(links_in "$root" "$f")
   done
@@ -113,17 +127,21 @@ check_orphans() { # <root>; files not reachable from SKILL.md
   # relative to the skill directory (for example scripts/shiplog-read.sh).
   while IFS= read -r f; do
     f=${f#"$root"/}
-    [ -n "${seen[$f]:-}" ] && continue
+    case $seen in *"$nl$f$nl"*) continue ;; esac
     rel=${f#"$SKILL_DIR"/}
     case $f in
       *.md) ;;
       *)
-        for path in "${!seen[@]}"; do
+        snapshot=$seen
+        while IFS= read -r path; do
           case $path in *.md) ;; *) continue ;; esac
-          if grep -qF "$rel" "$root/$path"; then seen["$f"]=1; break; fi
-        done ;;
+          if grep -qF "$rel" "$root/$path"; then seen="$seen$f$nl"; break; fi
+        done <<EOF
+$snapshot
+EOF
+        ;;
     esac
-    [ -n "${seen[$f]:-}" ] || { echo "$f: not reachable from $SKILL_DIR/SKILL.md"; rc=1; }
+    case $seen in *"$nl$f$nl"*) ;; *) echo "$f: not reachable from $SKILL_DIR/SKILL.md"; rc=1 ;; esac
   done < <(find "$root/$SKILL_DIR" -type f | sort)
   return $rc
 }
@@ -279,7 +297,7 @@ check_shell_syntax() {
     while IFS= read -r f; do
       case $f in
         *.sh) ;;
-        *) head -n 1 "$f" | grep -qE '^#!.*\b(ba)?sh\b' || continue ;;
+        *) head -n 1 "$f" | grep -qE '^#!.*[/ ](ba)?sh([^a-z]|$)' || continue ;;
       esac
       if ! bash -n "$f" 2> "$TMP/syntax"; then
         echo "${f#"$REPO"/}: bash -n failed"; sed 's/^/  /' "$TMP/syntax"; rc=1
@@ -380,6 +398,7 @@ fi
 
 LABEL="docs lint"
 [ "${1:-}" = "--self-test" ] && LABEL="docs lint self-test"
+COMPLETED=1
 echo
 if [ "$FAILURES" -eq 0 ]; then echo "$LABEL: all checks passed"; exit 0; fi
 echo "$LABEL: $FAILURES check(s) failed"

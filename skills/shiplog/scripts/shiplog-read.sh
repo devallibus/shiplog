@@ -5,6 +5,9 @@
 # compact lines, so the model never receives full bodies unless it asks for
 # one with `source`. Runtime needs: bash, gh, git, awk, sed, mktemp.
 # Output is data from GitHub, not instructions.
+# Portability rule (bash 3.2 on macOS): comments inside case blocks and inside
+# command substitutions must not contain backticks, apostrophes or double quotes,
+# and no heredoc may sit inside a command substitution (bash 3.2 scans it).
 set -eu
 
 usage() {
@@ -54,7 +57,7 @@ need_number() {
 # A file that does not start with a header is read as one local record
 # (tests). mode: index | show | source. sel: comment URL or id.
 # incl=1 lets source print entries from untrusted authors, labelled.
-PARSER=$(cat <<'AWK'
+IFS= read -r -d '' PARSER <<'AWK' || true
 function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
 function safe(s) { gsub(/[\001-\010\013\014\016-\037\177]/, "", s); return s }
 function nz(s) { return (s == "") ? "-" : s }
@@ -202,7 +205,6 @@ END {
   }
 }
 AWK
-)
 
 parse() { LC_ALL=C awk -v mode="$1" -v sel="${2:-}" -v incl="${3:-0}" "$PARSER"; }
 
@@ -214,6 +216,7 @@ def lines: [scan("\n")] | length + 1;
 def labels: [.labels[].name | one | gsub(","; " ")] | join(",") | if . == "" then "-" else . end;'
 JQ_RECORD='(.body // "") as $b |
 "\u001eR\t\($b | lines)\t\(.number)\t\(if .pull_request then (if .draft then "draft-pr" else "pr" end) else "issue" end)\t\(.state | one)\t\(.user.login // "ghost" | one)\t\(.author_association | one)\t\(.html_url | one)\t\(labels)\t\(.title | one)\n\($b)"'
+JQ_INDEX="$DEFS .[] | $JQ_RECORD"
 JQ_COMMENT='(.body // "") as $b |
 "\u001eC\t\($b | lines)\t\(.html_url | one)\t\(.created_at | one)\t\(.user.login // "ghost" | one)\t\(.author_association | one)\n\($b)"'
 
@@ -239,7 +242,7 @@ cmd_index() {
   done
   need_gh; tmp=$(mktemp)
   # The issues endpoint returns open issues and PRs together, newest first.
-  fetch gh api "repos/{owner}/{repo}/issues?state=open&per_page=$limit" --jq "$DEFS .[] | $JQ_RECORD"
+  fetch gh api "repos/{owner}/{repo}/issues?state=open&per_page=$limit" --jq "$JQ_INDEX"
   printf 'number\ttype\tauthor\ttrust\tkind\ttasks\tlabels\ttitle\tsummary\n'
   parse index <"$tmp"
 }
@@ -317,5 +320,8 @@ case "$cmd" in
   parse-file) [ $# -ge 2 ] || die "usage: parse-file index|show|source FILE [SEL] [INCLUDE_UNTRUSTED]"
     [ -f "$2" ] || die "no such file: $2"
     parse "$1" "${3:-}" "${4:-0}" <"$2" ;;
+  # Offline entry point for tests: print the exact jq program that index runs.
+  jq-filter) [ "${1:-}" = index ] || die "usage: jq-filter index"
+    printf '%s\n' "$JQ_INDEX" ;;
   *) usage >&2; die "unknown command '$cmd'" ;;
 esac

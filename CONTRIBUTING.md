@@ -16,7 +16,7 @@ bash tests/reader/run.sh        # skills/shiplog/scripts/shiplog-read.sh
 bash tests/review-gate/run.sh   # the cross-model review check
 ```
 
-All three run in CI through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They run offline and need `bash`, `git`, and POSIX tools; the review-gate suite also needs `node`. On Windows use Git Bash. Shell scripts must keep LF line endings (enforced by `.gitattributes`).
+All three run in CI through [`.github/workflows/ci.yml`](.github/workflows/ci.yml). They run offline and need `bash`, `git`, and POSIX tools; the review-gate suite also needs `node`. On Windows use Git Bash. Shell scripts must keep LF line endings (enforced by `.gitattributes`). The CI and release workflows can also be started manually from the Actions tab.
 
 ## Versioning
 

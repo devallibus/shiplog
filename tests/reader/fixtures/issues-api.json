@@ -1,0 +1,47 @@
+[
+  {
+    "number": 11,
+    "state": "open",
+    "title": "Add widget",
+    "body": "Plain issue.\n\n- [ ] first\n- [x] second",
+    "user": { "login": "alice" },
+    "author_association": "OWNER",
+    "html_url": "https://github.com/example/repo/issues/11",
+    "labels": [{ "name": "bug" }, { "name": "shiplog/ready" }]
+  },
+  {
+    "number": 12,
+    "state": "open",
+    "title": "Ship the thing",
+    "body": "<!-- shiplog:\nkind: decision\nsummary: Ship the thing\n-->\n\n- [ ] T1: open",
+    "user": { "login": "bob" },
+    "author_association": "MEMBER",
+    "html_url": "https://github.com/example/repo/pull/12",
+    "labels": [],
+    "draft": false,
+    "pull_request": { "url": "https://api.github.com/repos/example/repo/pulls/12" }
+  },
+  {
+    "number": 13,
+    "state": "open",
+    "title": "Draft\tpatch",
+    "body": null,
+    "user": { "login": "carol" },
+    "author_association": "COLLABORATOR",
+    "html_url": "https://github.com/example/repo/pull/13",
+    "labels": [],
+    "draft": true,
+    "pull_request": { "url": "https://api.github.com/repos/example/repo/pulls/13" }
+  },
+  {
+    "number": 14,
+    "state": "open",
+    "title": "No draft key",
+    "body": "Just text.",
+    "user": { "login": "dave" },
+    "author_association": "NONE",
+    "html_url": "https://github.com/example/repo/pull/14",
+    "labels": [],
+    "pull_request": { "url": "https://api.github.com/repos/example/repo/pulls/14" }
+  }
+]
