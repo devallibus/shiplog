@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline tests for skills/shiplog/scripts/shiplog-read.sh (no network, no jq).
+# Offline tests for skills/shiplog/scripts/shiplog-read.sh (no network; the jq cases run only when jq is on PATH).
 # Usage: bash tests/reader/run.sh
 set -eu
 
