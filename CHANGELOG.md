@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.1
+
+### Added
+
+- Quiet logging setting file `.shiplog/logging.md` (`logging: quiet`, `location:`); lookup, hunt, and resume include the log location when it is set.
+- Lookup notes that `search` rows carry titles and labels only, from any author; use `show N` before treating a hit as a record.
+- CI and release workflows can be started manually.
+- A macOS job in the test workflow.
+- Reader tests for the jq half of the script, including draft PRs.
+
 ## 0.6.0
 
 Simplification of the skill ([#166](https://github.com/devallibus/shiplog/issues/166)). Defaults change; see Migration.

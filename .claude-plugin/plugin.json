@@ -1,7 +1,7 @@
 {
   "name": "shiplog",
   "description": "Preserves project discussion, decisions, and work context in GitHub issues and PRs so tracked work can continue across sessions.",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": {
     "name": "devallibus"
   },

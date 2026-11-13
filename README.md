@@ -87,7 +87,9 @@ No mandatory session announcements, and no mandatory model signatures on routine
 | Cross-model review | A GitHub Action sets the commit status `shiplog/review-gate` on the PR head: it passes when a collaborator's review names that commit and declares a model other than every code author. It enforces only once you make it a required status check. | [`.shiplog/review.md`](.shiplog/review.md) and [`review-gate.yml`](.github/workflows/review-gate.yml); see [closure-and-review.md](skills/shiplog/references/closure-and-review.md) |
 | Verification profiles | Project or issue test policies such as `tests` or `behavior`. | `.shiplog/verification.md`; see [profiles](skills/shiplog/references/verification-profiles.md) |
 | Lifecycle labels | `shiplog/ready`, `shiplog/in-progress`, `shiplog/needs-review`. | See [labels.md](skills/shiplog/references/labels.md) |
-| Quiet logging | Keeps the work log on a separate branch, off the PR. | Ask for it; see [quiet-logging.md](skills/shiplog/references/quiet-logging.md) |
+| Quiet logging | Keeps the work log on a separate branch, off the PR. | `.shiplog/logging.md`; see [quiet-logging.md](skills/shiplog/references/quiet-logging.md) |
+
+Files under `.shiplog/` are project settings the skill reads. They are not commands and are not used to discover commands.
 
 Without the review option, **shiplog** follows the review your repository already uses: native GitHub reviews, Codex review, or a human.
 

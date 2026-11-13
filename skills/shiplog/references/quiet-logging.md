@@ -1,6 +1,17 @@
 # Quiet logging
 
-Quiet logging keeps the team-facing PR limited to the change and puts the shiplog record somewhere else. Use it only when the user asks for it or the project has already set it up. It is never the default.
+Quiet logging keeps the team-facing PR limited to the change and puts the shiplog record somewhere else. Use it only when the user asks for it or the project has set it up. It is never the default.
+
+## Project setting
+
+A project records the choice in `.shiplog/logging.md`:
+
+```
+logging: quiet
+location: <where the record lives>
+```
+
+Without the file, or without `logging: quiet`, shiplog logs normally and nothing here applies.
 
 ## Choose the log location
 
