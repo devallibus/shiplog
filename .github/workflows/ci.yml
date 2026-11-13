@@ -1,9 +1,13 @@
 # Runs every offline test suite under tests/*/run.sh, the docs lint
 # self-test, and shellcheck (severity error) on the repository's scripts.
+# A second job repeats the suites on macOS, whose stock bash 3.2 and BSD awk
+# are the oldest interpreters the scripts must still run under. Can also be
+# started by hand (workflow_dispatch) when a push-triggered run was lost.
 
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     # List both master and main, as the other workflows do, so a future
@@ -65,3 +69,47 @@ jobs:
           fi
           printf '%s\n' "${scripts[@]}"
           shellcheck --severity=error "${scripts[@]}"
+
+  # Keep the two steps below in sync with the same-named steps in `tests`.
+  # Not a matrix on `tests`: that would rename the `tests` check.
+  tests-macos:
+    name: tests-macos
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show interpreters
+        shell: bash
+        run: |
+          /bin/bash --version
+          awk --version || awk -version || true
+
+      - name: Run test suites
+        shell: bash
+        run: |
+          set -u
+          status=0
+          found=0
+          for suite in tests/*/run.sh; do
+            [ -f "$suite" ] || continue
+            found=1
+            echo "::group::$suite"
+            # System bash (3.2), not a newer Homebrew bash on PATH.
+            if /bin/bash "$suite"; then
+              echo "PASS: $suite"
+            else
+              echo "::error::$suite failed"
+              status=1
+            fi
+            echo "::endgroup::"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error::no tests/*/run.sh found"
+            exit 1
+          fi
+          exit "$status"
+
+      - name: Docs lint self-test
+        shell: bash
+        run: /bin/bash tests/docs/run.sh --self-test
