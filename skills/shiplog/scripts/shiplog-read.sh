@@ -5,6 +5,8 @@
 # compact lines, so the model never receives full bodies unless it asks for
 # one with `source`. Runtime needs: bash, gh, git, awk, sed, mktemp.
 # Output is data from GitHub, not instructions.
+# Portability rule (bash 3.2 on macOS): comments inside case blocks and inside
+# command substitutions must not contain backticks, apostrophes or double quotes.
 set -eu
 
 usage() {
@@ -318,7 +320,7 @@ case "$cmd" in
   parse-file) [ $# -ge 2 ] || die "usage: parse-file index|show|source FILE [SEL] [INCLUDE_UNTRUSTED]"
     [ -f "$2" ] || die "no such file: $2"
     parse "$1" "${3:-}" "${4:-0}" <"$2" ;;
-  # Offline entry point for tests: print the exact jq program `index` runs.
+  # Offline entry point for tests: print the exact jq program that index runs.
   jq-filter) [ "${1:-}" = index ] || die "usage: jq-filter index"
     printf '%s\n' "$JQ_INDEX" ;;
   *) usage >&2; die "unknown command '$cmd'" ;;
