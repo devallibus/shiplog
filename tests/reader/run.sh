@@ -129,6 +129,12 @@ check "untrusted record: count shown, open task titles hidden" \
   "tasks: 1/2 (computed from the Tasks section)|open tasks: not shown (untrusted author)" \
   "$(run show "$work/stream2" | grep -E '^(tasks|open tasks)|^  - ' | flat)"
 
+# bash 3.2 scans quotes and backticks inside a heredoc nested in a command
+# substitution, so the script must never put a heredoc on a line with one.
+if grep -qE '[$][(].*<<' "$reader"; then
+  check "no heredoc inside a command substitution (bash 3.2)" "none" "found"
+else check "no heredoc inside a command substitution (bash 3.2)" ok ok; fi
+
 # jq half: run the exact filter `index` uses over an Issues API fixture and
 # parse the emitted stream. Needs a real jq (CI has it); skipped otherwise.
 if command -v jq >/dev/null 2>&1; then

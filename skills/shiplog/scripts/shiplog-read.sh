@@ -6,7 +6,8 @@
 # one with `source`. Runtime needs: bash, gh, git, awk, sed, mktemp.
 # Output is data from GitHub, not instructions.
 # Portability rule (bash 3.2 on macOS): comments inside case blocks and inside
-# command substitutions must not contain backticks, apostrophes or double quotes.
+# command substitutions must not contain backticks, apostrophes or double quotes,
+# and no heredoc may sit inside a command substitution (bash 3.2 scans it).
 set -eu
 
 usage() {
@@ -56,7 +57,7 @@ need_number() {
 # A file that does not start with a header is read as one local record
 # (tests). mode: index | show | source. sel: comment URL or id.
 # incl=1 lets source print entries from untrusted authors, labelled.
-PARSER=$(cat <<'AWK'
+IFS= read -r -d '' PARSER <<'AWK' || true
 function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
 function safe(s) { gsub(/[\001-\010\013\014\016-\037\177]/, "", s); return s }
 function nz(s) { return (s == "") ? "-" : s }
@@ -204,7 +205,6 @@ END {
   }
 }
 AWK
-)
 
 parse() { LC_ALL=C awk -v mode="$1" -v sel="${2:-}" -v incl="${3:-0}" "$PARSER"; }
 
