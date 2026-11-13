@@ -72,7 +72,7 @@ jobs:
             # Manual run: there is no version change to detect, so decide on
             # whether the tag exists on the remote. Only a 404 means absent;
             # any other API failure must not be read as "absent".
-            if out=$(gh api "repos/${REPO}/git/refs/tags/${tag}" 2>&1); then
+            if out=$(gh api "repos/${REPO}/git/ref/tags/${tag}" 2>&1); then
               echo "Tag ${tag} already exists on remote; already released, nothing to do."
               echo "should_release=false" >> "$GITHUB_OUTPUT"
               exit 0
@@ -107,11 +107,12 @@ jobs:
         if: steps.detect.outputs.should_release == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
           TAG: ${{ steps.detect.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
-          if gh api "repos/${{ github.repository }}/git/refs/tags/${TAG}" >/dev/null 2>&1; then
+          if gh api "repos/${REPO}/git/ref/tags/${TAG}" >/dev/null 2>&1; then
             echo "::error::Tag ${TAG} already exists on remote — skipping release."
             echo "Likely cause: this version was already released manually. If the"
             echo "intent was to re-release, delete the tag first or bump again."
