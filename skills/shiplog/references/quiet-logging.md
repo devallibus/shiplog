@@ -11,6 +11,8 @@ logging: quiet
 location: <where the record lives>
 ```
 
+The value is an issue number, a log branch name, or an external tracker ID.
+
 Without the file, or without `logging: quiet`, shiplog logs normally and nothing here applies.
 
 ## Choose the log location
